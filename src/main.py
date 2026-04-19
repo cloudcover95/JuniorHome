@@ -3,46 +3,40 @@
 import mlx.core as mx
 import logging
 from physiomanifold.tda_svd_core.manifold_collapse import ThermodynamicManifold
-from physiomanifold.manifold_geometry.discrete_ricci import RicciFlowOptimizer
 from physiomanifold.recursive_feedback.active_inference import FreeEnergyMinimizer
-from physiomanifold.inference_engine.causal_routing import CausalManifoldRouter
+from physiomanifold.physics_principles.noether_invariant import NoetherSymmetryEnforcer
+from physiomanifold.agi_primitives.zero_trust_kernel import safe_write_parquet, SecurityIsolationError
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - JUNIORHOME_OS - %(message)s')
 
-def bootstrap_phase_three():
-    logging.info("Bootstrapping JuniorHome Phase III: Active Inference & Causal Routing...")
+def bootstrap_phase_four():
+    logging.info("Bootstrapping JuniorHome Phase IV: Zero-Trust Runtime & Noether Topology...")
     
-    # 1. Intake & SVD Collapse
-    raw_telemetry = mx.random.normal((1024, 1024), dtype=mx.float32)
-    thermo_engine = ThermodynamicManifold(target_rank=64)
+    # 1. Zero-Trust Runtime Audit
+    try:
+        logging.info("Auditing air-gap isolation protocols...")
+        # Simulating an accidental hallucinated write to a forbidden path
+        safe_write_parquet("/Users/nico/Documents/JuniorCloud/JuniorHome/02_Assets/malicious_inject.parquet", {})
+    except SecurityIsolationError as e:
+        logging.info(f"Zero-Trust Audit Passed. Fault successfully trapped: {e}")
+
+    # 2. Topological Inference Pipeline
+    raw_telemetry = mx.random.normal((100, 3), dtype=mx.float32) # Simulating 3D spatial/market data
+    
+    thermo_engine = ThermodynamicManifold(target_rank=3)
     denoised_manifold, entropy = thermo_engine.collapse_and_measure(raw_telemetry)
     
-    # 2. Curvature Correction (Ricci Flow)
-    ricci_engine = RicciFlowOptimizer(learning_rate=0.05)
-    ricci_metric = ricci_engine.flow_step(denoised_manifold[:64, :64])
+    noether_enforcer = NoetherSymmetryEnforcer()
+    logging.info("Computing initial Vietoris-Rips persistence diagram...")
+    initial_drift = noether_enforcer.calculate_topological_drift(denoised_manifold)
     
-    # 3. Causal Routing
-    router = CausalManifoldRouter(target_dimensions=64)
-    causal_sensory_input = router.route_tensor(raw_telemetry[:64, :], ricci_metric)
-    logging.info("Causal routing complete. Telemetry projected onto Ricci metric.")
+    # Simulate a state change (Active Inference update)
+    logging.info("Executing state change and re-evaluating topological invariants...")
+    perturbed_manifold = denoised_manifold + mx.random.normal((100, 3), dtype=mx.float32) * 0.05
+    subsequent_drift = noether_enforcer.calculate_topological_drift(perturbed_manifold)
     
-    # 4. Active Inference (Free Energy Minimization)
-    fep_minimizer = FreeEnergyMinimizer(learning_rate=0.01)
-    
-    # Initialize arbitrary internal state and generative weights for the loop
-    internal_state = mx.random.normal((64, 64), dtype=mx.float32)
-    generative_weights = mx.random.normal((64, 64), dtype=mx.float32)
-    
-    logging.info("Executing Active Inference recursive loop...")
-    for step in range(5):
-        internal_state, free_energy = fep_minimizer.execute_perception_step(
-            internal_state, 
-            causal_sensory_input, 
-            generative_weights
-        )
-        logging.info(f"FEP Loop {step+1}/5 - Variational Free Energy: {free_energy.item():.6f}")
-
-    logging.info("Phase III Complete. System state optimized to physical invariants.")
+    logging.info(f"Topological Drift (Noether Violation): {subsequent_drift.item():.6f}")
+    logging.info("Phase IV Complete. System state protected and topologically mapped.")
 
 if __name__ == "__main__":
-    bootstrap_phase_three()
+    bootstrap_phase_four()
