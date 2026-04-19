@@ -4,31 +4,45 @@ import mlx.core as mx
 import logging
 from physiomanifold.tda_svd_core.manifold_collapse import ThermodynamicManifold
 from physiomanifold.manifold_geometry.discrete_ricci import RicciFlowOptimizer
+from physiomanifold.recursive_feedback.active_inference import FreeEnergyMinimizer
+from physiomanifold.inference_engine.causal_routing import CausalManifoldRouter
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - JUNIORHOME_OS - %(message)s')
 
-def bootstrap_phase_two():
-    logging.info("Bootstrapping JuniorHome Phase II: Edge Inference & Metric Flow...")
+def bootstrap_phase_three():
+    logging.info("Bootstrapping JuniorHome Phase III: Active Inference & Causal Routing...")
     
-    # 1. Initialize Interstellar Sparse Tensor Simulation (10000 x 10000)
-    # Using small rank to simulate sparse cosmological/financial structure
-    logging.info("Allocating high-dimensional state tensor on MLX Metal...")
-    raw_telemetry = mx.random.normal((5000, 5000), dtype=mx.float32)
-    
-    # 2. Thermodynamic SVD Collapse
+    # 1. Intake & SVD Collapse
+    raw_telemetry = mx.random.normal((1024, 1024), dtype=mx.float32)
     thermo_engine = ThermodynamicManifold(target_rank=64)
     denoised_manifold, entropy = thermo_engine.collapse_and_measure(raw_telemetry)
-    logging.info(f"RSVD Collapse Complete. Thermodynamic Entropy: {entropy.item():.4f} nats")
     
-    # 3. Curvature Correction via Ricci Flow
+    # 2. Curvature Correction (Ricci Flow)
     ricci_engine = RicciFlowOptimizer(learning_rate=0.05)
-    # Treat a sub-block of the manifold as a discrete metric tensor
-    sub_metric = denoised_manifold[:64, :64]
-    smoothed_metric = ricci_engine.flow_step(sub_metric)
+    ricci_metric = ricci_engine.flow_step(denoised_manifold[:64, :64])
     
-    curvature_delta = mx.mean(mx.abs(sub_metric - smoothed_metric)).item()
-    logging.info(f"Discrete Ricci Flow applied. Metric tensor curvature delta: {curvature_delta:.6f}")
-    logging.info("Physical invariants satisfied. Awaiting recursive feedback loop execution.")
+    # 3. Causal Routing
+    router = CausalManifoldRouter(target_dimensions=64)
+    causal_sensory_input = router.route_tensor(raw_telemetry[:64, :], ricci_metric)
+    logging.info("Causal routing complete. Telemetry projected onto Ricci metric.")
+    
+    # 4. Active Inference (Free Energy Minimization)
+    fep_minimizer = FreeEnergyMinimizer(learning_rate=0.01)
+    
+    # Initialize arbitrary internal state and generative weights for the loop
+    internal_state = mx.random.normal((64, 64), dtype=mx.float32)
+    generative_weights = mx.random.normal((64, 64), dtype=mx.float32)
+    
+    logging.info("Executing Active Inference recursive loop...")
+    for step in range(5):
+        internal_state, free_energy = fep_minimizer.execute_perception_step(
+            internal_state, 
+            causal_sensory_input, 
+            generative_weights
+        )
+        logging.info(f"FEP Loop {step+1}/5 - Variational Free Energy: {free_energy.item():.6f}")
+
+    logging.info("Phase III Complete. System state optimized to physical invariants.")
 
 if __name__ == "__main__":
-    bootstrap_phase_two()
+    bootstrap_phase_three()
