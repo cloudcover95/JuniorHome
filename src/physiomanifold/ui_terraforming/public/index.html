@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JuniorHome OS // Sovereign Terraformer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+    body { font-family: 'Inter', system-ui; background-color: #0a0a0a; color: #fff;}
+    .title { font-family: 'Space Grotesk', sans-serif; }
+  </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+  
+  <div class="border-b border-white/10 bg-zinc-950 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 bg-cyan-400 rounded-full flex items-center justify-center text-black font-bold text-xl">J</div>
+      <div>
+        <span class="title text-2xl tracking-tighter">JuniorHome</span>
+        <span class="text-xs text-cyan-400 block -mt-1">OS // ROOT TERRAFORMER API [WS: ACTIVE]</span>
+      </div>
+    </div>
+    <div class="text-xs font-mono text-emerald-400 animate-pulse">SYSTEM ZERO-TRUST: SECURE</div>
+  </div>
+
+  <div class="flex flex-1 overflow-hidden">
+    <div class="w-80 bg-zinc-950 border-r border-white/10 p-4 flex flex-col">
+      <div class="uppercase text-xs text-white/40 mb-4">AGI MODULATION</div>
+      <textarea id="prompt-input" rows="4" 
+        class="w-full bg-black border border-white/20 rounded-xl px-3 py-2 text-sm placeholder:text-white/40 mb-3 font-mono"
+        placeholder="'Render a rigid calendar orchestrator...'"></textarea>
+      <button onclick="requestTerraform()" 
+        class="w-full bg-cyan-400 hover:bg-cyan-300 text-black font-medium py-2 rounded-xl flex items-center justify-center gap-2 transition">
+        TERRAFORM ROOT BOARD
+      </button>
+      <div id="sys-log" class="mt-4 font-mono text-[10px] text-emerald-300 bg-black/60 p-3 rounded-xl h-full overflow-y-auto whitespace-pre-wrap">
+JuniorHome OS Initialized...
+Awaiting root generation.
+      </div>
+    </div>
+
+    <div class="flex-1 p-4 overflow-y-auto" id="canvas-grid">
+        <div class="text-center text-white/20 mt-20 font-mono text-sm">
+            [ ROOT CANVAS EMPTY. AWAITING LOCAL AGI. ]
+        </div>
+    </div>
+  </div>
+
+  <script>
+    const ws = new WebSocket("ws://127.0.0.1:8000/ws/audit");
+    const log = document.getElementById('sys-log');
+    
+    ws.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        if (data.type === "status") {
+            log.innerHTML += `\n> ${data.message}`;
+            log.scrollTop = log.scrollHeight;
+        } 
+        else if (data.type === "board_injection") {
+            log.innerHTML += `\n> [SUCCESS] Physical state rendered.`;
+            log.scrollTop = log.scrollHeight;
+            
+            const canvas = document.getElementById('canvas-grid');
+            if (canvas.innerHTML.includes('ROOT CANVAS EMPTY')) canvas.innerHTML = '';
+            
+            const container = document.createElement('div');
+            container.className = "bg-zinc-900 border border-white/10 rounded-2xl p-4 mb-4 shadow-xl";
+            container.innerHTML = data.html;
+            canvas.prepend(container);
+
+            const scripts = container.getElementsByTagName('script');
+            for (let i = 0; i < scripts.length; i++) {
+                const newScript = document.createElement('script');
+                if (scripts[i].src) newScript.src = scripts[i].src;
+                else newScript.text = scripts[i].innerHTML;
+                document.body.appendChild(newScript);
+            }
+        }
+    };
+
+    function requestTerraform() {
+        const input = document.getElementById('prompt-input').value;
+        if (!input) return;
+        log.innerHTML += `\n> [REQUEST] Routing to MLX-LM Sandbox...`;
+        ws.send(JSON.stringify({ action: "terraform", request: input }));
+    }
+  </script>
+</body>
+</html>
