@@ -1,0 +1,14 @@
+[project]
+name = "JuniorAGI"
+version = "0.1.0"
+description = "PhysioManifold-AGI Sovereign OS"
+requires-python = ">=3.12"
+dependencies = [
+    "mlx==0.29.3",
+    "giotto-tda==0.6.0",
+    "numpy==2.0.2",
+    "polars==1.36.1",
+    "fastapi==0.128.8",
+    "pydantic==2.13.2",
+    "websockets==15.0.1"
+]

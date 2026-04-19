@@ -1,0 +1,9 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/scripts/junior_venv/bin/python",
+    "python.analysis.extraPaths": ["${workspaceFolder}/src", "${workspaceFolder}/web3node"],
+    "files.exclude": { "**/__pycache__": true, "**/.DS_Store": true, "01_Legal/": true, "02_Assets/": true },
+    "search.exclude": { "01_Legal/": true, "02_Assets/": true },
+    "workbench.colorTheme": "Default Dark+",
+    "editor.formatOnSave": true,
+    "python.analysis.typeCheckingMode": "strict"
+}
