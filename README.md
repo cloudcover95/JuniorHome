@@ -1,30 +1,69 @@
 # JuniorHome
 
-**Sovereign Edge Computing Home Hub**
+**Sovereign Edge Orchestrator & Home Hub**
 
-JuniorHome is the central orchestration layer for the JuniorCloud LLC sovereign edge stack. It ties together quant execution (JuniorStock), memory systems (JuniorMemSys / JuniorAGI), inference (BitNet-mlx), and deterministic hardware control (crispy-mouse).
+JuniorHome is the central intelligence and orchestration layer for the entire JuniorCloud LLC sovereign edge stack. Think of it as a **fully local, air-gapped, math-first alternative to Google Nest / Home Assistant** — but built for serious systems, AI agents, quant execution, spatial sensing, and deterministic automation.
 
-## Architecture Role
+It coordinates data ingestion, reasoning, memory, and execution across all connected components while running efficiently on low-power Apple Silicon and edge hardware.
 
-JuniorHome acts as the "home server" equivalent for edge-native sovereign computing — a 45W-class always-on node that coordinates the full ecosystem.
+## Core Responsibilities
 
-## Integrated Components
+| Layer                    | Responsibility                                      |
+|--------------------------|-----------------------------------------------------|
+| **Data Ingestion**       | web3node, JuniorFetch, sensor streams               |
+| **Reasoning**            | BitNet-mlx + JuniorAGI_SDK                          |
+| **Memory**               | JuniorMemSys + long-term topological state          |
+| **Execution**            | crispy-mouse (hardware macros + sensing)            |
+| **Quant / Decisioning**  | JuniorStock                                         |
+| **Spatial Awareness**    | JuniorOmega + JuniorClimbs (multi-optical + WiFi)   |
 
-| System            | Role within JuniorHome                          |
-|-------------------|--------------------------------------------------|
-| **JuniorStock**   | Quantitative decision engine                     |
-| **BitNet-mlx**    | Local reasoning and proprietary math kernel      |
-| **crispy-mouse**  | Low-latency execution and multi-modal input      |
-| **JuniorMemSys**  | Long-term topological memory                     |
-| **JuniorAGI_SDK** | Persistent spectral memory and agent substrate   |
-| **web3node**      | On-chain signal ingestion                        |
+## Architecture Vision
 
-## Design Principles
+```text
+                    JuniorHome (Orchestrator)
+                           |
+        +------------------+--------------------+
+        |                  |                    |
+   Data Layer       Reasoning Layer      Execution Layer
+   (web3node,       (BitNet-mlx,        (crispy-mouse,
+    JuniorFetch)     JuniorAGI)           JuniorStock)
+        |                  |                    |
+   Memory Layer     Spatial Layer
+   (JuniorMemSys)   (JuniorOmega, JuniorClimbs)
+```
 
-- Extremely low power envelope
-- Fully local / air-gapped operation
-- Apple Silicon optimized (MLX + Metal)
-- Deterministic where it matters
-- Composable black-box architecture
+## Key Features
 
-JuniorHome is the glue that makes the full JuniorCloud LLC stack function as a cohesive sovereign system.
+- **Central Orchestration** — Single point of coordination for the full sovereign stack
+- **Low Power** — Designed for always-on 45W-class edge nodes
+- **Fully Local** — Zero cloud dependency by design
+- **Extensible** — Clean black-box interfaces for new sensors, agents, or execution modules
+- **Production Grade** — Logging, configuration, health monitoring, and graceful degradation
+
+## Integration Map
+
+| Component          | How JuniorHome Uses It                              |
+|--------------------|-----------------------------------------------------|
+| **JuniorStock**    | Quantitative signals and execution commands         |
+| **BitNet-mlx**     | Primary reasoning engine + proprietary math         |
+| **crispy-mouse**   | Hardware execution + multi-modal input              |
+| **JuniorAGI_SDK**  | Long-term agent memory and spectral state           |
+| **JuniorMemSys**   | Topological structured memory                       |
+| **JuniorOmega**    | Spatial sensing and fabrication pipelines           |
+| **JuniorClimbs**   | Performance imaging and room-scale movement data    |
+| **web3node**       | On-chain signals                                    |
+| **JuniorFetch**    | Local semantic retrieval                            |
+
+## Technical Principles
+
+- Apple Silicon first (MLX + Metal)
+- Deterministic execution where safety or finance matters
+- Efficient storage patterns (reduced SSD writes)
+- Composable and testable black-box modules
+- Sovereign by default
+
+## Current Status
+
+JuniorHome is actively evolving into the central "brain" of the sovereign edge ecosystem. It is designed to eventually run as a lightweight always-on service that manages agents, data flows, and hardware across one or more local nodes.
+
+Part of building a complete, production-grade, sovereign technology stack under JuniorCloud LLC.
