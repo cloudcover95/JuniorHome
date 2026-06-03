@@ -1,13 +1,9 @@
 # path: src/juniorhome/agent_orchestrator.py
 #!/usr/bin/env python3
 """
-Agent Orchestrator
+Agent Orchestrator (with Security)
 
-Unified high-level orchestrator for autonomous agents.
-Combines reasoning (JuniorLLM), efficiency (EdgeRuntime), knowledge (SecondBrainPipeline),
-and execution into one clean interface.
-
-This is the top-level coordination layer for deep agent autonomy.
+Now uses SecurityMiddleware for any code-related autonomous actions.
 """
 
 import logging
@@ -23,20 +19,18 @@ from .autonomous_agent import AutonomousAgent
 from .second_brain_pipeline import SecondBrainPipeline
 from .edge_runtime import EdgeRuntime
 from .second_brain import SecondBrain
+from .security_middleware import SecurityMiddleware
 
 logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 
 
 class AgentOrchestrator:
-    """
-    Top-level orchestrator for autonomous agents with full stack integration.
-    """
-
     def __init__(self, agent: Optional[AutonomousAgent] = None):
         self.agent = agent or AutonomousAgent()
         self.second_brain = SecondBrain(vault_path="./obsidian")
         self.pipeline = SecondBrainPipeline(second_brain=self.second_brain)
         self.edge_runtime = EdgeRuntime()
+        self.security = SecurityMiddleware()
 
         if HAS_JUNIORLLM:
             from juniorllm.autonomy.autonomous_coder import AutonomousCoder
@@ -44,26 +38,33 @@ class AgentOrchestrator:
         else:
             self.coder = None
 
-        logging.info("AgentOrchestrator initialized (unified deep architecture)")
+        logging.info("AgentOrchestrator initialized with Security integration")
 
     def autonomous_think_and_act(self, prompt: str, task_complexity: str = "medium") -> Dict[str, Any]:
-        # Step 1: Think efficiently
         thought = self.agent.think(prompt, task_complexity=task_complexity)
 
-        # Step 2: If it involves code, generate + review with efficiency in mind
         code_proposal = None
         if "code" in prompt.lower() or "implement" in prompt.lower():
             if self.coder:
-                proposal = self.coder.propose_code_change(prompt)
-                # Make generated code edge-efficient by default
+                raw_proposal = self.coder.propose_code_change(prompt)
+
+                # Secure the code action
+                def _secure_action():
+                    return raw_proposal
+
+                secured = self.security.secure_action(
+                    _secure_action,
+                    llm_output=str(raw_proposal),
+                    action_description="Code generation proposal",
+                )
+
                 code_proposal = {
-                    **proposal,
+                    **raw_proposal,
+                    "security_validated": secured.get("executed", False),
                     "edge_optimized": True,
-                    "recommendations": self.edge_runtime.tinyml.get_optimization_tips(),
                 }
 
-        # Step 3: Store important thoughts in Second Brain
-        if "important" in thought.lower() or len(thought) > 200:
+        if len(thought) > 150:
             self.pipeline.second_brain.store_finding({
                 "type": "agent_thought",
                 "content": thought,
@@ -73,7 +74,7 @@ class AgentOrchestrator:
         return {
             "thought": thought,
             "code_proposal": code_proposal,
-            "stored_in_second_brain": True,
+            "stored_in_second_brain": len(thought) > 150,
         }
 
     def process_knowledge(self, url: str = None):
