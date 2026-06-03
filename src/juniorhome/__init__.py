@@ -2,11 +2,18 @@
 #!/usr/bin/env python3
 """
 JuniorHome - Sovereign Edge Orchestrator
-
-Core package for the central home hub / orchestrator in the JuniorCloud LLC stack.
 """
 
+from .config import JuniorHomeConfig
 from .datalake import DataLake
+from .plugin_loader import PluginLoader
 from .reporter import Reporter
+from .orchestrator import JuniorHomeOrchestrator
 
-__all__ = ["DataLake", "Reporter"]
+__all__ = [
+    "JuniorHomeConfig",
+    "DataLake",
+    "PluginLoader",
+    "Reporter",
+    "JuniorHomeOrchestrator",
+]
