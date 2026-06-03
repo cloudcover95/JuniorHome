@@ -1,9 +1,9 @@
 # path: src/juniorhome/application.py
 #!/usr/bin/env python3
 """
-Application (with Second Brain + Service Locator)
+Application (Architecture v3 - with Interfaces)
 
-Now registers the SecondBrain as a first-class service via the container.
+Now uses interfaces + ServiceContainer for strong dependency inversion.
 """
 
 import logging
@@ -15,7 +15,13 @@ try:
 except ImportError:
     HAS_CONTAINER = False
 
-# Core imports
+# Interfaces
+try:
+    from .interfaces import IDataLake, ISecondBrain, IOrchestrator, IKnowledgeService
+except ImportError:
+    IDataLake = ISecondBrain = IOrchestrator = IKnowledgeService = object
+
+# Implementations
 
 from .config_manager import ConfigManager
 from .production_setup import ProductionSetup
@@ -58,27 +64,31 @@ class Application:
         if self.container:
             self.container.register(SecurityMiddleware, self.security)
 
-        self.datalake = DataLakeManager(base_path=self.config.get("data_dir", "data"))
+        self.datalake: IDataLake = DataLakeManager(base_path=self.config.get("data_dir", "data"))
         if self.container:
-            self.container.register(DataLakeManager, self.datalake)
+            self.container.register(IDataLake, self.datalake)
 
-        # Second Brain (Obsidian + Data Lake)
-        self.second_brain = SecondBrain(
+        self.second_brain: ISecondBrain = SecondBrain(
             vault_path=self.config.get("obsidian_vault", "./obsidian"),
             data_dir=self.config.get("data_dir", "data"),
         )
         if self.container:
-            self.container.register(SecondBrain, self.second_brain)
+            self.container.register(ISecondBrain, self.second_brain)
 
         self.docker = DockerManager(project_name=self.config.get("app_name", "juniorhome").lower())
-        self.orchestrator = JuniorHomeOrchestrator(config_path=config_file)
+        self.orchestrator: IOrchestrator = JuniorHomeOrchestrator(config_path=config_file)
+        if self.container:
+            self.container.register(IOrchestrator, self.orchestrator)
+
         self.quantized_models = QuantizedModelManager()
-        self.knowledge = KnowledgeService(
+        self.knowledge: IKnowledgeService = KnowledgeService(
             vault_path=self.config.get("obsidian_vault", "./obsidian"),
             enable_scheduling=True,
         )
+        if self.container:
+            self.container.register(IKnowledgeService, self.knowledge)
 
-        logging.info("Application initialized with SecondBrain + ServiceContainer")
+        logging.info("Application v3 initialized with interfaces + ServiceContainer")
 
     def resolve(self, interface):
         if self.container:

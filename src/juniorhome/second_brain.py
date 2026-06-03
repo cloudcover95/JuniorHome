@@ -1,17 +1,15 @@
 # path: src/juniorhome/second_brain.py
 #!/usr/bin/env python3
 """
-Second Brain
+Second Brain (implements ISecondBrain)
 
-High-level service representing the Obsidian-backed Data Lake as a
-persistent "Second Brain" for the sovereign agent ecosystem.
-
-Uses Service Locator / Container pattern for clean architecture.
+Now follows the interface for better architecture and dependency inversion.
 """
 
 import logging
 from typing import Any, Dict, List, Optional
 
+from .interfaces import ISecondBrain
 from .datalake_manager import DataLakeManager
 from .datalake_integration import DataLakeIntegration
 from .resilient_knowledge_pipeline import ResilientKnowledgePipeline
@@ -19,10 +17,10 @@ from .resilient_knowledge_pipeline import ResilientKnowledgePipeline
 logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 
 
-class SecondBrain:
+class SecondBrain(ISecondBrain):
     """
     The persistent knowledge layer (Obsidian + Data Lake).
-    Acts as the long-term memory / Second Brain for agents.
+    Implements ISecondBrain interface.
     """
 
     def __init__(self, vault_path: str, data_dir: str = "data"):
@@ -43,6 +41,5 @@ class SecondBrain:
         return self.integration.get_recent_findings(limit=limit)
 
     def query(self, topic: str) -> List[Dict[str, Any]]:
-        # Simple query against data lake (can be expanded)
         findings = self.get_recent_findings(limit=500)
         return [f for f in findings if topic.lower() in str(f).lower()]
