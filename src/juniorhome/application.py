@@ -1,9 +1,10 @@
 # path: src/juniorhome/application.py
 #!/usr/bin/env python3
 """
-Application (Architecture v3 - with Interfaces)
+Application (Composition Root v4)
 
-Now uses interfaces + ServiceContainer for strong dependency inversion.
+Fully uses ServiceContainer as the Composition Root.
+Most dependencies are now resolved through the container.
 """
 
 import logging
@@ -21,7 +22,7 @@ try:
 except ImportError:
     IDataLake = ISecondBrain = IOrchestrator = IKnowledgeService = object
 
-# Implementations
+# All implementations
 
 from .config_manager import ConfigManager
 from .production_setup import ProductionSetup
@@ -38,12 +39,19 @@ logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 
 
 class Application:
+    """
+    True Composition Root using ServiceContainer.
+    """
+
     def __init__(self, config_file: Optional[str] = None):
         if not HAS_CONTAINER:
-            logging.warning("ServiceContainer not available")
+            logging.warning("ServiceContainer not available. Using fallback mode.")
 
         self.container = ServiceContainer() if HAS_CONTAINER else None
 
+        # === Register everything via container ===
+
+        # Core
         self.config = ConfigManager(config_file)
         self.production = ProductionSetup(
             app_name=self.config.get("app_name", "JuniorHome"),
@@ -54,20 +62,24 @@ class Application:
             self.container.register(ConfigManager, self.config)
             self.container.register(ProductionSetup, self.production)
 
+        # Observability
         self.observability = ObservabilityManager()
         if self.container:
             self.container.register(ObservabilityManager, self.observability)
 
+        # Security
         self.security = SecurityMiddleware(
             strict_mode=self.config.get("strict_security", True)
         )
         if self.container:
             self.container.register(SecurityMiddleware, self.security)
 
+        # Data Lake
         self.datalake: IDataLake = DataLakeManager(base_path=self.config.get("data_dir", "data"))
         if self.container:
             self.container.register(IDataLake, self.datalake)
 
+        # Second Brain
         self.second_brain: ISecondBrain = SecondBrain(
             vault_path=self.config.get("obsidian_vault", "./obsidian"),
             data_dir=self.config.get("data_dir", "data"),
@@ -75,12 +87,18 @@ class Application:
         if self.container:
             self.container.register(ISecondBrain, self.second_brain)
 
+        # Docker
         self.docker = DockerManager(project_name=self.config.get("app_name", "juniorhome").lower())
+
+        # Orchestrator
         self.orchestrator: IOrchestrator = JuniorHomeOrchestrator(config_path=config_file)
         if self.container:
             self.container.register(IOrchestrator, self.orchestrator)
 
+        # Quantized Models
         self.quantized_models = QuantizedModelManager()
+
+        # Knowledge Service
         self.knowledge: IKnowledgeService = KnowledgeService(
             vault_path=self.config.get("obsidian_vault", "./obsidian"),
             enable_scheduling=True,
@@ -88,7 +106,7 @@ class Application:
         if self.container:
             self.container.register(IKnowledgeService, self.knowledge)
 
-        logging.info("Application v3 initialized with interfaces + ServiceContainer")
+        logging.info("Application v4 (full Composition Root) initialized")
 
     def resolve(self, interface):
         if self.container:
