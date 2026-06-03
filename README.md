@@ -1,22 +1,30 @@
-# JuniorAGI // The PhysioManifold Architecture
+# JuniorHome
 
-System Acknowledgment: Directives confirmed. The production-grade SDK suite is formalized as JuniorAGI, operating within the JuniorHome monorepo. 
+**Sovereign Edge Computing Home Hub**
 
-## I. Architecture Overview
-The architecture strictly integrates the web3node math inference engine to handle base hardware acceleration. 
-* tda_svd_core: Unified TDA + SVD primitives.
-* manifold_geometry: Differential geometry and Ricci-flow.
-* physics_principles: Computational differentiable constraints.
-* recursive_feedback: Active inference / Free-energy loops.
-* inference_engine: Interstellar-scale sparse tensor routing.
-* agi_primitives: Self-reflective state scaffolds.
+JuniorHome is the central orchestration layer for the JuniorCloud LLC sovereign edge stack. It ties together quant execution (JuniorStock), memory systems (JuniorMemSys / JuniorAGI), inference (BitNet-mlx), and deterministic hardware control (crispy-mouse).
 
-## II. Physics-First Mapping
-* Free-Energy Principle: Recursive Active Inference Loop
-* Thermodynamics (Entropy): Dimensional Collapse via SVD (H = -sum(sigma_i * ln(sigma_i)))
-* General Relativity: Riemannian Geodesic Transport (Curvature metric g_uv)
-* Noether's Theorem: Topological Invariant Preservation (Betti number constancy)
-* Conservation of Energy: Bounded Manifold Curvature (L2 Regularization on Sigma)
+## Architecture Role
 
-## III. Prohibited Execution
-Air-gapped isolation maintained for 01_Legal and 02_Assets. Zero cloud dependencies.
+JuniorHome acts as the "home server" equivalent for edge-native sovereign computing — a 45W-class always-on node that coordinates the full ecosystem.
+
+## Integrated Components
+
+| System            | Role within JuniorHome                          |
+|-------------------|--------------------------------------------------|
+| **JuniorStock**   | Quantitative decision engine                     |
+| **BitNet-mlx**    | Local reasoning and proprietary math kernel      |
+| **crispy-mouse**  | Low-latency execution and multi-modal input      |
+| **JuniorMemSys**  | Long-term topological memory                     |
+| **JuniorAGI_SDK** | Persistent spectral memory and agent substrate   |
+| **web3node**      | On-chain signal ingestion                        |
+
+## Design Principles
+
+- Extremely low power envelope
+- Fully local / air-gapped operation
+- Apple Silicon optimized (MLX + Metal)
+- Deterministic where it matters
+- Composable black-box architecture
+
+JuniorHome is the glue that makes the full JuniorCloud LLC stack function as a cohesive sovereign system.
