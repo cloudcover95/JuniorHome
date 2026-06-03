@@ -1,12 +1,10 @@
 # path: src/juniorhome/autonomous_agent.py
 #!/usr/bin/env python3
 """
-Autonomous Agent
+Autonomous Agent (Updated)
 
-High-level agent abstraction for JuniorHome.
-Combines LLM routing, task execution, memory access, and scheduling
-into a single manageable object. Designed for building autonomous
-workflows and agents on top of the sovereign stack.
+High-level agent with support for ternary-quantized models
+(via BitNet-mlx) in addition to standard Ollama/BitNet routing.
 """
 
 import logging
@@ -15,13 +13,14 @@ from typing import Any, Callable, Dict, List, Optional
 from .smart_llm_router import SmartLLMRouter
 from .task_runner import TaskRunner
 from .workflow_engine import WorkflowEngine
+from .quantized_model_manager import QuantizedModelManager
 
 logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 
 
 class AutonomousAgent:
     """
-    High-level autonomous agent.
+    High-level autonomous agent with quantized model support.
     """
 
     def __init__(self, name: str = "default_agent"):
@@ -29,8 +28,9 @@ class AutonomousAgent:
         self.llm_router = SmartLLMRouter()
         self.task_runner = TaskRunner(llm_router=self.llm_router)
         self.workflow_engine = WorkflowEngine()
+        self.quantized_models = QuantizedModelManager()
         self.memory: Dict[str, Any] = {}
-        logging.info(f"AutonomousAgent '{name}' initialized")
+        logging.info(f"AutonomousAgent '{name}' initialized with quantized model support")
 
     def think(self, prompt: str, prefer_bitnet: bool = False) -> str:
         result = self.llm_router.route(prompt, prefer_bitnet=prefer_bitnet)
@@ -38,6 +38,12 @@ class AutonomousAgent:
 
     def do_task(self, task_type: str, prompt: str, prefer_bitnet: bool = False) -> Dict[str, Any]:
         return self.task_runner.run_task(task_type, prompt, prefer_bitnet=prefer_bitnet)
+
+    def load_quantized_gemma(self, model_name: str = "google/gemma-2-2b") -> bool:
+        return self.quantized_models.load_gemma_ternary(model_name)
+
+    def get_quantized_model(self, name: str) -> Optional[Any]:
+        return self.quantized_models.get_model(name)
 
     def remember(self, key: str, value: Any):
         self.memory[key] = value
@@ -56,6 +62,7 @@ class AutonomousAgent:
             "name": self.name,
             "ollama_available": self.llm_router.ollama_available,
             "bitnet_available": self.llm_router.bitnet_available,
+            "quantized_models_loaded": self.quantized_models.list_loaded_models(),
             "memory_keys": list(self.memory.keys()),
             "workflows": self.workflow_engine.list_workflows(),
         }
