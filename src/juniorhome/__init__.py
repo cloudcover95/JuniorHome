@@ -9,6 +9,7 @@ from .datalake import DataLake
 from .plugin_loader import PluginLoader
 from .reporter import Reporter
 from .orchestrator import JuniorHomeOrchestrator
+from .agent_manager import AgentManager
 
 __all__ = [
     "JuniorHomeConfig",
@@ -16,4 +17,5 @@ __all__ = [
     "PluginLoader",
     "Reporter",
     "JuniorHomeOrchestrator",
+    "AgentManager",
 ]
