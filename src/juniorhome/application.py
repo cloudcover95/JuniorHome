@@ -1,10 +1,10 @@
 # path: src/juniorhome/application.py
 #!/usr/bin/env python3
 """
-Application (with AgentOrchestrator)
+Application (with JuniorAGI Container Agent Manager)
 
-Now includes AgentOrchestrator as a first-class component.
-This completes the unified deep architecture.
+Now includes full JuniorAGI capabilities for containerized
+self-improving agents, diagnostics, and command & control.
 """
 
 import logging
@@ -33,6 +33,7 @@ from .quantized_model_manager import QuantizedModelManager
 from .knowledge_service import KnowledgeService
 from .second_brain import SecondBrain
 from .agent_orchestrator import AgentOrchestrator
+from .junioragi.container_agent_manager import ContainerAgentManager
 
 logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 
@@ -88,12 +89,16 @@ class Application:
         if self.container:
             self.container.register(IKnowledgeService, self.knowledge)
 
-        # Top-level Agent Orchestrator (deep cross-pollination)
         self.agent_orchestrator = AgentOrchestrator()
         if self.container:
             self.container.register(AgentOrchestrator, self.agent_orchestrator)
 
-        logging.info("Application initialized with full AgentOrchestrator integration")
+        # JuniorAGI - Containerized self-improving agents
+        self.junior_agi = ContainerAgentManager(docker_manager=self.docker)
+        if self.container:
+            self.container.register(ContainerAgentManager, self.junior_agi)
+
+        logging.info("Application initialized with full JuniorAGI container management")
 
     def resolve(self, interface):
         if self.container:
@@ -116,4 +121,5 @@ class Application:
             "quantized_models": self.quantized_models.list_loaded_models(),
             "second_brain_active": True,
             "agent_orchestrator_active": True,
+            "junior_agi_active": True,
         }
