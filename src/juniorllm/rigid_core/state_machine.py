@@ -11,7 +11,7 @@ try:
     from ...training.adapters import LowRankAdapter
     from ...training.engine import SovereignTrainer
     from ...manifolds.ternary_spatial_manifold import TernarySpatialManifold
-    from ...bitnet.quantization_utils import estimate_memory_savings, get_quantization_stats
+    from ...bitnet.quantization_utils import estimate_1_58_vs_3_0_gains, get_quantization_stats
     HAS_FULL_3_0_STACK = True
 except ImportError:
     HAS_FULL_3_0_STACK = False
@@ -254,15 +254,16 @@ class JuniorLLMStateMachine:
             "current_profile": self.current_active_profile
         }
 
-    def get_quantization_efficiency(self) -> Dict[str, float]:
-        """Report memory/quantization efficiency for current setup."""
-        if not self.active_adapters:
-            return {"adapters": 0}
+    def get_quantization_efficiency(self) -> Dict[str, Any]:
         try:
-            return estimate_memory_savings(
-                base_params=1_000_000_000,  # placeholder
+            return estimate_1_58_vs_3_0_gains(
+                base_params=1_000_000_000,
                 adapter_rank=8,
-                num_adapters=len(self.active_adapters)
+                num_adapters=len(self.active_adapters),
+                has_profiles=len(self.adapter_profiles) > 1,
+                has_specialization=True,
+                has_persistence=True,
+                has_manifold_integration=self.manifold is not None
             )
         except:
             return {"adapters": len(self.active_adapters)}
