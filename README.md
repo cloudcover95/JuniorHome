@@ -1,16 +1,11 @@
 # JuniorHome
 
-**Ecosystem Architecture - Iteration Complete**
+**Current State**
 
-All core components synchronized across JuniorCloud LLC repos:
+- JuniorClimbs now has full Second Brain controlled finance ledger with Web3-style immutable tx hashes.
+- POS can record purchases, inject discounts (member-specific or global), track balances for merch/snacks/drinks.
+- Renewal audits and member status pulls built-in.
+- QR waiver auto-onboarding + keychain access live.
+- All tied into BackendRouter, TernarySpatialManifold, and BitNet core for sovereign operation.
 
-- TernarySpatialManifold (physics-informed + spatial readiness)
-- BackendRouter (MLX + CUDA hardware-agnostic routing for routed AGI)
-- BitNet 1.58 kernels + Metal target + CUDA stubs
-- JuniorLLMStateMachine (evolution rules + security policies + long-running state + SHEEP Easter egg)
-- KernelBridge (async + persistence)
-- Advanced capabilities: TopologySurgeon, SovereignTrainer, SwarmNode
-
-Roadmap progress: Hardware-agnostic execution, physics-informed spatial manifolds, efficient sovereign edge compute.
-
-All repos being brought to current state.
+Second brain (JuniorMemSys) has complete authority over offers, pricing, and financial records.
