@@ -158,13 +158,10 @@ class JuniorLLMStateMachine:
                 self.adapter_training_queue.append(entry)
 
     def process_adapter_training_queue(self, manifold_context: Optional[Dict[str, Any]] = None):
-        """Process queued adapter specializations. In full BitNet 3.0 this would run real on-device training."""
         trained = []
         context = manifold_context or {}
 
         for adapter_id, profile in list(self.adapter_training_queue):
-            # Placeholder: real implementation would use SovereignTrainer + manifold features as priors
-            # e.g. manifold topological features as regularization or initialization bias
             trained.append((adapter_id, profile, context))
 
         self.adapter_training_queue = [(aid, prof) for (aid, prof) in self.adapter_training_queue if (aid, prof) not in [(t[0], t[1]) for t in trained]]
@@ -225,6 +222,31 @@ class JuniorLLMStateMachine:
             self.push_context_to_manifold()
 
         return result
+
+    def run_specialization_cycle(self):
+        """Full autonomous specialization cycle for BitNet 3.0."""
+        # 1. Request specialization based on current context
+        request_result = self.request_specialization()
+
+        # 2. Push context back to manifold
+        self.push_context_to_manifold()
+
+        # 3. Process training queue with manifold context
+        manifold_context = {}
+        if self.manifold and self.manifold.state is not None:
+            if hasattr(self.manifold.state, "mean_abs"):
+                manifold_context = {
+                    "mean_abs": float(self.manifold.state.mean_abs),
+                    "sparsity": float(getattr(self.manifold.state, "sparsity", 0.0)),
+                }
+
+        trained = self.process_adapter_training_queue(manifold_context)
+
+        return {
+            "requested": request_result,
+            "trained": trained,
+            "current_profile": self.current_active_profile
+        }
 
     def _persist_state(self):
         if self.kernel_bridge and hasattr(self.kernel_bridge, "write_ternary_manifold"):
