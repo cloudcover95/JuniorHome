@@ -1,10 +1,10 @@
 # path: src/juniorhome/high_level_orchestrator.py
 #!/usr/bin/env python3
 """
-HighLevelOrchestrator (v128)
+HighLevelOrchestrator (v133)
 
-Further improved natural language support and auto-decision making
-that incorporates historical failures and TDA coherence from the Second Brain.
+Improved natural language support and auto-decision making
+that incorporates longer historical feedback from the Second Brain.
 """
 
 import logging
@@ -33,8 +33,7 @@ class HighLevelOrchestrator:
         ) if HAS_ENGINE else None
 
         self.sovereign = SovereignEdgeOrchestrator() if HAS_SOVEREIGN else None
-        self.recent_coherence: List[float] = []
-        logging.info("HighLevelOrchestrator initialized (v128)")
+        logging.info("HighLevelOrchestrator initialized (v133)")
 
     def _detect_intent(self, prompt: str) -> str:
         p = prompt.lower()
@@ -51,8 +50,8 @@ class HighLevelOrchestrator:
         if any(kw in p for kw in ["kernel", "inject", "bare metal", "junioros", "write to kernel"]):
             return "user"
 
-        if any(kw in p for kw in ["accumulation", "capital", "buy", "asset", "fiat", "restart accumulation"]):
-            return "swarm"  # Often benefits from agent + diagnostic approach
+        if any(kw in p for kw in ["accumulation", "capital", "buy", "asset", "fiat", "restart accumulation", "fix pipeline"]):
+            return "swarm"
 
         return "auto"
 

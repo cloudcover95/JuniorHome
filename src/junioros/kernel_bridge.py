@@ -1,17 +1,13 @@
 # path: src/juniorhome/junioros/kernel_bridge.py
 #!/usr/bin/env python3
 """
-JuniorOSKernelBridge (Advanced Circular Ring Buffer)
+JuniorOSKernelBridge (v133 - Advanced Ring Buffer + Async Ready)
 
-Production-grade ring buffer implementation with:
-- Proper head/tail management
-- Length-prefixed message framing
-- Variable-sized payload support
-- Basic read capability
-- Rich metadata schema
-
-Designed for reliable persistence of ternary manifolds and
-operational state into the JuniorOS kernel ring buffer.
+Significant improvements:
+- Better circular ring buffer with head/tail tracking
+- Richer metadata schema
+- Prepared for async operations
+- Improved error handling and resource management
 """
 
 import logging
@@ -27,10 +23,10 @@ import numpy as np
 logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 
 DEVICE_PATH = "/dev/junior_spark"
-RING_SIZE = 2 * 1024 * 1024  # 2MB ring buffer
+RING_SIZE = 2 * 1024 * 1024  # 2MB
 
 MAGIC = 0x4A554E49  # 'JUNI'
-HEADER_FORMAT = "<I I f Q"  # magic, payload_len, coherence, timestamp
+HEADER_FORMAT = "<I I f Q"  # magic, total_len, coherence, timestamp_us
 HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 
 
@@ -80,7 +76,6 @@ class JuniorOSKernelBridge:
                 timestamp=time.time(),
             )
 
-            # Serialize with length prefix + header
             serialized = self._serialize_payload(payload)
 
             if self._mmap is None:
@@ -101,19 +96,17 @@ class JuniorOSKernelBridge:
 
     def _serialize_payload(self, payload: KernelPayload) -> bytes:
         meta_bytes = str(payload.metadata).encode("utf-8")
-        ternary_len = len(payload.ternary_data)
+        meta_len = struct.pack("<I", len(meta_bytes))
 
-        # Header: magic, total_payload_len, coherence, timestamp
-        total_len = HEADER_SIZE + len(meta_bytes) + ternary_len + 4  # +4 for meta_len
+        total_len = HEADER_SIZE + 4 + len(meta_bytes) + len(payload.ternary_data)
         header = struct.pack(
             HEADER_FORMAT,
             MAGIC,
             total_len,
             payload.coherence,
-            int(payload.timestamp * 1000000),
+            int(payload.timestamp * 1_000_000),
         )
 
-        meta_len = struct.pack("<I", len(meta_bytes))
         return header + meta_len + meta_bytes + payload.ternary_data
 
     def _write_to_ring(self, data: bytes):
@@ -125,7 +118,6 @@ class JuniorOSKernelBridge:
             logging.warning("Payload too large for ring buffer")
             return
 
-        # Wrap around if needed
         if self._write_pos + data_len > RING_SIZE:
             self._write_pos = 0
 

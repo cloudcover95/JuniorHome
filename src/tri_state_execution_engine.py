@@ -1,14 +1,14 @@
 # path: src/juniorhome/tri_state_execution_engine.py
 #!/usr/bin/env python3
 """
-TriStateExecutionEngine (with Kernel Injection + Active Feedback)
+TriStateExecutionEngine (v133)
 
-Now actually calls the JuniorOSKernelBridge after black box execution.
-Uses historical TDA coherence from Second Brain to bias routing.
+Added basic execution logic for capital/accumulation tasks
+and improved Second Brain feedback with longer history.
 """
 
 import logging
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, List, Optional
 
 try:
     from bitnet_mlx.quantization.manifold_quantizer import fold_manifold_full
@@ -48,7 +48,7 @@ class SwarmBlackBox:
             manifold_result = fold_manifold_full(state)
             coherence = manifold_result.get("persistence_signature", {}).get("coherence", 0.5)
             self.recent_coherence.append(coherence)
-            if len(self.recent_coherence) > 10:
+            if len(self.recent_coherence) > 20:
                 self.recent_coherence.pop(0)
 
             routed["manifold_insights"] = manifold_result.get("tda", {})
@@ -82,7 +82,7 @@ class TriStateExecutionEngine:
         self.kernel_bridge = JuniorOSKernelBridge() if HAS_KERNEL_BRIDGE else None
         self.recent_coherence: List[float] = []
 
-        logging.info("TriStateExecutionEngine initialized with kernel injection + feedback")
+        logging.info("TriStateExecutionEngine initialized (v133)")
 
     def _inject_to_kernel(self, result: Dict[str, Any]):
         if self.kernel_bridge and self.kernel_bridge.is_available():
@@ -102,9 +102,15 @@ class TriStateExecutionEngine:
         elif mode == "industry":
             result = self.industry_box.execute(state)
         else:
-            # Auto with historical feedback
+            # Auto mode with improved historical feedback
             avg_recent = sum(self.recent_coherence) / len(self.recent_coherence) if self.recent_coherence else 0.6
-            current = fold_manifold_full(state).get("persistence_signature", {}).get("coherence", 0.5) if HAS_MANIFOLD else 0.5
+            current = 0.5
+            if HAS_MANIFOLD:
+                manifold = fold_manifold_full(state)
+                current = manifold.get("persistence_signature", {}).get("coherence", 0.5)
+                self.recent_coherence.append(current)
+                if len(self.recent_coherence) > 20:
+                    self.recent_coherence.pop(0)
 
             if current >= 0.75 and avg_recent >= 0.65:
                 result = self.user_box.execute(state)
