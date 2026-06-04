@@ -1,17 +1,4 @@
-# path: src/juniorhome/junioros/kernel_bridge.py
-#!/usr/bin/env python3
-"""
-JuniorOSKernelBridge (Async-Enabled v2)
-
-Major updates:
-- Async support via asyncio.to_thread for blocking operations
-- Async write and read methods
-- Richer metadata schema
-- Better structure for future direct async I/O
-- Backward compatible with sync usage
-
-Designed for long-term spatial/general state persistence on edge hardware.
-"""
+# path: src/junioros/kernel_bridge.py
 
 import asyncio
 import logging
@@ -24,13 +11,19 @@ from typing import Any, Dict, Optional
 
 import numpy as np
 
+try:
+    from ..bitnet.backends import router as backend_router
+    HAS_BACKEND_ROUTER = True
+except ImportError:
+    HAS_BACKEND_ROUTER = False
+
 logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 
 DEVICE_PATH = "/dev/junior_spark"
-RING_SIZE = 2 * 1024 * 1024  # 2MB
+RING_SIZE = 2 * 1024 * 1024
 
-MAGIC = 0x4A554E49  # 'JUNI'
-HEADER_FORMAT = "<I I f Q"  # magic, total_len, coherence, timestamp_us
+MAGIC = 0x4A554E49
+HEADER_FORMAT = "<I I f Q"
 HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 
 
@@ -59,7 +52,6 @@ class JuniorOSKernelBridge:
     def is_available(self) -> bool:
         return self._available
 
-    # --- Sync Methods (backward compatible) ---
     def write_ternary_manifold(
         self,
         ternary_tensor: Any,
@@ -67,7 +59,6 @@ class JuniorOSKernelBridge:
         coherence: float = 0.0,
     ) -> bool:
         if not self._available:
-            logging.debug("Kernel device not available. Skipping write.")
             return False
 
         try:
@@ -94,8 +85,7 @@ class JuniorOSKernelBridge:
 
             return True
 
-        except Exception as e:
-            logging.warning(f"Kernel write failed: {e}")
+        except Exception:
             return False
 
     def _serialize_payload(self, payload: KernelPayload) -> bytes:
@@ -119,7 +109,6 @@ class JuniorOSKernelBridge:
 
         data_len = len(data)
         if data_len > RING_SIZE:
-            logging.warning("Payload too large for ring buffer")
             return
 
         if self._write_pos + data_len > RING_SIZE:
@@ -133,9 +122,21 @@ class JuniorOSKernelBridge:
         try:
             self._fd = os.open(self.device_path, os.O_RDWR)
             self._mmap = mmap.mmap(self._fd, RING_SIZE, access=mmap.ACCESS_WRITE)
-        except Exception as e:
-            logging.debug(f"mmap failed: {e}")
+        except Exception:
             self._mmap = None
+
+    async def async_write_ternary_manifold(
+        self,
+        ternary_tensor: Any,
+        metadata: Optional[Dict[str, Any]] = None,
+        coherence: float = 0.0,
+    ) -> bool:
+        return await asyncio.to_thread(
+            self.write_ternary_manifold,
+            ternary_tensor,
+            metadata,
+            coherence,
+        )
 
     def close(self):
         if self._mmap:
@@ -150,51 +151,6 @@ class JuniorOSKernelBridge:
             except:
                 pass
             self._fd = None
-
-    # --- Async Methods ---
-    async def async_write_ternary_manifold(
-        self,
-        ternary_tensor: Any,
-        metadata: Optional[Dict[str, Any]] = None,
-        coherence: float = 0.0,
-    ) -> bool:
-        """Async version of write_ternary_manifold."""
-        return await asyncio.to_thread(
-            self.write_ternary_manifold,
-            ternary_tensor,
-            metadata,
-            coherence,
-        )
-
-    async def async_read_latest(self, max_bytes: int = 4096) -> Optional[bytes]:
-        """Async read from the kernel ring buffer (best-effort latest data)."""
-        if not self._available:
-            return None
-
-        try:
-            # For now we use thread offload. True async char device I/O can be added later.
-            return await asyncio.to_thread(self._sync_read_latest, max_bytes)
-        except Exception as e:
-            logging.warning(f"Async kernel read failed: {e}")
-            return None
-
-    def _sync_read_latest(self, max_bytes: int) -> Optional[bytes]:
-        """Internal sync read implementation."""
-        try:
-            if self._mmap is None:
-                self._try_open_mmap()
-
-            if self._mmap is not None:
-                # Simple read from current position (can be improved)
-                self._mmap.seek(0)
-                data = self._mmap.read(max_bytes)
-                return data
-            else:
-                with open(self.device_path, "rb") as f:
-                    return f.read(max_bytes)
-        except Exception as e:
-            logging.warning(f"Sync kernel read failed: {e}")
-            return None
 
     def __del__(self):
         self.close()
