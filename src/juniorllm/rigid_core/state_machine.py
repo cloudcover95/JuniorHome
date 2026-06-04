@@ -157,11 +157,17 @@ class JuniorLLMStateMachine:
             if entry not in self.adapter_training_queue:
                 self.adapter_training_queue.append(entry)
 
-    def process_adapter_training_queue(self):
+    def process_adapter_training_queue(self, manifold_context: Optional[Dict[str, Any]] = None):
+        """Process queued adapter specializations. In full BitNet 3.0 this would run real on-device training."""
         trained = []
+        context = manifold_context or {}
+
         for adapter_id, profile in list(self.adapter_training_queue):
-            trained.append((adapter_id, profile))
-        self.adapter_training_queue = [(aid, prof) for (aid, prof) in self.adapter_training_queue if (aid, prof) not in trained]
+            # Placeholder: real implementation would use SovereignTrainer + manifold features as priors
+            # e.g. manifold topological features as regularization or initialization bias
+            trained.append((adapter_id, profile, context))
+
+        self.adapter_training_queue = [(aid, prof) for (aid, prof) in self.adapter_training_queue if (aid, prof) not in [(t[0], t[1]) for t in trained]]
         return trained
 
     def get_adapters_by_profile(self, profile: str) -> List[str]:
@@ -213,12 +219,9 @@ class JuniorLLMStateMachine:
         return {"requested": None, "profile": target_profile}
 
     def specialize_for_current_context(self):
-        """Proactively specialize adapters based on current state + manifold features."""
         result = self.request_specialization()
 
         if result.get("requested"):
-            # In full 3.0 this would trigger immediate on-device fine-tuning
-            # using current manifold state as context/prior
             self.push_context_to_manifold()
 
         return result
