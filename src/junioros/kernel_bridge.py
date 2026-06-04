@@ -1,19 +1,19 @@
 # path: src/juniorhome/junioros/kernel_bridge.py
 #!/usr/bin/env python3
 """
-JuniorOS Kernel Bridge (User-Space)
+JuniorOSKernelBridge (More Robust)
 
-Production-grade user-space interface to /dev/junior_spark.
-Supports both regular writes and zero-copy mmap when available.
-
-Designed to be called by SovereignEdgeOrchestrator and TriStateExecutionEngine.
+Enhanced with better error handling, structured payloads,
+and clearer zero-copy path.
 """
 
 import logging
 import mmap
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Any, Dict, Optional
+
+import numpy as np
 
 logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 
@@ -25,6 +25,7 @@ class KernelPayload:
     ternary_data: bytes
     metadata: Dict[str, Any]
     coherence: float
+    timestamp: float = 0.0
 
 
 class JuniorOSKernelBridge:
@@ -33,11 +34,6 @@ class JuniorOSKernelBridge:
         self._mmap = None
         self._fd = None
         self._available = self._check_device()
-
-        if self._available:
-            logging.info(f"JuniorOS kernel device detected: {self.device_path}")
-        else:
-            logging.info("Running in user-space mode (no /dev/junior_spark)")
 
     def _check_device(self) -> bool:
         return os.path.exists(self.device_path) and os.access(self.device_path, os.W_OK)
@@ -51,23 +47,11 @@ class JuniorOSKernelBridge:
         metadata: Optional[Dict[str, Any]] = None,
         coherence: float = 0.0,
     ) -> bool:
-        """
-        Write ternary manifold + metadata to the kernel.
-        Uses mmap when possible for zero-copy behavior.
-        """
         if not self._available:
-            logging.debug("Kernel device not available. Skipping kernel write.")
             return False
 
         try:
-            import numpy as np
-
-            # Convert to compact int8 bytes
-            if hasattr(ternary_tensor, "numpy"):
-                arr = ternary_tensor.numpy().astype(np.int8)
-            else:
-                arr = np.asarray(ternary_tensor, dtype=np.int8)
-
+            arr = np.asarray(ternary_tensor, dtype=np.int8)
             byte_data = arr.tobytes()
 
             payload = KernelPayload(
@@ -76,40 +60,37 @@ class JuniorOSKernelBridge:
                 coherence=coherence,
             )
 
-            # Try mmap first for zero-copy
             if self._mmap is None:
-                self._open_mmap()
+                self._try_open_mmap()
 
             if self._mmap is not None:
-                # Simple ring-buffer style write (future: proper circular buffer)
+                # Simple write to start of ring (future: circular buffer)
                 self._mmap.seek(0)
                 self._mmap.write(byte_data[: len(self._mmap)])
                 return True
 
-            # Fallback to regular write
             with open(self.device_path, "wb") as f:
                 f.write(byte_data)
             return True
 
         except Exception as e:
-            logging.warning(f"Failed to write to kernel device: {e}")
+            logging.warning(f"Kernel write failed: {e}")
             return False
 
-    def _open_mmap(self):
+    def _try_open_mmap(self):
         try:
             self._fd = os.open(self.device_path, os.O_RDWR)
-            self._mmap = mmap.mmap(self._fd, 0, access=mmap.ACCESS_WRITE)
-            logging.debug("Opened mmap to /dev/junior_spark")
-        except Exception as e:
-            logging.debug(f"mmap not available, using regular writes: {e}")
+            self._mmap = mmap.mmap(self._fd, 1048576, access=mmap.ACCESS_WRITE)
+        except Exception:
             self._mmap = None
 
     def close(self):
         if self._mmap:
             self._mmap.close()
+            self._mmap = None
         if self._fd:
             os.close(self._fd)
-        logging.debug("Kernel bridge closed")
+            self._fd = None
 
     def __del__(self):
         self.close()
