@@ -5,12 +5,14 @@
 JuniorClimbs now includes:
 - Employee terminal with privacy-friendly customer info (hard copy mode)
 - Safety zones on optical dash
-- Full calendar/events + marketing campaigns
+- Full calendar/events (yoga, crossfit, classes, camps)
+- Marketing campaigns
 - Second Brain finance ledger (Web3-style immutable commits)
-- Portable CSV/Excel import/export for maintenance logs/schedules/reports/actionables (works with or without pandas)
-- Finance reporting layer (balance sheets, tax exports)
-- Dynamic 3.0 x 1.58 optimization hooks
+- Portable CSV/Excel for maintenance logs/schedules/reports/actionables
+- Finance reporting (balance sheets, tax exports)
+- Agent interface extended to maintenance + finance (JuniorAGI / on-suite agents can safely act)
+- Dynamic 3.0 x 1.58 optimization hooks for business endpoints
 
 All additive and integrated with BackendRouter, TernarySpatialManifold, LowRankAdapter, and sovereign architecture.
 
-Roadmap items (maintenance & finance) now have concrete portable data layers ready for deeper BitNet-powered optimization.
+BitNet 3.0 techniques (adapters + manifolds) positioned for intelligent maintenance scheduling and personalized offer timing.
