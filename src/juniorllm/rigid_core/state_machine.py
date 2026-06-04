@@ -8,9 +8,11 @@ from typing import Any, Callable, Dict, List, Optional
 
 try:
     from ...bitnet.backends import router as backend_router
-    HAS_BACKEND_ROUTER = True
+    from ...training.adapters import LowRankAdapter
+    HAS_BACKEND_AND_ADAPTERS = True
 except ImportError:
-    HAS_BACKEND_ROUTER = False
+    HAS_BACKEND_AND_ADAPTERS = False
+    LowRankAdapter = None
 
 logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 
@@ -54,6 +56,7 @@ class EvolutionRule:
     condition: Callable[[Dict[str, Any]], bool]
     action: Callable[[], None]
     security_policy: Optional[str] = None
+    triggers_adapter_training: bool = False
 
 
 class JuniorLLMStateMachine:
@@ -65,6 +68,7 @@ class JuniorLLMStateMachine:
         self.timers: Dict[str, Timer] = {}
         self.evolution_rules: List[EvolutionRule] = []
         self.active_adapters: Dict[str, Any] = {}
+        self.adapter_training_queue: List[str] = []
 
         self.add_timer("coherence_check", interval_seconds=300, metadata={"type": "system"})
         self.add_timer("spatial_health_check", interval_seconds=600, metadata={"type": "spatial"})
@@ -82,6 +86,9 @@ class JuniorLLMStateMachine:
                     if not context.get("authenticated", False):
                         continue
                 rule.action()
+
+                if rule.triggers_adapter_training and rule.name in self.active_adapters:
+                    self.adapter_training_queue.append(rule.name)
 
         self._evaluate_state_coherence(context)
 
@@ -122,8 +129,22 @@ class JuniorLLMStateMachine:
 
     def switch_adapter(self, adapter_id: str):
         if adapter_id in self.active_adapters:
-            # In real usage, this would re-wire the active layers
+            # In real usage this would dynamically re-wire layers
             pass
+
+    def queue_adapter_training(self, adapter_id: str):
+        if adapter_id in self.active_adapters and adapter_id not in self.adapter_training_queue:
+            self.adapter_training_queue.append(adapter_id)
+
+    def process_adapter_training_queue(self):
+        """Placeholder for future BitNet 3.0 on-device adapter training loop."""
+        trained = []
+        for adapter_id in list(self.adapter_training_queue):
+            # In full 3.0 implementation this would run LowRankAdapter fine-tuning
+            # using SovereignTrainer or similar
+            trained.append(adapter_id)
+        self.adapter_training_queue = [aid for aid in self.adapter_training_queue if aid not in trained]
+        return trained
 
     def process_command(self, command: str, payload: Any = None):
         if command == "start_inference":

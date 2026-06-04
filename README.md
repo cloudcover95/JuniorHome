@@ -2,17 +2,10 @@
 
 **Current Ecosystem State**
 
-JuniorClimbs now includes:
-- Employee terminal with privacy-friendly customer info (hard copy mode)
-- Safety zones on optical dash
-- Calendar/events (yoga, crossfit, classes, camps)
-- Marketing campaigns
-- Second Brain finance ledger (Web3-style immutable commits)
-- Portable CSV/Excel for maintenance and finance
-- Admin reporting endpoints (overdue maintenance, balance sheet, ledger)
-- Agent interface extended to maintenance + finance actions
-- Dynamic 3.0 x 1.58 optimization hooks for business endpoints
+Deepened JuniorLLMStateMachine integration with LowRankAdapter:
+- Evolution rules can now trigger adapter training
+- Adapter training queue + processing placeholder for BitNet 3.0 on-device fine-tuning
+- Adapter lifecycle management as part of long-running autonomous state
+- Clean separation between public reference and in-house specialized systems
 
-All additive and integrated with BackendRouter, TernarySpatialManifold, LowRankAdapter, and sovereign architecture.
-
-BitNet 3.0 techniques positioned for intelligent maintenance scheduling and personalized offer timing.
+This advances the BitNet 1.58 → 3.0 trajectory with custom JuniorLLM rigid core + adapter-powered continual adaptation.
