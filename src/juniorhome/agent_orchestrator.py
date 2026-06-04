@@ -1,14 +1,28 @@
 # path: src/juniorhome/agent_orchestrator.py
 #!/usr/bin/env python3
 """
-Agent Orchestrator (TriStateRouter Integrated)
+Agent Orchestrator (Manifold Folding Integrated)
 
-Now uses the hardware-agnostic TriStateRouter for smart routing decisions.
-Routing is efficiency-aware via EdgeRuntime.
+Now uses the full ManifoldFoldingQuantizer (with SVD + TDA + persistence)
+as part of intelligent routing and agent operations.
 """
 
 import logging
 from typing import Any, Dict, Optional
+
+try:
+    from bitnet_mlx.quantization.manifold_quantizer import fold_manifold_full
+    HAS_MANIFOLD = True
+except ImportError:
+    HAS_MANIFOLD = False
+    fold_manifold_full = None
+
+try:
+    from bitnet_mlx.compute.tri_state_router import TriStateRouter
+    HAS_TRISTATE = True
+except ImportError:
+    HAS_TRISTATE = False
+    TriStateRouter = None
 
 try:
     from juniorllm.autonomy.autonomous_coder import AutonomousCoder
@@ -22,13 +36,6 @@ try:
 except ImportError:
     HAS_JUNIORQUANT = False
     orchestrate_quant_team = None
-
-try:
-    from bitnet_mlx.compute.tri_state_router import TriStateRouter
-    HAS_TRISTATE = True
-except ImportError:
-    HAS_TRISTATE = False
-    TriStateRouter = None
 
 
 from .autonomous_agent import AutonomousAgent
@@ -59,7 +66,7 @@ class AgentOrchestrator:
         else:
             self.coder = None
 
-        logging.info("AgentOrchestrator initialized with TriStateRouter")
+        logging.info("AgentOrchestrator initialized with ManifoldFoldingQuantizer")
 
     def autonomous_think_and_act(self, prompt: str, task_complexity: str = "medium") -> Dict[str, Any]:
         thought = self.agent.think(prompt, task_complexity=task_complexity)
@@ -114,10 +121,6 @@ class AgentOrchestrator:
         return result
 
     def route_intelligence(self, data: Any, mode: str = "auto", agent_context: Any = None):
-        """
-        Uses TriStateRouter for hardware-agnostic intelligent routing.
-        Respects edge efficiency.
-        """
         if not self.router:
             return {"error": "TriStateRouter not available"}
 
@@ -128,6 +131,23 @@ class AgentOrchestrator:
             _route,
             task_name="tri_state_routing",
             estimated_memory_mb=40,
+            task_complexity="medium",
+        )
+
+    def analyze_manifold(self, state: Any) -> Dict[str, Any]:
+        """
+        Uses the full ManifoldFoldingQuantizer (with SVD + TDA + persistence).
+        """
+        if not HAS_MANIFOLD or fold_manifold_full is None:
+            return {"error": "ManifoldFoldingQuantizer not available"}
+
+        def _analyze():
+            return fold_manifold_full(state)
+
+        return self.edge_runtime.execute_efficiently(
+            _analyze,
+            task_name="manifold_analysis",
+            estimated_memory_mb=30,
             task_complexity="medium",
         )
 
