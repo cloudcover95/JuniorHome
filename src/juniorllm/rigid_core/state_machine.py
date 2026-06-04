@@ -9,10 +9,12 @@ from typing import Any, Callable, Dict, List, Optional
 try:
     from ...bitnet.backends import router as backend_router
     from ...training.adapters import LowRankAdapter
-    HAS_BACKEND_AND_ADAPTERS = True
+    from ...junioros.kernel_bridge import JuniorOSKernelBridge
+    HAS_BACKEND_ADAPTERS_AND_BRIDGE = True
 except ImportError:
-    HAS_BACKEND_AND_ADAPTERS = False
+    HAS_BACKEND_ADAPTERS_AND_BRIDGE = False
     LowRankAdapter = None
+    JuniorOSKernelBridge = None
 
 logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 
@@ -61,8 +63,9 @@ class EvolutionRule:
 
 
 class JuniorLLMStateMachine:
-    def __init__(self, node_id: str = "default"):
+    def __init__(self, node_id: str = "default", kernel_bridge: Optional[Any] = None):
         self.node_id = node_id
+        self.kernel_bridge = kernel_bridge
         self.current_state: State = State.IDLE
         self.current_spatial_sub_state: Optional[SpatialSubState] = None
         self.history: List[Dict[str, Any]] = []
@@ -127,11 +130,12 @@ class JuniorLLMStateMachine:
             self.current_state = new_state
             self.current_spatial_sub_state = None
 
-            # Auto-switch profile on state transition for context-aware behavior
             if new_state == State.SPATIAL_EVOLUTION:
                 self.switch_to_profile("spatial")
             elif new_state == State.ACTIVE_INFERENCE:
                 self.switch_to_profile("general")
+
+            self._persist_state()
 
     def load_adapter(self, adapter_id: str, adapter: Any, profile: str = "general"):
         self.active_adapters[adapter_id] = adapter
@@ -143,7 +147,7 @@ class JuniorLLMStateMachine:
 
     def switch_to_profile(self, profile: str):
         self.current_active_profile = profile
-        # In full implementation this would dynamically activate the best adapter(s) for the profile
+        self._persist_state()
 
     def queue_adapter_training(self, adapter_id: str, profile: Optional[str] = None):
         if adapter_id in self.active_adapters:
@@ -164,6 +168,29 @@ class JuniorLLMStateMachine:
 
     def get_current_active_adapters(self) -> List[str]:
         return self.get_adapters_by_profile(self.current_active_profile)
+
+    def _persist_state(self):
+        if self.kernel_bridge and hasattr(self.kernel_bridge, "write_ternary_manifold"):
+            try:
+                self.kernel_bridge.write_ternary_manifold(
+                    ternary_tensor=None,
+                    metadata={
+                        "node_id": self.node_id,
+                        "current_state": self.current_state.name,
+                        "current_active_profile": self.current_active_profile,
+                        "adapter_profiles": self.adapter_profiles,
+                        "timestamp": time.time(),
+                    },
+                    coherence=0.0,
+                )
+            except Exception:
+                pass
+
+    def restore_from_persistence(self, metadata: Dict[str, Any]):
+        if "current_active_profile" in metadata:
+            self.current_active_profile = metadata["current_active_profile"]
+        if "adapter_profiles" in metadata:
+            self.adapter_profiles.update(metadata["adapter_profiles"])
 
     def process_command(self, command: str, payload: Any = None):
         if command == "start_inference":
