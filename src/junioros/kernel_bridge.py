@@ -3,8 +3,8 @@
 """
 JuniorOSKernelBridge (More Robust)
 
-Enhanced with better error handling, structured payloads,
-and clearer zero-copy path.
+Improved error handling, better structured payloads, and clearer
+zero-copy path. More production-ready for deeper integration.
 """
 
 import logging
@@ -35,6 +35,9 @@ class JuniorOSKernelBridge:
         self._fd = None
         self._available = self._check_device()
 
+        if self._available:
+            logging.info(f"JuniorOS kernel device detected at {self.device_path}")
+
     def _check_device(self) -> bool:
         return os.path.exists(self.device_path) and os.access(self.device_path, os.W_OK)
 
@@ -48,40 +51,38 @@ class JuniorOSKernelBridge:
         coherence: float = 0.0,
     ) -> bool:
         if not self._available:
+            logging.debug("Kernel device not present. Skipping write.")
             return False
 
         try:
             arr = np.asarray(ternary_tensor, dtype=np.int8)
             byte_data = arr.tobytes()
 
-            payload = KernelPayload(
-                ternary_data=byte_data,
-                metadata=metadata or {},
-                coherence=coherence,
-            )
-
             if self._mmap is None:
                 self._try_open_mmap()
 
             if self._mmap is not None:
-                # Simple write to start of ring (future: circular buffer)
+                # Simple write (future versions will use proper ring buffer)
                 self._mmap.seek(0)
                 self._mmap.write(byte_data[: len(self._mmap)])
+                logging.debug("Wrote to kernel via mmap")
                 return True
 
             with open(self.device_path, "wb") as f:
                 f.write(byte_data)
+            logging.debug("Wrote to kernel via regular file")
             return True
 
         except Exception as e:
-            logging.warning(f"Kernel write failed: {e}")
+            logging.warning(f"Failed to write to JuniorOS kernel: {e}")
             return False
 
     def _try_open_mmap(self):
         try:
             self._fd = os.open(self.device_path, os.O_RDWR)
             self._mmap = mmap.mmap(self._fd, 1048576, access=mmap.ACCESS_WRITE)
-        except Exception:
+        except Exception as e:
+            logging.debug(f"mmap failed, will use regular writes: {e}")
             self._mmap = None
 
     def close(self):

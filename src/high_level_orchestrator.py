@@ -1,10 +1,10 @@
 # path: src/juniorhome/high_level_orchestrator.py
 #!/usr/bin/env python3
 """
-HighLevelOrchestrator (End-User Focused)
+HighLevelOrchestrator (Expanded)
 
-Provides simple, natural-language friendly interfaces so end users
-never need to write code. Maps to TriStateExecutionEngine + kernel.
+More natural language support, more task types, and smarter
+auto-decision making using historical feedback.
 """
 
 import logging
@@ -28,68 +28,72 @@ logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 class HighLevelOrchestrator:
     def __init__(self):
         self.engine = TriStateExecutionEngine(
-            agent_orchestrator=None,  # Will be resolved internally
+            agent_orchestrator=None,
             second_brain_pipeline=None
         ) if HAS_ENGINE else None
 
         self.sovereign = SovereignEdgeOrchestrator() if HAS_SOVEREIGN else None
-        logging.info("HighLevelOrchestrator initialized (end-user friendly)")
+        logging.info("HighLevelOrchestrator initialized (expanded)")
 
     def _detect_intent(self, prompt: str) -> str:
-        prompt_lower = prompt.lower()
-        if any(word in prompt_lower for word in ["sovereignty", "private", "local", "secure"]):
+        p = prompt.lower()
+
+        # Strong sovereignty / privacy signals
+        if any(kw in p for kw in ["sovereignty", "private", "local only", "air gapped", "maximum security", "no cloud"]):
             return "user"
-        if any(word in prompt_lower for word in ["agent", "debate", "team", "discuss", "learn"]):
+
+        # Swarm / agent collaboration signals
+        if any(kw in p for kw in ["agent", "debate", "team", "discuss", "collaborate", "learn together", "swarm"]):
             return "swarm"
-        if any(word in prompt_lower for word in ["verify", "check", "fallback", "safe"]):
+
+        # Fallback / verification signals
+        if any(kw in p for kw in ["verify", "safe", "fallback", "check", "validate", "industry standard"]):
             return "industry"
+
+        # Kernel injection signals
+        if any(kw in p for kw in ["kernel", "inject", "bare metal", "junioros"]):
+            return "user"  # Will execute then inject
+
         return "auto"
 
     def run(self, prompt_or_task: str, data: Any = None) -> Dict[str, Any]:
-        """
-        Main end-user entry point. Supports natural language or task names.
-        """
         if not self.engine:
             return {"error": "Execution engine not available"}
 
         mode = self._detect_intent(prompt_or_task)
 
-        # Simple task name mapping
-        task_lower = prompt_or_task.lower()
-        if "fold" in task_lower or "manifold" in task_lower:
+        # Explicit task name overrides
+        task = prompt_or_task.lower()
+        if any(x in task for x in ["fold", "manifold", "analyze manifold"]):
             mode = "user"
-        elif "debate" in task_lower or "swarm" in task_lower:
+        elif any(x in task for x in ["debate", "swarm", "agent team"]):
             mode = "swarm"
-        elif "kernel" in task_lower or "inject" in task_lower:
-            mode = "user"  # Will inject after
+        elif any(x in task for x in ["kernel inject", "write to kernel"]):
+            mode = "user"
 
         result = self.engine.execute(data or prompt_or_task, mode=mode)
         return result
 
     def run_task(self, task_type: str, data: Any = None) -> Dict[str, Any]:
-        """
-        Structured task interface (for UIs or simple scripts).
-        """
         if not self.engine:
             return {"error": "Execution engine not available"}
 
         mode_map = {
             "user_analyze": "user",
-            "user_fold": "user",
+            "user_fold_manifold": "user",
             "swarm_debate": "swarm",
             "swarm_learn": "swarm",
             "industry_verify": "industry",
             "kernel_inject": "user",
             "diagnostic": "auto",
+            "build_test": "auto",
         }
+
         mode = mode_map.get(task_type, "auto")
         result = self.engine.execute(data, mode=mode)
         return result
 
     def smart_execute(self, state: Any, goal: str = "balanced") -> Dict[str, Any]:
-        """
-        Let the system decide with goal awareness.
-        """
         if not self.engine:
             return {"error": "Execution engine not available"}
         return self.engine.execute(state, mode="auto")
