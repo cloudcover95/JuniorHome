@@ -1,22 +1,26 @@
 # path: src/juniorhome/junioros/kernel_bridge.py
 #!/usr/bin/env python3
 """
-JuniorOSKernelBridge (v133 - Advanced Ring Buffer + Async Ready)
+JuniorOSKernelBridge (Async-Enabled v2)
 
-Significant improvements:
-- Better circular ring buffer with head/tail tracking
+Major updates:
+- Async support via asyncio.to_thread for blocking operations
+- Async write and read methods
 - Richer metadata schema
-- Prepared for async operations
-- Improved error handling and resource management
+- Better structure for future direct async I/O
+- Backward compatible with sync usage
+
+Designed for long-term spatial/general state persistence on edge hardware.
 """
 
+import asyncio
 import logging
 import mmap
 import os
 import struct
 import time
 from dataclasses import dataclass, asdict
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import numpy as np
 
@@ -55,6 +59,7 @@ class JuniorOSKernelBridge:
     def is_available(self) -> bool:
         return self._available
 
+    # --- Sync Methods (backward compatible) ---
     def write_ternary_manifold(
         self,
         ternary_tensor: Any,
@@ -66,8 +71,8 @@ class JuniorOSKernelBridge:
             return False
 
         try:
-            arr = np.asarray(ternary_tensor, dtype=np.int8)
-            ternary_bytes = arr.tobytes()
+            arr = np.asarray(ternary_tensor, dtype=np.int8) if ternary_tensor is not None else b""
+            ternary_bytes = arr.tobytes() if ternary_tensor is not None else b""
 
             payload = KernelPayload(
                 ternary_data=ternary_bytes,
@@ -87,7 +92,6 @@ class JuniorOSKernelBridge:
                 with open(self.device_path, "wb") as f:
                     f.write(serialized)
 
-            logging.debug(f"Wrote {len(serialized)} bytes to kernel ring buffer")
             return True
 
         except Exception as e:
@@ -146,6 +150,51 @@ class JuniorOSKernelBridge:
             except:
                 pass
             self._fd = None
+
+    # --- Async Methods ---
+    async def async_write_ternary_manifold(
+        self,
+        ternary_tensor: Any,
+        metadata: Optional[Dict[str, Any]] = None,
+        coherence: float = 0.0,
+    ) -> bool:
+        """Async version of write_ternary_manifold."""
+        return await asyncio.to_thread(
+            self.write_ternary_manifold,
+            ternary_tensor,
+            metadata,
+            coherence,
+        )
+
+    async def async_read_latest(self, max_bytes: int = 4096) -> Optional[bytes]:
+        """Async read from the kernel ring buffer (best-effort latest data)."""
+        if not self._available:
+            return None
+
+        try:
+            # For now we use thread offload. True async char device I/O can be added later.
+            return await asyncio.to_thread(self._sync_read_latest, max_bytes)
+        except Exception as e:
+            logging.warning(f"Async kernel read failed: {e}")
+            return None
+
+    def _sync_read_latest(self, max_bytes: int) -> Optional[bytes]:
+        """Internal sync read implementation."""
+        try:
+            if self._mmap is None:
+                self._try_open_mmap()
+
+            if self._mmap is not None:
+                # Simple read from current position (can be improved)
+                self._mmap.seek(0)
+                data = self._mmap.read(max_bytes)
+                return data
+            else:
+                with open(self.device_path, "rb") as f:
+                    return f.read(max_bytes)
+        except Exception as e:
+            logging.warning(f"Sync kernel read failed: {e}")
+            return None
 
     def __del__(self):
         self.close()
