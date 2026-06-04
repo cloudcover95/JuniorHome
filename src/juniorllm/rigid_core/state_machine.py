@@ -11,7 +11,7 @@ try:
     from ...training.adapters import LowRankAdapter
     from ...training.engine import SovereignTrainer
     from ...manifolds.ternary_spatial_manifold import TernarySpatialManifold
-    from ...bitnet.quantization_utils import estimate_1_58_vs_3_0_gains, get_quantization_stats
+    from ...bitnet.quantization_utils import get_quantization_stats
     HAS_FULL_3_0_STACK = True
 except ImportError:
     HAS_FULL_3_0_STACK = False
@@ -170,6 +170,7 @@ class JuniorLLMStateMachine:
                 try:
                     adapter = self.active_adapters.get(adapter_id)
                     if adapter:
+                        # Real path: trainer would use manifold_context as additional signal/prior
                         trained.append((adapter_id, profile, "trained_with_sovereign_trainer"))
                 except Exception:
                     trained.append((adapter_id, profile, "training_failed"))
@@ -256,6 +257,7 @@ class JuniorLLMStateMachine:
 
     def get_quantization_efficiency(self) -> Dict[str, Any]:
         try:
+            from ...bitnet.quantization_utils import estimate_1_58_vs_3_0_gains
             return estimate_1_58_vs_3_0_gains(
                 base_params=1_000_000_000,
                 adapter_rank=8,

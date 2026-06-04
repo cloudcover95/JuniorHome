@@ -2,9 +2,9 @@
 
 **Current Ecosystem State**
 
-Deepened BitNet 1.58 → 3.0 comparison and scaling justification:
-- Enhanced estimate_1_58_vs_3_0_gains() with stronger utility cases and scaling rationale
-- get_quantization_efficiency() returns full comparison with clear justification
-- Strong emphasis on why 3.0 extensions warrant scaling (autonomy, specialization, resilience, physics-informed reasoning)
+Continued deepening of BitNet 3.0 + custom JuniorLLM with efficient quantization focus:
+- process_adapter_training_queue and run_specialization_cycle now more robust with trainer + manifold context
+- Lighter runtime efficiency reporting (heavy comparison moved toward MemSys)
+- Stronger executable paths for autonomous adaptation on the ternary base
 
-This continues the deep architecture for BitNet 3.0 and custom JuniorLLM with real efficiency and scaling justification.
+Keeping public code lean while advancing real 3.0 capabilities.
