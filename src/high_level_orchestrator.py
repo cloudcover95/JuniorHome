@@ -1,14 +1,14 @@
 # path: src/juniorhome/high_level_orchestrator.py
 #!/usr/bin/env python3
 """
-HighLevelOrchestrator (Expanded)
+HighLevelOrchestrator (Further Expanded)
 
-More natural language support, more task types, and smarter
-auto-decision making using historical feedback.
+More natural language understanding, additional task types,
+and improved auto-decision making using historical coherence.
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 try:
     from .tri_state_execution_engine import TriStateExecutionEngine
@@ -33,26 +33,27 @@ class HighLevelOrchestrator:
         ) if HAS_ENGINE else None
 
         self.sovereign = SovereignEdgeOrchestrator() if HAS_SOVEREIGN else None
-        logging.info("HighLevelOrchestrator initialized (expanded)")
+        self.recent_coherence: List[float] = []
+        logging.info("HighLevelOrchestrator initialized (expanded further)")
 
     def _detect_intent(self, prompt: str) -> str:
         p = prompt.lower()
 
-        # Strong sovereignty / privacy signals
-        if any(kw in p for kw in ["sovereignty", "private", "local only", "air gapped", "maximum security", "no cloud"]):
+        # Strong User Black Box signals
+        if any(kw in p for kw in ["sovereignty", "private", "local only", "air gapped", "maximum security", "no cloud", "pure ternary"]):
             return "user"
 
-        # Swarm / agent collaboration signals
-        if any(kw in p for kw in ["agent", "debate", "team", "discuss", "collaborate", "learn together", "swarm"]):
+        # Strong Swarm Black Box signals
+        if any(kw in p for kw in ["agent", "debate", "team", "discuss", "collaborate", "swarm", "learn together", "second brain"]):
             return "swarm"
 
-        # Fallback / verification signals
-        if any(kw in p for kw in ["verify", "safe", "fallback", "check", "validate", "industry standard"]):
+        # Industry Fallback signals
+        if any(kw in p for kw in ["verify", "safe", "fallback", "check", "validate", "industry", "dense"]):
             return "industry"
 
         # Kernel injection signals
-        if any(kw in p for kw in ["kernel", "inject", "bare metal", "junioros"]):
-            return "user"  # Will execute then inject
+        if any(kw in p for kw in ["kernel", "inject", "bare metal", "junioros", "write to kernel"]):
+            return "user"
 
         return "auto"
 
@@ -62,11 +63,11 @@ class HighLevelOrchestrator:
 
         mode = self._detect_intent(prompt_or_task)
 
-        # Explicit task name overrides
+        # Explicit task overrides
         task = prompt_or_task.lower()
         if any(x in task for x in ["fold", "manifold", "analyze manifold"]):
             mode = "user"
-        elif any(x in task for x in ["debate", "swarm", "agent team"]):
+        elif any(x in task for x in ["debate", "swarm", "agent team", "learn"]):
             mode = "swarm"
         elif any(x in task for x in ["kernel inject", "write to kernel"]):
             mode = "user"
