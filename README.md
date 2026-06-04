@@ -2,11 +2,10 @@
 
 **Current Ecosystem State**
 
-Further deepened BitNet 3.0 + custom JuniorLLM architecture:
-- Adapter profiles (spatial, quant, business, general)
-- Context-driven specialization via evolution rules
-- Adapter training queue now carries target profile
-- get_adapters_by_profile() for runtime selection
-- Stronger foundation for autonomous, profile-aware continual adaptation on ternary base
+Further advanced BitNet 3.0 + custom JuniorLLM:
+- Automatic profile switching on state transitions (SPATIAL_EVOLUTION → spatial profile)
+- Context-aware adapter specialization driven by evolution rules and current state
+- get_current_active_adapters() for runtime profile-based selection
+- Stronger foundation for truly autonomous, profile-aware, continual adaptation on the ternary base
 
-This continues the proactive BitNet 3.0 trajectory with a more capable custom JuniorLLM rigid core.
+This deepens the custom JuniorLLM architecture toward production-grade BitNet 3.0 capabilities.
