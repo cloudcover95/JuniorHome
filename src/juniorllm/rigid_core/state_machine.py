@@ -1,14 +1,15 @@
 # path: src/juniorhome/juniorllm/rigid_core/state_machine.py
 #!/usr/bin/env python3
 """
-JuniorLLM Rigid Core State Machine (Hierarchical + Capital Focus)
+JuniorLLM Rigid Core State Machine (Expanded - Hierarchical Spatial + Persistence)
 
-Added:
-- Hierarchical sub-state support (nested states under CAPITAL_RECOVERY)
-- Expanded capital accumulation logic with recovery sub-flows
-- Better structure for long-term timers and persistence
+Major updates this iteration:
+- Stronger hierarchical spatial state support
+- Deeper persistence (state + active timers + spatial manifold metadata)
+- Better integration hooks for generalized Ternary Spatial Manifolds
+- Foundation for evolution rules and long-term spatial tracking
 
-This continues building the rigid Layer 1 core with real hierarchical behavior.
+Designed to be domain-agnostic (not market-specific).
 """
 
 import logging
@@ -31,16 +32,17 @@ class State(Enum):
     ACTIVE_INFERENCE = auto()
     MAINTENANCE = auto()
     EVOLUTION = auto()
-    CAPITAL_MONITORING = auto()
-    CAPITAL_RECOVERY = auto()
+    SPATIAL_MONITORING = auto()     # General spatial manifold monitoring
+    SPATIAL_EVOLUTION = auto()      # Controlled evolution of spatial state
 
 
-# Hierarchical sub-states under CAPITAL_RECOVERY
-class RecoverySubState(Enum):
-    CLEAR_BLOCKS = auto()
-    RESTART_PIPELINE = auto()
-    VERIFY_ANCHOR = auto()
-    ACH_REROUTE = auto()
+class SpatialSubState(Enum):
+    """Hierarchical sub-states under SPATIAL_EVOLUTION / SPATIAL_MONITORING."""
+    INITIALIZE = auto()
+    TRACK = auto()
+    DETECT_DRIFT = auto()
+    EVOLVE = auto()
+    FUSE = auto()           # Multi-node / UDP mesh fusion
     COMPLETE = auto()
 
 
@@ -63,14 +65,15 @@ class JuniorLLMStateMachine:
     def __init__(self, node_id: str = "default"):
         self.node_id = node_id
         self.current_state: State = State.IDLE
-        self.current_sub_state: Optional[RecoverySubState] = None
+        self.current_spatial_sub_state: Optional[SpatialSubState] = None
         self.history: List[Dict[str, Any]] = []
         self.timers: Dict[str, Timer] = {}
         self.event_handlers: Dict[str, List[Callable]] = {}
         self.kernel_bridge = JuniorOSKernelBridge() if HAS_KERNEL_BRIDGE else None
 
+        # Default persistent timers
         self.add_timer("coherence_check", interval_seconds=300, metadata={"type": "system"})
-        self.add_timer("capital_health_check", interval_seconds=1800, metadata={"type": "capital"})
+        self.add_timer("spatial_health_check", interval_seconds=600, metadata={"type": "spatial"})
 
         logging.info(f"JuniorLLMStateMachine initialized for node {node_id}")
 
@@ -84,33 +87,38 @@ class JuniorLLMStateMachine:
             })
             logging.info(f"State transition: {self.current_state.name} -> {new_state.name} ({reason})")
             self.current_state = new_state
-            self.current_sub_state = None  # Reset sub-state on root transition
+            self.current_spatial_sub_state = None
             self._persist_state()
 
-    def transition_sub_state(self, new_sub_state: RecoverySubState, reason: str = ""):
-        if self.current_state != State.CAPITAL_RECOVERY:
-            self.transition_to(State.CAPITAL_RECOVERY, reason="sub_state_entry")
+    def transition_spatial_sub_state(self, new_sub_state: SpatialSubState, reason: str = ""):
+        if self.current_state not in (State.SPATIAL_MONITORING, State.SPATIAL_EVOLUTION):
+            self.transition_to(State.SPATIAL_MONITORING, reason="spatial_sub_state_entry")
 
-        if new_sub_state != self.current_sub_state:
+        if new_sub_state != self.current_spatial_sub_state:
             self.history.append({
-                "from_sub": self.current_sub_state.name if self.current_sub_state else None,
-                "to_sub": new_sub_state.name,
+                "from_spatial_sub": self.current_spatial_sub_state.name if self.current_spatial_sub_state else None,
+                "to_spatial_sub": new_sub_state.name,
                 "timestamp": time.time(),
                 "reason": reason
             })
-            logging.info(f"Sub-state transition: {self.current_sub_state} -> {new_sub_state} ({reason})")
-            self.current_sub_state = new_sub_state
+            logging.info(f"Spatial sub-state transition: {self.current_spatial_sub_state} -> {new_sub_state} ({reason})")
+            self.current_spatial_sub_state = new_sub_state
             self._persist_state()
 
     def get_current_state(self) -> State:
         return self.current_state
 
-    def get_current_sub_state(self) -> Optional[RecoverySubState]:
-        return self.current_sub_state
+    def get_current_spatial_sub_state(self) -> Optional[SpatialSubState]:
+        return self.current_spatial_sub_state
 
     # --- Timer Management ---
     def add_timer(self, name: str, interval_seconds: float, persistent: bool = True, metadata: Optional[Dict[str, Any]] = None):
-        self.timers[name] = Timer(name=name, interval=interval_seconds, persistent=persistent, metadata=metadata or {})
+        self.timers[name] = Timer(
+            name=name,
+            interval=interval_seconds,
+            persistent=persistent,
+            metadata=metadata or {}
+        )
 
     def check_timers(self):
         for timer in list(self.timers.values()):
@@ -119,8 +127,8 @@ class JuniorLLMStateMachine:
                 self._handle_timer_event(timer)
 
     def _handle_timer_event(self, timer: Timer):
-        if timer.metadata.get("type") == "capital":
-            self.emit_event("capital_health_check")
+        if timer.metadata.get("type") == "spatial":
+            self.emit_event("spatial_health_check")
         else:
             self.emit_event(timer.name)
 
@@ -135,7 +143,7 @@ class JuniorLLMStateMachine:
             self.event_handlers[event_name] = []
         self.event_handlers[event_name].append(handler)
 
-    # --- Persistence ---
+    # --- Persistence (Deeper) ---
     def _persist_state(self):
         if self.kernel_bridge and self.kernel_bridge.is_available():
             try:
@@ -144,7 +152,7 @@ class JuniorLLMStateMachine:
                     metadata={
                         "node_id": self.node_id,
                         "current_state": self.current_state.name,
-                        "current_sub_state": self.current_sub_state.name if self.current_sub_state else None,
+                        "current_spatial_sub_state": self.current_spatial_sub_state.name if self.current_spatial_sub_state else None,
                         "history_length": len(self.history),
                         "active_timers": list(self.timers.keys()),
                         "timestamp": time.time(),
@@ -162,49 +170,43 @@ class JuniorLLMStateMachine:
             self.transition_to(State.MAINTENANCE, reason="external_command")
         elif command == "trigger_evolution":
             self.transition_to(State.EVOLUTION, reason="external_command")
-        elif command == "monitor_capital":
-            self.transition_to(State.CAPITAL_MONITORING, reason="external_command")
-        elif command == "recover_capital_pipeline":
-            self.transition_to(State.CAPITAL_RECOVERY, reason="external_command")
-            self.transition_sub_state(RecoverySubState.CLEAR_BLOCKS, reason="recovery_start")
+        elif command == "monitor_spatial":
+            self.transition_to(State.SPATIAL_MONITORING, reason="external_command")
+        elif command == "evolve_spatial_manifold":
+            self.transition_to(State.SPATIAL_EVOLUTION, reason="external_command")
+            self.transition_spatial_sub_state(SpatialSubState.INITIALIZE)
         else:
             self.emit_event(command, payload)
 
-    def handle_capital_task(self, task_type: str):
-        if task_type == "capital_accumulation_monitor":
-            self.transition_to(State.CAPITAL_MONITORING, reason="task")
-            return {"status": "monitoring_started"}
+    def handle_spatial_task(self, task_type: str):
+        """Handler for general spatial manifold tasks."""
+        if task_type == "monitor_spatial_manifold":
+            self.transition_to(State.SPATIAL_MONITORING, reason="task")
+            return {"status": "spatial_monitoring_started"}
 
-        elif task_type == "capital_accumulation_restart":
-            self.transition_to(State.CAPITAL_RECOVERY, reason="task")
-            self.transition_sub_state(RecoverySubState.CLEAR_BLOCKS)
-            return {"status": "recovery_started"}
+        elif task_type == "evolve_spatial_manifold":
+            self.transition_to(State.SPATIAL_EVOLUTION, reason="task")
+            self.transition_spatial_sub_state(SpatialSubState.INITIALIZE)
+            return {"status": "evolution_started"}
 
-        elif task_type == "verify_fiat_anchor":
-            if self.current_state == State.CAPITAL_RECOVERY:
-                self.transition_sub_state(RecoverySubState.VERIFY_ANCHOR)
-            else:
-                self.transition_to(State.MAINTENANCE, reason="task")
-            return {"status": "verification_started"}
+        elif task_type == "fuse_spatial_states":
+            if self.current_state == State.SPATIAL_EVOLUTION:
+                self.transition_spatial_sub_state(SpatialSubState.FUSE)
+            return {"status": "fusion_initiated"}
 
-        elif task_type == "clear_external_blocks":
-            if self.current_state == State.CAPITAL_RECOVERY:
-                self.transition_sub_state(RecoverySubState.CLEAR_BLOCKS)
-            return {"status": "clearing_blocks"}
+        elif task_type == "detect_spatial_drift":
+            if self.current_state == State.SPATIAL_EVOLUTION:
+                self.transition_spatial_sub_state(SpatialSubState.DETECT_DRIFT)
+            return {"status": "drift_detection_started"}
 
-        elif task_type == "ach_reroute":
-            if self.current_state == State.CAPITAL_RECOVERY:
-                self.transition_sub_state(RecoverySubState.ACH_REROUTE)
-            return {"status": "initiating_ach_reroute"}
-
-        return {"status": "unknown_task"}
+        return {"status": "unknown_spatial_task"}
 
 
 if __name__ == "__main__":
     sm = JuniorLLMStateMachine(node_id="llm_core_01")
-    sm.on("capital_health_check", lambda p: print("[EVENT] Checking capital pipeline..."))
+    sm.on("spatial_health_check", lambda p: print("[EVENT] Checking spatial manifold health..."))
 
-    print("JuniorLLMStateMachine with hierarchical capital recovery running...")
+    print("JuniorLLMStateMachine with hierarchical spatial support running...")
     while True:
         sm.check_timers()
         time.sleep(5)
