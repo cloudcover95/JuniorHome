@@ -181,12 +181,38 @@ class JuniorLLMStateMachine:
                         self.switch_to_profile("spatial")
 
     def push_context_to_manifold(self):
-        """Push current state/profile context back to the manifold for physics-informed updates."""
         if self.manifold is not None:
-            # Example: when in spatial evolution, the manifold can receive priors from current profile
             if self.current_active_profile == "spatial" and self.current_state == State.SPATIAL_EVOLUTION:
-                # In full implementation this would inject adapter-derived priors into manifold folding
                 pass
+
+    def request_specialization(self, context: Optional[Dict[str, Any]] = None):
+        """Proactively request adapter specialization based on current state, manifold features, and context."""
+        if context is None:
+            context = {}
+
+        manifold_state = context.get("manifold_state")
+        if manifold_state is None and self.manifold is not None:
+            manifold_state = self.manifold.state
+
+        target_profile = self.current_active_profile
+
+        if self.current_state == State.SPATIAL_EVOLUTION:
+            target_profile = "spatial"
+        elif self.current_state == State.ACTIVE_INFERENCE:
+            target_profile = "general"
+
+        if manifold_state is not None and hasattr(manifold_state, "mean_abs"):
+            if manifold_state.mean_abs > 0.75 and target_profile != "spatial":
+                target_profile = "spatial"
+
+        # Queue training for best matching adapter in target profile
+        candidates = self.get_adapters_by_profile(target_profile)
+        if candidates:
+            best_adapter = candidates[0]
+            self.queue_adapter_training(best_adapter, target_profile)
+            return {"requested": best_adapter, "profile": target_profile}
+
+        return {"requested": None, "profile": target_profile}
 
     def _persist_state(self):
         if self.kernel_bridge and hasattr(self.kernel_bridge, "write_ternary_manifold"):
