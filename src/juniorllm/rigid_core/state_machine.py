@@ -186,7 +186,6 @@ class JuniorLLMStateMachine:
                 pass
 
     def request_specialization(self, context: Optional[Dict[str, Any]] = None):
-        """Proactively request adapter specialization based on current state, manifold features, and context."""
         if context is None:
             context = {}
 
@@ -205,7 +204,6 @@ class JuniorLLMStateMachine:
             if manifold_state.mean_abs > 0.75 and target_profile != "spatial":
                 target_profile = "spatial"
 
-        # Queue training for best matching adapter in target profile
         candidates = self.get_adapters_by_profile(target_profile)
         if candidates:
             best_adapter = candidates[0]
@@ -213,6 +211,17 @@ class JuniorLLMStateMachine:
             return {"requested": best_adapter, "profile": target_profile}
 
         return {"requested": None, "profile": target_profile}
+
+    def specialize_for_current_context(self):
+        """Proactively specialize adapters based on current state + manifold features."""
+        result = self.request_specialization()
+
+        if result.get("requested"):
+            # In full 3.0 this would trigger immediate on-device fine-tuning
+            # using current manifold state as context/prior
+            self.push_context_to_manifold()
+
+        return result
 
     def _persist_state(self):
         if self.kernel_bridge and hasattr(self.kernel_bridge, "write_ternary_manifold"):
