@@ -171,21 +171,34 @@ class JuniorLLMStateMachine:
         return self.get_adapters_by_profile(self.current_active_profile)
 
     def update_from_manifold(self, manifold_state: Optional[Any] = None):
-        """Use current manifold state/features to influence profile or trigger adaptation."""
         if manifold_state is None and self.manifold is not None:
             manifold_state = self.manifold.state
 
         if manifold_state is not None:
-            # Example heuristic: if manifold shows high drift or low coherence, prioritize spatial profile
-            # In full 3.0 this would use manifold features + LowRankAdapter inference
             if hasattr(manifold_state, "mean_abs"):
                 if manifold_state.mean_abs > 0.7:
                     if self.current_active_profile != "spatial":
                         self.switch_to_profile("spatial")
 
+    def push_context_to_manifold(self):
+        """Push current state/profile context back to the manifold for physics-informed updates."""
+        if self.manifold is not None:
+            # Example: when in spatial evolution, the manifold can receive priors from current profile
+            if self.current_active_profile == "spatial" and self.current_state == State.SPATIAL_EVOLUTION:
+                # In full implementation this would inject adapter-derived priors into manifold folding
+                pass
+
     def _persist_state(self):
         if self.kernel_bridge and hasattr(self.kernel_bridge, "write_ternary_manifold"):
             try:
+                manifold_features = {}
+                if self.manifold and self.manifold.state is not None:
+                    if hasattr(self.manifold.state, "mean_abs"):
+                        manifold_features = {
+                            "mean_abs": float(self.manifold.state.mean_abs),
+                            "sparsity": float(getattr(self.manifold.state, "sparsity", 0.0)),
+                        }
+
                 self.kernel_bridge.write_ternary_manifold(
                     ternary_tensor=None,
                     metadata={
@@ -193,6 +206,7 @@ class JuniorLLMStateMachine:
                         "current_state": self.current_state.name,
                         "current_active_profile": self.current_active_profile,
                         "adapter_profiles": self.adapter_profiles,
+                        "manifold_features": manifold_features,
                         "timestamp": time.time(),
                     },
                     coherence=0.0,
