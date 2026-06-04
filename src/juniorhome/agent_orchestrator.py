@@ -1,10 +1,10 @@
 # path: src/juniorhome/agent_orchestrator.py
 #!/usr/bin/env python3
 """
-Agent Orchestrator (with JuniorQuant Integration)
+Agent Orchestrator (TriStateRouter Integrated)
 
-Now includes the universal quant agent team from JuniorQuant.
-Fully cross-pollinated with EdgeRuntime for efficient execution.
+Now uses the hardware-agnostic TriStateRouter for smart routing decisions.
+Routing is efficiency-aware via EdgeRuntime.
 """
 
 import logging
@@ -16,7 +16,6 @@ try:
 except ImportError:
     HAS_JUNIORLLM = False
 
-# JuniorQuant integration (universal quant black box)
 try:
     from juniorquant.orchestration.agent_team import orchestrate_quant_team
     HAS_JUNIORQUANT = True
@@ -24,11 +23,18 @@ except ImportError:
     HAS_JUNIORQUANT = False
     orchestrate_quant_team = None
 
+try:
+    from bitnet_mlx.compute.tri_state_router import TriStateRouter
+    HAS_TRISTATE = True
+except ImportError:
+    HAS_TRISTATE = False
+    TriStateRouter = None
+
+
 from .autonomous_agent import AutonomousAgent
 from .second_brain_pipeline import SecondBrainPipeline
 from .edge_runtime import EdgeRuntime
 from .second_brain import SecondBrain
-
 from .security_middleware import SecurityMiddleware
 
 logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
@@ -42,13 +48,18 @@ class AgentOrchestrator:
         self.edge_runtime = EdgeRuntime()
         self.security = SecurityMiddleware()
 
+        if HAS_TRISTATE:
+            self.router = TriStateRouter()
+        else:
+            self.router = None
+
         if HAS_JUNIORLLM:
             from juniorllm.autonomy.autonomous_coder import AutonomousCoder
             self.coder = AutonomousCoder()
         else:
             self.coder = None
 
-        logging.info("AgentOrchestrator initialized with JuniorQuant integration")
+        logging.info("AgentOrchestrator initialized with TriStateRouter")
 
     def autonomous_think_and_act(self, prompt: str, task_complexity: str = "medium") -> Dict[str, Any]:
         thought = self.agent.think(prompt, task_complexity=task_complexity)
@@ -82,10 +93,6 @@ class AgentOrchestrator:
         }
 
     def run_quant_agent_team(self, svd_manifold) -> Dict[str, Any]:
-        """
-        Runs the universal JuniorQuant agent team (Alpha → Risk → Execution).
-        Executes efficiently via EdgeRuntime.
-        """
         if not HAS_JUNIORQUANT or orchestrate_quant_team is None:
             return {"error": "JuniorQuant not available"}
 
@@ -99,13 +106,30 @@ class AgentOrchestrator:
             task_complexity="high",
         )
 
-        # Store result in Second Brain
         self.pipeline.second_brain.store_finding({
             "type": "quant_agent_result",
             "result": result,
         })
 
         return result
+
+    def route_intelligence(self, data: Any, mode: str = "auto", agent_context: Any = None):
+        """
+        Uses TriStateRouter for hardware-agnostic intelligent routing.
+        Respects edge efficiency.
+        """
+        if not self.router:
+            return {"error": "TriStateRouter not available"}
+
+        def _route():
+            return self.router.evaluate_and_route(data, agent_context=agent_context, mode=mode)
+
+        return self.edge_runtime.execute_efficiently(
+            _route,
+            task_name="tri_state_routing",
+            estimated_memory_mb=40,
+            task_complexity="medium",
+        )
 
     def process_knowledge(self, url: str = None):
         if url:
