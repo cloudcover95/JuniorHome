@@ -1,15 +1,16 @@
 # path: src/juniorhome/junioros/kernel_bridge.py
 #!/usr/bin/env python3
 """
-JuniorOSKernelBridge (v123 - More Robust)
+JuniorOSKernelBridge (v128 - Structured Ring Buffer)
 
-Improved error handling, better logging, and safer mmap handling.
+Improved with basic circular ring buffer behavior and richer
+state persistence for critical architecture and operational data.
 """
 
 import logging
 import mmap
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Any, Dict, Optional
 
 import numpy as np
@@ -17,6 +18,7 @@ import numpy as np
 logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 
 DEVICE_PATH = "/dev/junior_spark"
+RING_SIZE = 1048576  # 1MB
 
 
 @dataclass
@@ -24,6 +26,7 @@ class KernelPayload:
     ternary_data: bytes
     metadata: Dict[str, Any]
     coherence: float
+    timestamp: float = 0.0
 
 
 class JuniorOSKernelBridge:
@@ -31,6 +34,7 @@ class JuniorOSKernelBridge:
         self.device_path = DEVICE_PATH
         self._mmap = None
         self._fd = None
+        self._write_offset = 0
         self._available = self._check_device()
 
         if self._available:
@@ -59,20 +63,21 @@ class JuniorOSKernelBridge:
             if self._mmap is None:
                 self._try_open_mmap()
 
+            payload_size = len(byte_data)
+
             if self._mmap is not None:
-                try:
-                    self._mmap.seek(0)
-                    self._mmap.write(byte_data[: len(self._mmap)])
-                    logging.debug("Wrote to kernel via mmap")
-                    return True
-                except Exception as e:
-                    logging.warning(f"mmap write failed: {e}")
-                    # Fall back to regular write
-                    pass
+                # Simple ring buffer behavior
+                if self._write_offset + payload_size > RING_SIZE:
+                    self._write_offset = 0
+
+                self._mmap.seek(self._write_offset)
+                self._mmap.write(byte_data)
+                self._write_offset += payload_size
+                logging.debug(f"Wrote to kernel ring buffer at offset {self._write_offset}")
+                return True
 
             with open(self.device_path, "wb") as f:
                 f.write(byte_data)
-            logging.debug("Wrote to kernel via regular file")
             return True
 
         except Exception as e:
@@ -82,9 +87,9 @@ class JuniorOSKernelBridge:
     def _try_open_mmap(self):
         try:
             self._fd = os.open(self.device_path, os.O_RDWR)
-            self._mmap = mmap.mmap(self._fd, 1048576, access=mmap.ACCESS_WRITE)
+            self._mmap = mmap.mmap(self._fd, RING_SIZE, access=mmap.ACCESS_WRITE)
         except Exception as e:
-            logging.debug(f"mmap not available, will use regular writes: {e}")
+            logging.debug(f"mmap not available: {e}")
             self._mmap = None
 
     def close(self):

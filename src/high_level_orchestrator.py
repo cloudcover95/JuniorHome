@@ -1,10 +1,10 @@
 # path: src/juniorhome/high_level_orchestrator.py
 #!/usr/bin/env python3
 """
-HighLevelOrchestrator (Iteration 123)
+HighLevelOrchestrator (v128)
 
 Further improved natural language support and auto-decision making
-using recent historical coherence from the Second Brain.
+that incorporates historical failures and TDA coherence from the Second Brain.
 """
 
 import logging
@@ -34,7 +34,7 @@ class HighLevelOrchestrator:
 
         self.sovereign = SovereignEdgeOrchestrator() if HAS_SOVEREIGN else None
         self.recent_coherence: List[float] = []
-        logging.info("HighLevelOrchestrator initialized (v123)")
+        logging.info("HighLevelOrchestrator initialized (v128)")
 
     def _detect_intent(self, prompt: str) -> str:
         p = prompt.lower()
@@ -51,6 +51,9 @@ class HighLevelOrchestrator:
         if any(kw in p for kw in ["kernel", "inject", "bare metal", "junioros", "write to kernel"]):
             return "user"
 
+        if any(kw in p for kw in ["accumulation", "capital", "buy", "asset", "fiat", "restart accumulation"]):
+            return "swarm"  # Often benefits from agent + diagnostic approach
+
         return "auto"
 
     def run(self, prompt_or_task: str, data: Any = None) -> Dict[str, Any]:
@@ -66,6 +69,8 @@ class HighLevelOrchestrator:
             mode = "swarm"
         elif any(x in task for x in ["kernel inject", "write to kernel"]):
             mode = "user"
+        elif any(x in task for x in ["accumulation", "capital", "restart buy", "fix pipeline"]):
+            mode = "swarm"
 
         result = self.engine.execute(data or prompt_or_task, mode=mode)
         return result
@@ -83,6 +88,9 @@ class HighLevelOrchestrator:
             "kernel_inject": "user",
             "diagnostic": "auto",
             "build_test": "auto",
+            "capital_accumulation_monitor": "swarm",
+            "capital_accumulation_restart": "swarm",
+            "verify_fiat_anchor": "swarm",
         }
 
         mode = mode_map.get(task_type, "auto")
