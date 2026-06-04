@@ -1,10 +1,9 @@
 # path: src/juniorhome/junioros/kernel_bridge.py
 #!/usr/bin/env python3
 """
-JuniorOSKernelBridge (More Robust)
+JuniorOSKernelBridge (v123 - More Robust)
 
-Improved error handling, better logging, and clearer separation
-of mmap vs regular writes. Ready for deeper production use.
+Improved error handling, better logging, and safer mmap handling.
 """
 
 import logging
@@ -61,14 +60,19 @@ class JuniorOSKernelBridge:
                 self._try_open_mmap()
 
             if self._mmap is not None:
-                self._mmap.seek(0)
-                self._mmap.write(byte_data[: len(self._mmap)])
-                logging.debug("Wrote ternary manifold via mmap")
-                return True
+                try:
+                    self._mmap.seek(0)
+                    self._mmap.write(byte_data[: len(self._mmap)])
+                    logging.debug("Wrote to kernel via mmap")
+                    return True
+                except Exception as e:
+                    logging.warning(f"mmap write failed: {e}")
+                    # Fall back to regular write
+                    pass
 
             with open(self.device_path, "wb") as f:
                 f.write(byte_data)
-            logging.debug("Wrote ternary manifold via regular file")
+            logging.debug("Wrote to kernel via regular file")
             return True
 
         except Exception as e:
@@ -80,15 +84,21 @@ class JuniorOSKernelBridge:
             self._fd = os.open(self.device_path, os.O_RDWR)
             self._mmap = mmap.mmap(self._fd, 1048576, access=mmap.ACCESS_WRITE)
         except Exception as e:
-            logging.debug(f"mmap not available, falling back to regular writes: {e}")
+            logging.debug(f"mmap not available, will use regular writes: {e}")
             self._mmap = None
 
     def close(self):
         if self._mmap:
-            self._mmap.close()
+            try:
+                self._mmap.close()
+            except:
+                pass
             self._mmap = None
         if self._fd:
-            os.close(self._fd)
+            try:
+                os.close(self._fd)
+            except:
+                pass
             self._fd = None
 
     def __del__(self):

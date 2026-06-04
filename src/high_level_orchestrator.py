@@ -1,14 +1,14 @@
 # path: src/juniorhome/high_level_orchestrator.py
 #!/usr/bin/env python3
 """
-HighLevelOrchestrator (Further Expanded)
+HighLevelOrchestrator (Iteration 123)
 
-More natural language understanding, additional task types,
-and improved auto-decision making using historical coherence.
+Further improved natural language support and auto-decision making
+using recent historical coherence from the Second Brain.
 """
 
 import logging
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, List, Optional
 
 try:
     from .tri_state_execution_engine import TriStateExecutionEngine
@@ -34,24 +34,20 @@ class HighLevelOrchestrator:
 
         self.sovereign = SovereignEdgeOrchestrator() if HAS_SOVEREIGN else None
         self.recent_coherence: List[float] = []
-        logging.info("HighLevelOrchestrator initialized (expanded further)")
+        logging.info("HighLevelOrchestrator initialized (v123)")
 
     def _detect_intent(self, prompt: str) -> str:
         p = prompt.lower()
 
-        # Strong User Black Box signals
         if any(kw in p for kw in ["sovereignty", "private", "local only", "air gapped", "maximum security", "no cloud", "pure ternary"]):
             return "user"
 
-        # Strong Swarm Black Box signals
         if any(kw in p for kw in ["agent", "debate", "team", "discuss", "collaborate", "swarm", "learn together", "second brain"]):
             return "swarm"
 
-        # Industry Fallback signals
         if any(kw in p for kw in ["verify", "safe", "fallback", "check", "validate", "industry", "dense"]):
             return "industry"
 
-        # Kernel injection signals
         if any(kw in p for kw in ["kernel", "inject", "bare metal", "junioros", "write to kernel"]):
             return "user"
 
@@ -63,7 +59,6 @@ class HighLevelOrchestrator:
 
         mode = self._detect_intent(prompt_or_task)
 
-        # Explicit task overrides
         task = prompt_or_task.lower()
         if any(x in task for x in ["fold", "manifold", "analyze manifold"]):
             mode = "user"
