@@ -1,13 +1,15 @@
-# JuniorHome
+# JuniorHome (Main Development Hub)
 
-**Current Ecosystem State (Iteration Final)**
+**Current Ecosystem State - Final Commit of Iteration**
 
-Core components committed across repos:
-- TernarySpatialManifold (physics-informed)
-- BackendRouter (MLX + CUDA routing)
-- BitNet 1.58 kernels + Metal/CUDA targets
-- JuniorLLMStateMachine (evolution rules + SHEEP Easter egg)
+Core architecture propagated:
+- TernarySpatialManifold (physics-informed + spatial readiness)
+- BackendRouter (MLX + CUDA hardware-agnostic routing)
+- BitNet 1.58 kernels + Metal target + CUDA stubs
+- JuniorLLMStateMachine (evolution rules, security policies, long-running state + SHEEP Easter egg)
 - KernelBridge (async + persistence)
-- Advanced capabilities integrated: TopologySurgeon, SovereignTrainer, SwarmNode
+- Advanced capabilities: TopologySurgeon, SovereignTrainer, SwarmNode
 
-All repos being synchronized to this architecture.
+All key repos being synchronized to this state.
+
+Roadmap focus: Routed AGI, efficient sovereign edge compute, physics-informed spatial manifolds.
