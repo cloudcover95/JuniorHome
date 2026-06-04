@@ -1,15 +1,15 @@
 # path: src/juniorhome/juniorllm/rigid_core/state_machine.py
 #!/usr/bin/env python3
 """
-JuniorLLM Rigid Core State Machine (Expanded - Hierarchical Spatial + Persistence)
+JuniorLLM Rigid Core State Machine (Expanded - Evolution Rules + Security Policies)
 
-Major updates this iteration:
-- Stronger hierarchical spatial state support
-- Deeper persistence (state + active timers + spatial manifold metadata)
-- Better integration hooks for generalized Ternary Spatial Manifolds
-- Foundation for evolution rules and long-term spatial tracking
+Major updates:
+- Evolution rule system with pluggable rules
+- Guard condition evaluation with security policy hooks
+- Deeper isolated persistence (state + rules + spatial metadata)
+- Stronger black-box boundaries for privacy and security
 
-Designed to be domain-agnostic (not market-specific).
+Designed for secure, long-term autonomous operation with controllable boundaries.
 """
 
 import logging
@@ -32,17 +32,16 @@ class State(Enum):
     ACTIVE_INFERENCE = auto()
     MAINTENANCE = auto()
     EVOLUTION = auto()
-    SPATIAL_MONITORING = auto()     # General spatial manifold monitoring
-    SPATIAL_EVOLUTION = auto()      # Controlled evolution of spatial state
+    SPATIAL_MONITORING = auto()
+    SPATIAL_EVOLUTION = auto()
 
 
 class SpatialSubState(Enum):
-    """Hierarchical sub-states under SPATIAL_EVOLUTION / SPATIAL_MONITORING."""
     INITIALIZE = auto()
     TRACK = auto()
     DETECT_DRIFT = auto()
     EVOLVE = auto()
-    FUSE = auto()           # Multi-node / UDP mesh fusion
+    FUSE = auto()
     COMPLETE = auto()
 
 
@@ -61,6 +60,15 @@ class Timer:
         self.last_triggered = time.time()
 
 
+@dataclass
+class EvolutionRule:
+    """Simple evolution rule with optional security policy hook."""
+    name: str
+    condition: Callable[[Dict[str, Any]], bool]   # Receives context (coherence, drift, etc.)
+    action: Callable[[], None]                    # What to do when rule triggers
+    security_policy: Optional[str] = None         # e.g. "require_auth", "rate_limit", "anomaly_check"
+
+
 class JuniorLLMStateMachine:
     def __init__(self, node_id: str = "default"):
         self.node_id = node_id
@@ -69,13 +77,34 @@ class JuniorLLMStateMachine:
         self.history: List[Dict[str, Any]] = []
         self.timers: Dict[str, Timer] = {}
         self.event_handlers: Dict[str, List[Callable]] = {}
+        self.evolution_rules: List[EvolutionRule] = []
         self.kernel_bridge = JuniorOSKernelBridge() if HAS_KERNEL_BRIDGE else None
 
-        # Default persistent timers
         self.add_timer("coherence_check", interval_seconds=300, metadata={"type": "system"})
         self.add_timer("spatial_health_check", interval_seconds=600, metadata={"type": "spatial"})
 
         logging.info(f"JuniorLLMStateMachine initialized for node {node_id}")
+
+    def add_evolution_rule(self, rule: EvolutionRule):
+        self.evolution_rules.append(rule)
+        logging.info(f"Evolution rule added: {rule.name} (security_policy={rule.security_policy})")
+
+    def evaluate_evolution_rules(self, context: Dict[str, Any]):
+        """Evaluate all rules. Guard conditions + security policies can block actions."""
+        for rule in self.evolution_rules:
+            if rule.condition(context):
+                # Basic security policy hook (expandable)
+                if rule.security_policy == "require_auth":
+                    if not context.get("authenticated", False):
+                        logging.warning(f"Rule {rule.name} blocked: authentication required")
+                        continue
+                if rule.security_policy == "anomaly_check":
+                    if context.get("anomaly_score", 0) > 0.8:
+                        logging.warning(f"Rule {rule.name} blocked: high anomaly score")
+                        continue
+
+                logging.info(f"Evolution rule triggered: {rule.name}")
+                rule.action()
 
     def transition_to(self, new_state: State, reason: str = ""):
         if new_state != self.current_state:
@@ -143,7 +172,7 @@ class JuniorLLMStateMachine:
             self.event_handlers[event_name] = []
         self.event_handlers[event_name].append(handler)
 
-    # --- Persistence (Deeper) ---
+    # --- Persistence (Deeper + Isolated) ---
     def _persist_state(self):
         if self.kernel_bridge and self.kernel_bridge.is_available():
             try:
@@ -153,8 +182,8 @@ class JuniorLLMStateMachine:
                         "node_id": self.node_id,
                         "current_state": self.current_state.name,
                         "current_spatial_sub_state": self.current_spatial_sub_state.name if self.current_spatial_sub_state else None,
+                        "active_evolution_rules": [r.name for r in self.evolution_rules],
                         "history_length": len(self.history),
-                        "active_timers": list(self.timers.keys()),
                         "timestamp": time.time(),
                     },
                     coherence=0.0,
@@ -162,7 +191,7 @@ class JuniorLLMStateMachine:
             except Exception as e:
                 logging.warning(f"Failed to persist state: {e}")
 
-    # --- Public API ---
+    # --- Public API (Black-box friendly) ---
     def process_command(self, command: str, payload: Any = None):
         if command == "start_inference":
             self.transition_to(State.ACTIVE_INFERENCE, reason="external_command")
@@ -179,7 +208,6 @@ class JuniorLLMStateMachine:
             self.emit_event(command, payload)
 
     def handle_spatial_task(self, task_type: str):
-        """Handler for general spatial manifold tasks."""
         if task_type == "monitor_spatial_manifold":
             self.transition_to(State.SPATIAL_MONITORING, reason="task")
             return {"status": "spatial_monitoring_started"}
@@ -204,9 +232,23 @@ class JuniorLLMStateMachine:
 
 if __name__ == "__main__":
     sm = JuniorLLMStateMachine(node_id="llm_core_01")
-    sm.on("spatial_health_check", lambda p: print("[EVENT] Checking spatial manifold health..."))
 
-    print("JuniorLLMStateMachine with hierarchical spatial support running...")
+    # Example evolution rule with security policy
+    def high_drift_rule(context):
+        return context.get("drift_score", 0) > 0.7
+
+    def trigger_evolution():
+        print("[RULE] High drift detected - triggering evolution")
+
+    sm.add_evolution_rule(EvolutionRule(
+        name="high_drift_evolution",
+        condition=high_drift_rule,
+        action=trigger_evolution,
+        security_policy="anomaly_check"
+    ))
+
+    print("JuniorLLMStateMachine with evolution rules + security policies running...")
     while True:
         sm.check_timers()
+        sm.evaluate_evolution_rules({"drift_score": 0.85, "anomaly_score": 0.3})
         time.sleep(5)
