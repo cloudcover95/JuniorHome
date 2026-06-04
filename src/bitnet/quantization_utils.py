@@ -3,14 +3,14 @@
 """
 Efficient Quantization Utilities for BitNet 1.58 → 3.0 and custom JuniorLLM.
 
-Focus: Quantify why the 3.0 extensions (adapters, profiles, specialization, manifold integration, persistence)
- warrant scaling beyond pure 1.58 ternary inference.
+Focus: Quantify why the 3.0 extensions warrant scaling beyond pure 1.58 ternary inference.
 
-Utility cases:
-- Desktop/enterprise power users needing long-running autonomous agents
-- Sovereign business systems (JuniorClimbs POS, finance, maintenance) with continual adaptation
-- Edge nodes that must remain functional offline with persistent state + specialized behavior
-- Efficient spatial/physics-informed computing without massive models
+Key scaling advantages of 3.0 (adapters + profiles + specialization + persistence + manifold integration):
+- Tiny memory overhead for massive gains in autonomy and specialization
+- Context-aware behavior without full model retraining
+- Restart-resilient persistent state + profile memory
+- Physics-informed co-evolution with spatial manifold
+- Enables sovereign long-running agents and business systems on desktop/edge hardware
 """
 
 from typing import Any, Dict, Optional
@@ -18,7 +18,6 @@ import mlx.core as mx
 
 
 def estimate_memory_savings(base_params: int, adapter_rank: int = 8, num_adapters: int = 3) -> Dict[str, float]:
-    """Estimate memory savings from LowRankAdapter on ternary base vs full fine-tuning."""
     base_memory_fp16 = base_params * 2
     adapter_memory = num_adapters * (base_params * adapter_rank * 2 * 2)
     ternary_base = base_params * 0.1875
@@ -47,17 +46,17 @@ def estimate_1_58_vs_3_0_gains(
     """
     Quantify scaling benefits of BitNet 3.0 extensions over pure 1.58 ternary inference.
 
-    1.58 baseline: Efficient inference, but static behavior, no easy specialization,
-    limited long-term autonomy without external orchestration.
+    1.58 baseline advantages: Extremely efficient inference, very low memory footprint.
+    Limitations: Static behavior, difficult specialization, limited long-term autonomy.
 
-    3.0 extensions (adapters + profiles + specialization + persistence + manifold integration):
-    - Parameter-efficient continual adaptation
-    - Context-aware profile switching (spatial/quant/business)
-    - Autonomous specialization cycles
+    3.0 extensions advantages:
+    - Parameter-efficient continual adaptation via LowRankAdapter
+    - Context-aware profile switching (spatial / quant / business / general)
+    - Autonomous specialization cycles (run_specialization_cycle)
     - Restart-resilient persistent state + profile memory
-    - Physics-informed co-evolution with spatial manifold
+    - Physics-informed co-evolution with TernarySpatialManifold
     """
-    base_1_58 = base_params * 0.1875  # ternary
+    base_1_58 = base_params * 0.1875
     adapter_mem = num_adapters * (base_params * adapter_rank * 2 * 2)
     full_3_0 = base_1_58 + adapter_mem
 
@@ -65,21 +64,23 @@ def estimate_1_58_vs_3_0_gains(
         "1_58_baseline_mb": round(base_1_58 / 1e6, 2),
         "3_0_with_adapters_mb": round(full_3_0 / 1e6, 2),
         "memory_overhead_percent": round((adapter_mem / base_1_58) * 100, 1),
+        "key_advantage": "Small memory overhead for massive gains in autonomy, specialization, and resilience"
     }
 
     if has_profiles:
-        gains["profile_switching"] = "enables context-aware behavior without retraining"
+        gains["profile_switching"] = "context-aware behavior without retraining"
     if has_specialization:
-        gains["autonomous_specialization"] = "run_specialization_cycle() enables proactive adaptation"
+        gains["autonomous_specialization"] = "run_specialization_cycle enables proactive adaptation"
     if has_persistence:
         gains["restart_resilience"] = "profile + manifold state survives restarts"
     if has_manifold_integration:
         gains["physics_informed"] = "spatial manifold influences and is influenced by LLM state"
 
-    gains["key_scaling_justification"] = (
-        "Small memory overhead for massive gains in autonomy, specialization, "
-        "restart resilience, and physics-informed reasoning. Enables sovereign long-running "
-        "agents and business systems on desktop/edge hardware without cloud dependency."
+    gains["scaling_justification"] = (
+        "The 3.0 extensions add modest memory overhead but deliver transformative capabilities: "
+        "long-running sovereign agents, continual business logic adaptation, restart-resilient state, "
+        "and physics-informed reasoning. This is the difference between a static efficient inference engine "
+        "and a true autonomous, adaptive sovereign AI system on desktop/edge hardware."
     )
 
     return gains
