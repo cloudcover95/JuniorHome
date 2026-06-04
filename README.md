@@ -1,16 +1,13 @@
 # JuniorHome
 
-**Ecosystem State**
+**Latest Ecosystem State**
 
 JuniorClimbs now includes:
-- Employee POS with keychain swipe confirmation on monitor/UI
-- QR waiver auto-onboarding (employee workload eliminated)
-- Real-time balance tracking for merch, snacks, drinks
-- Second Brain controlled FinanceLedger with immutable tx hashes (ready for on-chain anchoring)
-- Discount/offer injection (member-specific or global)
-- Renewal audits and member status pulls
-- Admin web dashboards
+- Employee terminal with keychain swipe + customer info display (hard copy privacy option)
+- Full calendar & events system (daily yoga, crossfit, climbing classes, camps)
+- Marketing campaigns + scheduling for admins
+- Second Brain controlled finance ledger with Web3-style commits
+- QR waiver auto-onboarding
+- Dynamic optimization hooks using BitNet 3.0 x 1.58 techniques for personalized offers and scheduling
 
-All wired into BackendRouter, TernarySpatialManifold, LowRankAdapter, and BitNet core.
-
-BitNet 1.58 → 3.0 trajectory active with adapter support for business personalization.
+All integrated with BackendRouter, TernarySpatialManifold, LowRankAdapter, and sovereign architecture.
