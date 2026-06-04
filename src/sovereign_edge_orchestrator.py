@@ -1,28 +1,22 @@
 # path: src/juniorhome/sovereign_edge_orchestrator.py
 #!/usr/bin/env python3
 """
-Sovereign Edge Orchestrator (Iteration 100 Capstone)
+SovereignEdgeOrchestrator (with TriStateExecutionEngine)
 
-Final unifying layer of the entire JuniorCloud LLC architecture.
+Now uses the dedicated TriStateExecutionEngine for clean separation
+of the three black boxes defined in the JUNIOR_OS_DIRECTIVE.
 
-Provides a single, clean entry point that combines:
-- AgentOrchestrator (with TriStateRouter + ManifoldFoldingQuantizer)
-- JuniorAGI Container Agent Manager
-- EdgeRuntime (efficiency + memory)
-- SecondBrainPipeline (Event Sourcing + CQRS + knowledge)
-- HardwareAbstraction (MLX / future backends)
-
-This is the top-level interface for the sovereign edge ecosystem.
+Includes hooks for future JuniorOS kernel injection (/dev/junior_spark).
 """
 
 import logging
 from typing import Any, Dict, Optional
 
 try:
-    from .agent_orchestrator import AgentOrchestrator
-    HAS_AGENT_ORCH = True
+    from .tri_state_execution_engine import TriStateExecutionEngine
+    HAS_TRISTATE_ENGINE = True
 except ImportError:
-    HAS_AGENT_ORCH = False
+    HAS_TRISTATE_ENGINE = False
 
 try:
     from .junioragi.container_agent_manager import ContainerAgentManager
@@ -36,68 +30,68 @@ try:
 except ImportError:
     HAS_EDGE = False
 
-try:
-    from .second_brain_pipeline import SecondBrainPipeline
-    HAS_SECOND_BRAIN = True
-except ImportError:
-    HAS_SECOND_BRAIN = False
-
 logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 
 
 class SovereignEdgeOrchestrator:
-    """
-    Top-level orchestrator for the complete sovereign edge architecture.
-    """
-
     def __init__(self):
-        self.agent_orchestrator = AgentOrchestrator() if HAS_AGENT_ORCH else None
+        self.tri_state_engine = TriStateExecutionEngine(
+            agent_orchestrator=self._get_agent_orchestrator()
+        ) if HAS_TRISTATE_ENGINE else None
+
         self.junior_agi = ContainerAgentManager() if HAS_JUNIORAGI else None
         self.edge_runtime = EdgeRuntime() if HAS_EDGE else None
-        self.second_brain_pipeline = SecondBrainPipeline(
-            second_brain=self.agent_orchestrator.second_brain if self.agent_orchestrator else None
-        ) if HAS_SECOND_BRAIN else None
 
-        logging.info("SovereignEdgeOrchestrator initialized (Iteration 100 Capstone)")
+        logging.info("SovereignEdgeOrchestrator initialized with TriStateExecutionEngine")
 
-    def think_and_act(self, prompt: str, task_complexity: str = "medium") -> Dict[str, Any]:
-        if not self.agent_orchestrator:
-            return {"error": "AgentOrchestrator not available"}
-        return self.agent_orchestrator.autonomous_think_and_act(prompt, task_complexity=task_complexity)
+    def _get_agent_orchestrator(self):
+        try:
+            from .agent_orchestrator import AgentOrchestrator
+            return AgentOrchestrator()
+        except ImportError:
+            return None
+
+    def execute(self, state: Any, mode: str = "auto", agent_context: Any = None) -> Dict[str, Any]:
+        """
+        Main entry point. Routes to the appropriate black box.
+        """
+        if not self.tri_state_engine:
+            return {"error": "TriStateExecutionEngine not available"}
+
+        result = self.tri_state_engine.execute(state, mode=mode, agent_context=agent_context)
+
+        # Optional: inject result into kernel when JuniorOS is available
+        self._try_kernel_injection(result)
+
+        return result
+
+    def _try_kernel_injection(self, result: Dict[str, Any]):
+        """
+        Placeholder for future /dev/junior_spark kernel injection.
+        In production this would write ternary manifolds to the kernel ring buffer.
+        """
+        if result.get("status") == "KERNEL_INJECTED":
+            logging.debug("Result already injected to kernel")
+        # Future: integrate with KernelBridge
 
     def analyze_manifold(self, state: Any) -> Dict[str, Any]:
-        if not self.agent_orchestrator:
-            return {"error": "AgentOrchestrator not available"}
-        return self.agent_orchestrator.analyze_manifold(state)
-
-    def route_intelligence(self, data: Any, mode: str = "auto", agent_context: Any = None):
-        if not self.agent_orchestrator:
-            return {"error": "AgentOrchestrator not available"}
-        return self.agent_orchestrator.route_intelligence(data, mode=mode, agent_context=agent_context)
-
-    def run_quant_team(self, svd_manifold: Any) -> Dict[str, Any]:
-        if not self.agent_orchestrator:
-            return {"error": "AgentOrchestrator not available"}
-        return self.agent_orchestrator.run_quant_agent_team(svd_manifold)
+        if not self.tri_state_engine:
+            return {"error": "TriStateExecutionEngine not available"}
+        return self.tri_state_engine.user_box.execute(state)  # Use User box for pure analysis
 
     def spawn_container_agent(self, task_type: str, **kwargs) -> str:
         if not self.junior_agi:
             return "JuniorAGI not available"
         return self.junior_agi.spawn_agent(task_type, **kwargs)
 
-    def send_command_to_agent(self, agent_id: str, command: str) -> Dict[str, Any]:
-        if not self.junior_agi:
-            return {"error": "JuniorAGI not available"}
-        return self.junior_agi.send_command(agent_id, command)
-
     def get_status(self) -> Dict[str, Any]:
         status = {}
-        if self.agent_orchestrator:
-            status["agent_orchestrator"] = self.agent_orchestrator.get_full_status()
+        if self.tri_state_engine:
+            status["tri_state_boxes"] = self.tri_state_engine.get_box_status()
         if self.edge_runtime:
             status["edge"] = self.edge_runtime.get_status()
         if self.junior_agi:
-            status["junior_agi_active_agents"] = len(self.junior_agi.active_agents)
+            status["active_container_agents"] = len(self.junior_agi.active_agents)
         return status
 
     def shutdown(self):
@@ -105,7 +99,3 @@ class SovereignEdgeOrchestrator:
         if self.junior_agi:
             for agent_id in list(self.junior_agi.active_agents.keys()):
                 self.junior_agi.stop_agent(agent_id)
-
-
-# Convenience global instance for simple usage
-sovereign_orchestrator = SovereignEdgeOrchestrator()
