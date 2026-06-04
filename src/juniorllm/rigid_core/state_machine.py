@@ -39,7 +39,7 @@ class SpatialSubState(Enum):
 class Timer:
     name: str
     interval: float
-    last_triggered: float = field(default_factory=time.time)
+    last_triggered: float = field(default_factory=time.time())
     persistent: bool = True
     metadata: Dict[str, Any] = field(default_factory=dict)
 
@@ -57,6 +57,7 @@ class EvolutionRule:
     action: Callable[[], None]
     security_policy: Optional[str] = None
     triggers_adapter_training: bool = False
+    target_adapter_profile: Optional[str] = None  # e.g. "spatial", "quant", "business"
 
 
 class JuniorLLMStateMachine:
@@ -68,7 +69,8 @@ class JuniorLLMStateMachine:
         self.timers: Dict[str, Timer] = {}
         self.evolution_rules: List[EvolutionRule] = []
         self.active_adapters: Dict[str, Any] = {}
-        self.adapter_training_queue: List[str] = []
+        self.adapter_training_queue: List[Dict[str, str]] = []  # (adapter_id, profile)
+        self.adapter_profiles: Dict[str, str] = {}  # adapter_id -> profile
 
         self.add_timer("coherence_check", interval_seconds=300, metadata={"type": "system"})
         self.add_timer("spatial_health_check", interval_seconds=600, metadata={"type": "spatial"})
@@ -87,8 +89,10 @@ class JuniorLLMStateMachine:
                         continue
                 rule.action()
 
-                if rule.triggers_adapter_training and rule.name in self.active_adapters:
-                    self.adapter_training_queue.append(rule.name)
+                if rule.triggers_adapter_training:
+                    profile = rule.target_adapter_profile or "general"
+                    if rule.name in self.active_adapters:
+                        self.adapter_training_queue.append((rule.name, profile))
 
         self._evaluate_state_coherence(context)
 
@@ -124,27 +128,32 @@ class JuniorLLMStateMachine:
             self.current_state = new_state
             self.current_spatial_sub_state = None
 
-    def load_adapter(self, adapter_id: str, adapter: Any):
+    def load_adapter(self, adapter_id: str, adapter: Any, profile: str = "general"):
         self.active_adapters[adapter_id] = adapter
+        self.adapter_profiles[adapter_id] = profile
 
     def switch_adapter(self, adapter_id: str):
         if adapter_id in self.active_adapters:
-            # In real usage this would dynamically re-wire layers
             pass
 
-    def queue_adapter_training(self, adapter_id: str):
-        if adapter_id in self.active_adapters and adapter_id not in self.adapter_training_queue:
-            self.adapter_training_queue.append(adapter_id)
+    def queue_adapter_training(self, adapter_id: str, profile: Optional[str] = None):
+        if adapter_id in self.active_adapters:
+            prof = profile or self.adapter_profiles.get(adapter_id, "general")
+            if (adapter_id, prof) not in self.adapter_training_queue:
+                self.adapter_training_queue.append((adapter_id, prof))
 
     def process_adapter_training_queue(self):
-        """Placeholder for future BitNet 3.0 on-device adapter training loop."""
+        """Placeholder for BitNet 3.0 on-device adapter training/specialization."""
         trained = []
-        for adapter_id in list(self.adapter_training_queue):
-            # In full 3.0 implementation this would run LowRankAdapter fine-tuning
-            # using SovereignTrainer or similar
-            trained.append(adapter_id)
-        self.adapter_training_queue = [aid for aid in self.adapter_training_queue if aid not in trained]
+        for adapter_id, profile in list(self.adapter_training_queue):
+            # Future: run actual LowRankAdapter fine-tuning here using SovereignTrainer
+            # and context from current state / manifold
+            trained.append((adapter_id, profile))
+        self.adapter_training_queue = [(aid, prof) for (aid, prof) in self.adapter_training_queue if (aid, prof) not in trained]
         return trained
+
+    def get_adapters_by_profile(self, profile: str) -> List[str]:
+        return [aid for aid, prof in self.adapter_profiles.items() if prof == profile]
 
     def process_command(self, command: str, payload: Any = None):
         if command == "start_inference":

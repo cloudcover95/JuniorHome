@@ -2,10 +2,11 @@
 
 **Current Ecosystem State**
 
-Deepened JuniorLLMStateMachine integration with LowRankAdapter:
-- Evolution rules can now trigger adapter training
-- Adapter training queue + processing placeholder for BitNet 3.0 on-device fine-tuning
-- Adapter lifecycle management as part of long-running autonomous state
-- Clean separation between public reference and in-house specialized systems
+Further deepened BitNet 3.0 + custom JuniorLLM architecture:
+- Adapter profiles (spatial, quant, business, general)
+- Context-driven specialization via evolution rules
+- Adapter training queue now carries target profile
+- get_adapters_by_profile() for runtime selection
+- Stronger foundation for autonomous, profile-aware continual adaptation on ternary base
 
-This advances the BitNet 1.58 → 3.0 trajectory with custom JuniorLLM rigid core + adapter-powered continual adaptation.
+This continues the proactive BitNet 3.0 trajectory with a more capable custom JuniorLLM rigid core.
