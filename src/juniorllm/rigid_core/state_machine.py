@@ -64,6 +64,7 @@ class JuniorLLMStateMachine:
         self.history: List[Dict[str, Any]] = []
         self.timers: Dict[str, Timer] = {}
         self.evolution_rules: List[EvolutionRule] = []
+        self.active_adapters: Dict[str, Any] = {}
 
         self.add_timer("coherence_check", interval_seconds=300, metadata={"type": "system"})
         self.add_timer("spatial_health_check", interval_seconds=600, metadata={"type": "spatial"})
@@ -115,6 +116,14 @@ class JuniorLLMStateMachine:
             })
             self.current_state = new_state
             self.current_spatial_sub_state = None
+
+    def load_adapter(self, adapter_id: str, adapter: Any):
+        self.active_adapters[adapter_id] = adapter
+
+    def switch_adapter(self, adapter_id: str):
+        if adapter_id in self.active_adapters:
+            # In real usage, this would re-wire the active layers
+            pass
 
     def process_command(self, command: str, payload: Any = None):
         if command == "start_inference":
