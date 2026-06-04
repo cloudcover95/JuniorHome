@@ -9,12 +9,12 @@ from typing import Any, Callable, Dict, List, Optional
 try:
     from ...bitnet.backends import router as backend_router
     from ...training.adapters import LowRankAdapter
-    from ...junioros.kernel_bridge import JuniorOSKernelBridge
-    HAS_BACKEND_ADAPTERS_AND_BRIDGE = True
+    from ...manifolds.ternary_spatial_manifold import TernarySpatialManifold
+    HAS_BACKEND_ADAPTERS_AND_MANIFOLD = True
 except ImportError:
-    HAS_BACKEND_ADAPTERS_AND_BRIDGE = False
+    HAS_BACKEND_ADAPTERS_AND_MANIFOLD = False
     LowRankAdapter = None
-    JuniorOSKernelBridge = None
+    TernarySpatialManifold = None
 
 logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 
@@ -63,9 +63,10 @@ class EvolutionRule:
 
 
 class JuniorLLMStateMachine:
-    def __init__(self, node_id: str = "default", kernel_bridge: Optional[Any] = None):
+    def __init__(self, node_id: str = "default", kernel_bridge: Optional[Any] = None, manifold: Optional[Any] = None):
         self.node_id = node_id
         self.kernel_bridge = kernel_bridge
+        self.manifold = manifold
         self.current_state: State = State.IDLE
         self.current_spatial_sub_state: Optional[SpatialSubState] = None
         self.history: List[Dict[str, Any]] = []
@@ -168,6 +169,19 @@ class JuniorLLMStateMachine:
 
     def get_current_active_adapters(self) -> List[str]:
         return self.get_adapters_by_profile(self.current_active_profile)
+
+    def update_from_manifold(self, manifold_state: Optional[Any] = None):
+        """Use current manifold state/features to influence profile or trigger adaptation."""
+        if manifold_state is None and self.manifold is not None:
+            manifold_state = self.manifold.state
+
+        if manifold_state is not None:
+            # Example heuristic: if manifold shows high drift or low coherence, prioritize spatial profile
+            # In full 3.0 this would use manifold features + LowRankAdapter inference
+            if hasattr(manifold_state, "mean_abs"):
+                if manifold_state.mean_abs > 0.7:
+                    if self.current_active_profile != "spatial":
+                        self.switch_to_profile("spatial")
 
     def _persist_state(self):
         if self.kernel_bridge and hasattr(self.kernel_bridge, "write_ternary_manifold"):
