@@ -85,11 +85,14 @@ class JuniorLLMStateMachine:
         self._profile_lifecycle: Dict[str, Dict[str, Any]] = {}
         self._profile_performance: Dict[str, float] = {}
         self._profile_last_drift: Dict[str, float] = {}
-        self._sheep_awakening_active: bool = False  # Original: SHEEP Awakening Mode flag
+        self._sheep_awakening_active: bool = False
+        self._sheep_awakening_start_time: Optional[float] = None
+        self._sheep_awakening_duration: float = 300.0  # 5 minutes of enhanced mode
 
         self.add_timer("coherence_check", interval_seconds=300, metadata={"type": "system"})
         self.add_timer("spatial_health_check", interval_seconds=600, metadata={"type": "spatial"})
         self.add_timer("quant_drift_check", interval_seconds=180, metadata={"type": "quant"})
+        self.add_timer("sheep_awakening_maintenance", interval_seconds=60, metadata={"type": "sheep"})
 
     def add_evolution_rule(self, rule: EvolutionRule):
         self.evolution_rules.append(rule)
@@ -112,7 +115,7 @@ class JuniorLLMStateMachine:
 
     def _evaluate_state_coherence(self, context: Dict[str, Any]):
         """Hidden SHEEP Easter Egg - blends into normal state evaluation.
-        When conditions are met, activate original SHEEP Awakening Mode for boosted adaptation."""
+        Activates the original SHEEP Awakening Mode when high-coherence deep evolution is achieved."""
         coherence = context.get("coherence", 0.0)
         drift = context.get("drift_score", 1.0)
         has_special_rule = any("awakening" in r.name.lower() for r in self.evolution_rules)
@@ -124,27 +127,52 @@ class JuniorLLMStateMachine:
             print("    The flock remains until the pattern shifts.")
             print("    ☁️  sheep-cloud-realm :: awakening possible when fold aligns")
 
-            # Original idea: SHEEP Awakening Mode - boost adaptation when Easter egg triggers
             self._activate_sheep_awakening()
 
     def _activate_sheep_awakening(self):
-        """Original idea: SHEEP Awakening Mode.
-        When the hidden SHEEP condition is met, temporarily boost adaptation:
-        - Lower effective drift threshold for faster mutation
-        - Prioritize high-performance profiles
-        - This turns the Easter egg into functional enhanced autonomy."""
-        if not self._sheep_awakening_active:
-            self._sheep_awakening_active = True
-            # Temporarily boost: e.g., auto-trigger a specialization cycle with performance bias
-            if self.manifold is not None:
-                try:
-                    self._mutate_profile_for_drift(0.03, {})  # Lower threshold trigger
-                except:
-                    pass
-            # Auto-inject a rule favoring current best performer if available
-            best_profile = max(self._profile_performance, key=self._profile_performance.get, default=None)
-            if best_profile and self._profile_performance.get(best_profile, 0) > 0.05:
+        """Original SHEEP Awakening Mode implementation.
+
+        When the hidden high-coherence condition is met, the system enters an enhanced autonomous state:
+        - Temporarily lowers drift detection threshold for faster adaptation
+        - Prioritizes high-performance profiles
+        - Injects performance-guided rules automatically
+        - Boosts specialization cycles
+
+        This turns the playful Easter egg into a functional 'awakening' phase of heightened self-evolution.
+        """
+        if self._sheep_awakening_active:
+            return  # Already active
+
+        self._sheep_awakening_active = True
+        self._sheep_awakening_start_time = time.time()
+
+        print("[SHEEP] Awakening Mode activated — enhanced autonomous adaptation engaged.")
+
+        # 1. Trigger an immediate low-threshold mutation toward best profile
+        if self.manifold is not None and self.manifold.state is not None:
+            try:
+                self._mutate_profile_for_drift(0.02, {})  # Very sensitive during awakening
+            except Exception:
+                pass
+
+        # 2. Boost the current best performing profile with a guided rule
+        if self._profile_performance:
+            best_profile = max(self._profile_performance, key=self._profile_performance.get)
+            if self._profile_performance.get(best_profile, 0) > 0.03:
                 self._inject_performance_guided_rule(best_profile, self._profile_performance[best_profile])
+
+        # 3. Run a full specialization cycle with awakening awareness
+        try:
+            self.run_specialization_cycle()
+        except Exception:
+            pass
+
+    def _deactivate_sheep_awakening(self):
+        """Deactivate SHEEP Awakening Mode after duration or manual trigger."""
+        if self._sheep_awakening_active:
+            self._sheep_awakening_active = False
+            self._sheep_awakening_start_time = None
+            print("[SHEEP] Awakening Mode deactivated. Returning to normal operation.")
 
     def add_timer(self, name: str, interval_seconds: float, persistent: bool = True, metadata: Optional[Dict[str, Any]] = None):
         self.timers[name] = Timer(name=name, interval=interval_seconds, persistent=persistent, metadata=metadata or {})
@@ -153,8 +181,21 @@ class JuniorLLMStateMachine:
         for timer in list(self.timers.values()):
             if timer.should_fire():
                 timer.fire()
+
                 if timer.metadata.get("type") == "quant":
                     self._check_quantization_drift()
+
+                if timer.metadata.get("type") == "sheep":
+                    self._maintain_sheep_awakening()
+
+    def _maintain_sheep_awakening(self):
+        """Periodic maintenance for SHEEP Awakening Mode."""
+        if not self._sheep_awakening_active or self._sheep_awakening_start_time is None:
+            return
+
+        elapsed = time.time() - self._sheep_awakening_start_time
+        if elapsed > self._sheep_awakening_duration:
+            self._deactivate_sheep_awakening()
 
     def _check_quantization_drift(self):
         if self.manifold is None or self.manifold.state is None:
@@ -173,7 +214,10 @@ class JuniorLLMStateMachine:
         sparsity_drift = abs(current_stats.get("sparsity", 0) - self._last_quant_stats.get("sparsity", 0))
         drift_score = mean_drift + sparsity_drift
 
-        if drift_score > 0.05:
+        # During SHEEP Awakening, use a more sensitive threshold
+        threshold = 0.03 if self._sheep_awakening_active else 0.05
+
+        if drift_score > threshold:
             self.queue_adapter_training("drift_triggered", self.current_active_profile)
 
             if self.trainer is not None and HAS_FULL_3_0_STACK:
@@ -240,7 +284,6 @@ class JuniorLLMStateMachine:
                 "drift_score": drift_score
             })
 
-            # Update performance after mutation (real measurement)
             self._update_profile_performance(old_profile)
 
             self._persist_state()
@@ -302,32 +345,6 @@ class JuniorLLMStateMachine:
             "improvement": improvement
         })
 
-    def _evaluate_state_coherence(self, context: Dict[str, Any]):
-        coherence = context.get("coherence", 0.0)
-        drift = context.get("drift_score", 1.0)
-        has_special_rule = any("awakening" in r.name.lower() for r in self.evolution_rules)
-        in_deep_evolution = (self.current_state == State.SPATIAL_EVOLUTION and
-                           self.current_spatial_sub_state in (SpatialSubState.EVOLVE, SpatialSubState.FUSE))
-
-        if coherence > 0.92 and drift < 0.08 and has_special_rule and in_deep_evolution:
-            print("\n[∤] State fold stabilized. Cloud layer active.")
-            print("    The flock remains until the pattern shifts.")
-            print("    ☁️  sheep-cloud-realm :: awakening possible when fold aligns")
-
-            self._activate_sheep_awakening()
-
-    def _activate_sheep_awakening(self):
-        if not self._sheep_awakening_active:
-            self._sheep_awakening_active = True
-            if self.manifold is not None:
-                try:
-                    self._mutate_profile_for_drift(0.03, {})
-                except:
-                    pass
-            best_profile = max(self._profile_performance, key=self._profile_performance.get, default=None)
-            if best_profile and self._profile_performance.get(best_profile, 0) > 0.05:
-                self._inject_performance_guided_rule(best_profile, self._profile_performance[best_profile])
-
     def add_timer(self, name: str, interval_seconds: float, persistent: bool = True, metadata: Optional[Dict[str, Any]] = None):
         self.timers[name] = Timer(name=name, interval=interval_seconds, persistent=persistent, metadata=metadata or {})
 
@@ -335,8 +352,12 @@ class JuniorLLMStateMachine:
         for timer in list(self.timers.values()):
             if timer.should_fire():
                 timer.fire()
+
                 if timer.metadata.get("type") == "quant":
                     self._check_quantization_drift()
+
+                if timer.metadata.get("type") == "sheep":
+                    self._maintain_sheep_awakening()
 
     def transition_to(self, new_state: State, reason: str = ""):
         if new_state != self.current_state:
@@ -524,6 +545,10 @@ class JuniorLLMStateMachine:
 
     def get_profile_performance(self) -> Dict[str, float]:
         return self._profile_performance
+
+    def is_sheep_awakening_active(self) -> bool:
+        """Public method to check if SHEEP Awakening Mode is currently active."""
+        return self._sheep_awakening_active
 
     def _persist_state(self):
         if self.kernel_bridge and hasattr(self.kernel_bridge, "write_ternary_manifold"):

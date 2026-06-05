@@ -2,9 +2,15 @@
 
 **Current Ecosystem State**
 
-Integrated real performance measurement into the mutation flow and introduced the original **SHEEP Awakening Mode**:
-- When the hidden SHEEP Easter egg condition is met, the system activates enhanced adaptation (auto-mutation + performance-biased rule injection).
-- This turns the playful Easter egg into a functional 'awakening' that boosts autonomy when the system reaches high-coherence states.
-- Combined with Performance-Guided Rule Injection and Profile Lifecycle, this creates one of the most advanced self-evolving 3.0 adaptation architectures.
+Fully implemented **SHEEP Awakening Mode** as a first-class original feature:
 
-These original ideas continue to push the boundaries of autonomous, efficient sovereign systems on the ternary base.
+- When the hidden high-coherence + low-drift condition in deep spatial evolution is met, the system enters SHEEP Awakening Mode.
+- During awakening:
+  - Drift detection becomes significantly more sensitive (lower threshold).
+  - High-performance profiles are automatically prioritized via guided rules.
+  - A full specialization cycle is triggered with awakening awareness.
+  - The mode has a configurable duration and auto-deactivates.
+
+This turns the original playful Easter egg into a meaningful autonomous enhancement phase, representing one of the most distinctive original ideas in the BitNet 3.0 + custom JuniorLLM architecture.
+
+Combined with Quantization Drift Trigger, Profile Lifecycle, Performance Scoring, and Performance-Guided Rule Injection, this creates a deeply self-evolving, sovereign adaptation system.
