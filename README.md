@@ -2,22 +2,16 @@
 
 **Current Ecosystem State**
 
-**Added Digital Calling + Mobile Integration**
+**Quant Pipeline Inference now powers Call Verification**
 
-New module `src/juniorhome/calling/digital_call_manager.py`:
+`DigitalCallManager` is now wired to the quant / theoretical inference pipeline:
 
-- Full support for digital/mobile calling.
-- **Always starts muted** on call acceptance.
-- Stays muted until **verified non-bot human verbal speech** is detected.
-- Once verified, automatically **unmutes** for complete two-way communication.
-- Verification is fully pluggable — you can connect:
-  - Simple VAD
-  - BitNet / MLX voice models
-  - Your black-box theoretical math engines
-  - Advanced bot detection
-- Optional integration with SHEEPMemory / JuniorMemSys for call event logging.
-- Clean status API and force-mute / end-call controls.
+- You can call `set_inference_engine(engine)` with any `InferenceEngine`
+  (especially `TheoreticalMathEngine` from the comparison pipeline).
+- Incoming audio chunks are converted to features and run through your
+  quantized BitNet or black-box theoretical math engines for recognition.
+- Decision to unmute is driven by the engine's output (theoretical_fit / performance).
 
-This brings mobile calling into the sovereign edge orchestrator while maintaining strong privacy and anti-bot protection.
+This unifies the calling system with the rest of the ecosystem's inference architecture.
 
-The feature is designed to work alongside the existing inference pipelines, plasticity, and memory systems.
+The muted-until-verified-human behavior remains strict, now powered by your custom quant/theoretical engines for maximum sovereignty and accuracy.
