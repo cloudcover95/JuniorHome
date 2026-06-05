@@ -110,6 +110,10 @@ class JuniorLLMStateMachine:
         self._model_hashes: Dict[str, str] = {}
         self._credential_isolation_enabled: bool = True
 
+        # Plasticity parameters (biologically inspired)
+        self._plasticity_lr: float = 0.01          # Learning rate for Hebbian-like updates
+        self._homeostatic_target: float = 0.15     # Target average performance (homeostatic scaling)
+
         self.add_timer("coherence_check", interval_seconds=300, metadata={"type": "system"})
         self.add_timer("spatial_health_check", interval_seconds=600, metadata={"type": "spatial"})
         self.add_timer("quant_drift_check", interval_seconds=180, metadata={"type": "quant"})
@@ -327,54 +331,42 @@ class JuniorLLMStateMachine:
 
             self._sheep_history = self._sheep_history[-20:]
 
-    def retrieve_relevant_memories(self, current_profile: str = None, top_k: int = 5) -> List[Dict[str, Any]]:
-        if not self._sheep_history:
-            return []
+    def _apply_plasticity_rule(self, profile: str, outcome: float, recent_coactivation: float = 1.0):
+        """Simple biologically-inspired plasticity rule (Hebbian + homeostatic).
 
-        scored = []
-        for record in self._sheep_history:
-            score = record.get("performance_at_activation", 0)
-            if current_profile and record.get("active_profile") == current_profile:
-                score += 0.1
-            scored.append((score, record))
-
-        scored.sort(reverse=True)
-        return [r for score, r in scored[:top_k]]
-
-    def test_sheep_memory_system(self, num_simulated_awakenings: int = 8):
-        """Basic testing/diagnostic utility for the biologically-inspired memory system.
-        Simulates a series of awakenings and prints key metrics.
-        Useful for verifying Reflection, Consolidation, Replay, and Retrieval.
+        - Hebbian component: Strengthen when profile is active during good outcomes (co-activation).
+        - Homeostatic component: Mild normalization toward a target performance level.
+        
+        This is a lightweight approximation of synaptic plasticity rules for profile/adapter learning.
         """
-        print("\n=== SHEEP Memory System Test ===")
-        original_history_len = len(self._sheep_history)
+        if profile not in self._profile_performance:
+            self._profile_performance[profile] = 0.0
 
-        for i in range(num_simulated_awakenings):
-            fake_perf = random.uniform(0.05, 0.25)
-            fake_level = random.choice(["BASIC", "ELEVATED", "FULL_AWAKENING"])
-            fake_profile = random.choice(list(self._profile_performance.keys()) or ["general"])
+        # Hebbian-like update (strengthen successful co-activation)
+        hebbian_update = self._plasticity_lr * outcome * recent_coactivation
+        self._profile_performance[profile] += hebbian_update
 
-            self._sheep_history.append({
-                "timestamp": time.time() - (num_simulated_awakenings - i) * 100,
-                "level": fake_level,
-                "performance_at_activation": fake_perf,
-                "active_profile": fake_profile
-            })
+        # Homeostatic scaling (prevent runaway growth, inspired by synaptic scaling)
+        current_avg = sum(self._profile_performance.values()) / max(len(self._profile_performance), 1)
+        if current_avg > self._homeostatic_target:
+            self._profile_performance[profile] *= 0.995  # Gentle down-scaling
 
-            if fake_level in ("ELEVATED", "FULL_AWAKENING"):
-                if fake_profile in self._profile_performance:
-                    self._profile_performance[fake_profile] += 0.01
+        if profile in self._profile_lifecycle:
+            self._profile_lifecycle[profile]["performance_score"] = self._profile_performance[profile]
 
-        self._consolidate_sheep_memory()
-        self._replay_and_consolidate()
+    def update_from_manifold(self, manifold_state: Optional[Any] = None):
+        if manifold_state is None and self.manifold is not None:
+            manifold_state = self.manifold.state
 
-        print(f"History length after test: {len(self._sheep_history)}")
-        print(f"Consolidated insights: {self.get_sheep_consolidated_insights()}")
-        print(f"Top relevant memories: {self.retrieve_relevant_memories(top_k=3)}")
-        print("=== Test Complete ===\n")
+        if manifold_state is not None:
+            if hasattr(manifold_state, "mean_abs"):
+                if manifold_state.mean_abs > 0.7:
+                    if self.current_active_profile != "spatial":
+                        self.switch_to_profile("spatial")
 
-        # Restore original history length for cleanliness (in real use you wouldn't do this)
-        self._sheep_history = self._sheep_history[:original_history_len]
+                # Optional: Apply plasticity when manifold state is strong
+                if manifold_state.mean_abs > 0.75 and self.current_active_profile:
+                    self._apply_plasticity_rule(self.current_active_profile, outcome=0.1)
 
     def is_sheep_awakening_active(self) -> bool:
         return self._sheep_level != SHEEPLevel.INACTIVE
@@ -422,4 +414,4 @@ class JuniorLLMStateMachine:
         if hasattr(adapter, 'ternary_weights') and self._security_level >= SecurityLevel.HARDENED:
             self.request_model_integrity_check(profile, adapter.ternary_weights)
 
-    # ... (core methods unchanged)
+    # ... (remaining core methods unchanged)

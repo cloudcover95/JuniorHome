@@ -2,16 +2,15 @@
 
 **Current Ecosystem State**
 
-Added testing/diagnostic utility (`test_sheep_memory_system()`) for the biologically-inspired memory system.
-- Simulates awakenings and exercises Reflection, Consolidation, Replay, and Retrieval.
-- Useful for verifying the bio mem behavior during development.
+**Investigation into Neural Plasticity Models for Learning**
 
-**Regarding NeoMemSys / JuniorMemSys**:
-The original suggestion for the ecosystem was to treat **JuniorMemSys-Suite** (the topological long-term memory system) as the persistent 'neocortex' layer.
-- The active SHEEP memory (history, consolidated insights, replay) in the state machine acts as the fast, reasoning-time memory (hippocampus-like).
-- Long-term, we should port or deeply integrate SHEEP memory into JuniorMemSys for:
-  - Persistent .parquet storage
-  - TDA / topological querying of memories
-  - Cross-component memory sharing across the ecosystem (JuniorLLM, JuniorStock, etc.)
+Added a lightweight, biologically-inspired plasticity rule (`_apply_plasticity_rule`):
 
-This keeps the core reasoning engine lean while giving the ecosystem a proper, biologically-inspired two-tier memory architecture.
+- **Hebbian component**: Strengthens profiles when they are active during positive outcomes (co-activation strengthening).
+- **Homeostatic component**: Applies mild normalization to prevent runaway performance growth (inspired by synaptic scaling).
+
+This rule is now optionally used in `update_from_manifold` when the system detects strong manifold states, and can be extended for use in replay, consolidation, or adapter training.
+
+The SHEEP memory + plasticity system is evolving toward a more complete, neuroscience-grounded learning architecture suitable for sovereign ternary inference on edge hardware.
+
+Next natural step: Integrate these plasticity rules more deeply with the LowRankAdapter training loop and/or port the memory + plasticity layer into JuniorMemSys for persistent, topological learning.
