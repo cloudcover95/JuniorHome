@@ -1,15 +1,9 @@
 # path: src/juniorllm/memory/sheep_memory.py
 
 """
-SHEEPMemory
+SHEEPMemory (refactored)
 
-Advanced biologically-inspired memory system with:
-- Multi-scale consolidation
-- Eligibility traces + reward-modulated plasticity
-- Sleep-like offline consolidation
-- Improved context-dependent retrieval
-
-Designed for future integration with JuniorMemSys-Suite.
+Now composes PlasticityEngine and MemoryRetriever for better modularity.
 """
 
 import time
@@ -17,6 +11,9 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from .memory_backend import MemoryBackend, InMemoryBackend
+
+from .plasticity import PlasticityEngine
+from .retrieval import MemoryRetriever
 
 logging.basicConfig(level=logging.INFO, format="[*] %(asctime)s - %(message)s")
 
@@ -33,21 +30,14 @@ class SHEEPMemory:
         self.node_id = node_id
         self.backend = backend or InMemoryBackend()
 
+        # Composable components
+        self.plasticity = PlasticityEngine()
+        self.retriever = MemoryRetriever()
+
         self.history: List[Dict[str, Any]] = []
         self.consolidated_insights: Dict[str, Any] = {}
         self.performance: Dict[str, float] = {}
         self.lifecycle: Dict[str, Dict[str, Any]] = {}
-
-        self.eligibility_traces: Dict[str, float] = {}
-        self.eligibility_decay: float = 0.9
-        self.plasticity_lr: float = 0.01
-        self.homeostatic_target: float = 0.15
-
-        self.consolidation_scales: Dict[int, Dict[str, Any]] = {
-            0: {"last_run": 0, "interval": 1},
-            1: {"last_run": 0, "interval": 5},
-            2: {"last_run": 0, "interval": 20},
-        }
 
         self._sync_from_backend()
 
@@ -55,38 +45,27 @@ class SHEEPMemory:
         self.history = self.backend.get_history(last_n=100)
         self.consolidated_insights = self.backend.get_consolidated_insights()
 
+    # Delegate to PlasticityEngine
     def update_eligibility_trace(self, profile: str, strength: float = 1.0):
-        if profile not in self.eligibility_traces:
-            self.eligibility_traces[profile] = 0.0
-        self.eligibility_traces[profile] = min(1.0, self.eligibility_traces[profile] + strength)
+        self.plasticity.update_eligibility_trace(profile, strength)
 
     def decay_eligibility_traces(self):
-        for profile in list(self.eligibility_traces.keys()):
-            self.eligibility_traces[profile] *= self.eligibility_decay
-            if self.eligibility_traces[profile] < 0.01:
-                del self.eligibility_traces[profile]
+        self.plasticity.decay_eligibility_traces()
 
     def apply_plasticity(self, profile: str, outcome: float, reward: float = 1.0, coactivation: float = 1.0):
-        if profile not in self.performance:
-            self.performance[profile] = 0.0
+        self.plasticity.apply(self.performance, self.lifecycle, profile, outcome, reward, coactivation)
 
-        eligibility = self.eligibility_traces.get(profile, 0.0)
-        modulated_update = self.plasticity_lr * eligibility * reward * outcome * coactivation
-        self.performance[profile] += modulated_update
-
-        current_avg = sum(self.performance.values()) / max(len(self.performance), 1)
-        if current_avg > self.homeostatic_target:
-            self.performance[profile] *= 0.995
-
-        if profile in self.lifecycle:
-            self.lifecycle[profile]["performance_score"] = self.performance[profile]
-
-        self.backend.store_performance(profile, self.performance[profile])
+        # Persist
+        self.backend.store_performance(profile, self.performance.get(profile, 0.0))
         if profile in self.lifecycle:
             self.backend.store_lifecycle(profile, self.lifecycle[profile])
 
-        if profile in self.eligibility_traces:
-            self.eligibility_traces[profile] *= 0.5
+    # Delegate to MemoryRetriever
+    def retrieve_relevant(self, current_profile: Optional[str] = None, context: Optional[Dict[str, Any]] = None, top_k: int = 5) -> List[Dict[str, Any]]:
+        return self.retriever.retrieve(self.history, current_profile, context, top_k)
+
+    # The rest of the methods (record_awakening, consolidate, sleep_like..., etc.) remain largely the same
+    # but now benefit from the composed components.
 
     def record_awakening(self, level: str, performance: float, active_profile: str):
         record = {
@@ -175,76 +154,28 @@ class SHEEPMemory:
         print(f"[SHEEP Meta Consolidation] Global insights updated. High-level ratio: {meta['high_level_ratio']:.2f}")
 
     def sleep_like_offline_consolidation(self, iterations: int = 3):
-        """Sleep-like offline consolidation.
-
-        Biological inspiration: During 'sleep' (offline periods), the brain replays
-        experiences to consolidate memories without new input.
-
-        This method performs multiple rounds of replay + deeper consolidation
-        on existing high-value memories. It improves long-term retention and
-        generalization with no external data required.
-        """
         if len(self.history) < 5:
             return
 
         print(f"[SHEEP Sleep] Starting offline consolidation ({iterations} iterations)...")
 
         for i in range(iterations):
-            # Replay strongest memories with high reward
             high_level = [r for r in self.history if r.get("level") in ("ELEVATED", "FULL_AWAKENING")]
             if high_level:
-                # Sort by performance and take top ones
                 sorted_memories = sorted(high_level, key=lambda r: r.get("performance_at_activation", 0), reverse=True)
-                for mem in sorted_memories[:3]:  # Replay top 3
+                for mem in sorted_memories[:3]:
                     profile = mem.get("active_profile")
                     perf = mem.get("performance_at_activation", 0)
                     if profile and profile in self.performance:
-                        # Strong offline reinforcement
                         self.apply_plasticity(profile, outcome=perf, reward=2.5)
 
-            # Run deeper systems + meta consolidation
             self._systems_consolidation()
             if i == iterations - 1:
                 self._meta_consolidation()
 
-            # Decay traces (like memory fading during sleep)
             self.decay_eligibility_traces()
 
         print("[SHEEP Sleep] Offline consolidation complete.")
-
-    def retrieve_relevant(self, current_profile: Optional[str] = None, context: Optional[Dict[str, Any]] = None, top_k: int = 5) -> List[Dict[str, Any]]:
-        """Improved context-dependent retrieval.
-
-        Now supports optional context dict for smarter scoring
-        (e.g., recent state, current performance level, or external cues).
-        """
-        if not self.history:
-            return []
-
-        scored = []
-        for r in self.history:
-            score = r.get("performance_at_activation", 0)
-
-            # Base boost if same profile is currently active
-            if current_profile and r.get("active_profile") == current_profile:
-                score += 0.15
-
-            # Context-aware boosts
-            if context:
-                # Boost if awakening happened in similar 'level' context
-                if context.get("level") and r.get("level") == context.get("level"):
-                    score += 0.1
-
-                # Boost recent memories if 'recency' context is high
-                if context.get("prefer_recent"):
-                    age = time.time() - r.get("timestamp", 0)
-                    if age < 3600:  # Within last hour
-                        score += 0.08
-
-            scored.append((score, r))
-
-        scored.sort(reverse=True)
-        return [r for score, r in scored[:top_k]]
 
     def get_insights(self) -> Dict[str, Any]:
         return self.consolidated_insights.copy()

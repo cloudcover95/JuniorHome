@@ -2,14 +2,14 @@
 
 **Current Ecosystem State**
 
-**Added Sleep-like Offline Consolidation + Improved Context-Dependent Retrieval**
+**Further Modularization of SHEEP Memory**
 
-Major biological fidelity upgrades to `SHEEPMemory`:
+- Extracted plasticity logic into `PlasticityEngine` (eligibility traces, reward modulation, homeostatic scaling).
+- Extracted retrieval logic into `MemoryRetriever` (context-dependent scoring).
+- `SHEEPMemory` now composes these smaller, reusable components.
 
-- **`sleep_like_offline_consolidation(iterations=...)`**: Performs multiple rounds of replay and deeper consolidation without new external input. Inspired by hippocampal replay during sleep. Strengthens important memories and runs meta-consolidation.
+This improves testability, extensibility, and prepares the system for more advanced strategies (different plasticity rules, alternative retrieval scorers, etc.).
 
-- **Improved `retrieve_relevant()`**: Now accepts an optional `context` dict for smarter, context-dependent scoring (recency, level matching, current profile, etc.).
+The architecture continues to become cleaner while biological fidelity (multi-scale consolidation, sleep-like offline consolidation, plasticity) remains strong.
 
-These features make the memory system significantly more powerful for autonomous, long-running operation while remaining fully compatible with the `MemoryBackend` abstraction (including `JuniorMemSysBackend`).
-
-The architecture continues to evolve toward a rich, biologically-plausible memory and learning system for sovereign edge AI.
+JuniorMemSys integration path remains open via the `MemoryBackend` abstraction.
