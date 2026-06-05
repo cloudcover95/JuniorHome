@@ -82,6 +82,7 @@ class JuniorLLMStateMachine:
         self.current_active_profile: str = "general"
         self.specialization_history: List[Dict[str, Any]] = []
         self._last_quant_stats: Optional[Dict[str, float]] = None
+        self._profile_lifecycle: Dict[str, Dict[str, Any]] = {}  # Original: simple profile lifecycle tracking
 
         self.add_timer("coherence_check", interval_seconds=300, metadata={"type": "system"})
         self.add_timer("spatial_health_check", interval_seconds=600, metadata={"type": "spatial"})
@@ -161,8 +162,6 @@ class JuniorLLMStateMachine:
                     pass
 
             self._inject_drift_as_evolution_signal(drift_score, current_stats)
-
-            # Original idea: Drift-Guided Profile Mutation
             self._mutate_profile_for_drift(drift_score, current_stats)
 
         self._last_quant_stats = current_stats
@@ -179,36 +178,51 @@ class JuniorLLMStateMachine:
         })
 
     def _mutate_profile_for_drift(self, drift_score: float, current_stats: Dict[str, float]):
-        """Original idea: Drift-Guided Profile Mutation.
-        When quantization drift is detected, the state machine can dynamically suggest or bias towards
-        a more suitable profile (e.g. spatial if manifold shows high activity).
-        This is a lightweight, original mechanism for autonomous 3.0 profile evolution."""
+        """Original idea: Drift-Guided Profile Mutation with Autonomous Lifecycle.
+        When drift is detected, the system can now autonomously switch the active profile
+        if a better one is suggested by manifold topology. This is part of the original
+        Ternary Profile Lifecycle concept: profiles are born, mutated, and can be retired
+        based on real-time quantization health."""
         if drift_score < 0.08:
             return
 
         suggested_profile = self.current_active_profile
 
-        # Simple original heuristic based on manifold stats
         if self.manifold is not None and self.manifold.state is not None:
             try:
                 stats = get_quantization_stats(self.manifold.state)
-                if stats.get("mean_abs", 0) > 0.6:
+                if stats.get("mean_abs", 0) > 0.6 and self.current_active_profile != "spatial":
                     suggested_profile = "spatial"
-                elif stats.get("sparsity", 0) > 0.7:
+                elif stats.get("sparsity", 0) > 0.7 and self.current_active_profile != "general":
                     suggested_profile = "general"
             except:
                 pass
 
         if suggested_profile != self.current_active_profile:
-            # Queue a profile switch request (lightweight mutation)
+            # Autonomous profile switch (original lightweight mutation)
+            old_profile = self.current_active_profile
+            self.current_active_profile = suggested_profile
+
+            # Track in original profile lifecycle
+            if old_profile not in self._profile_lifecycle:
+                self._profile_lifecycle[old_profile] = {"birth": time.time(), "mutations": 0}
+            self._profile_lifecycle[old_profile]["mutations"] = self._profile_lifecycle[old_profile].get("mutations", 0) + 1
+            self._profile_lifecycle[old_profile]["last_retired"] = time.time()
+
+            if suggested_profile not in self._profile_lifecycle:
+                self._profile_lifecycle[suggested_profile] = {"birth": time.time(), "mutations": 0}
+
             self.queue_adapter_training(f"profile_mutation_to_{suggested_profile}", suggested_profile)
+
             self.specialization_history.append({
                 "timestamp": time.time(),
                 "type": "drift_guided_profile_mutation",
-                "from_profile": self.current_active_profile,
+                "from_profile": old_profile,
                 "to_profile": suggested_profile,
                 "drift_score": drift_score
             })
+
+            self._persist_state()  # Persist the new active profile immediately
 
     def _evaluate_state_coherence(self, context: Dict[str, Any]):
         coherence = context.get("coherence", 0.0)
@@ -412,6 +426,10 @@ class JuniorLLMStateMachine:
                 pass
 
         return snapshot
+
+    def get_profile_lifecycle(self) -> Dict[str, Dict[str, Any]]:
+        """Original: Expose the Ternary Profile Lifecycle for monitoring and debugging."""
+        return self._profile_lifecycle
 
     def _persist_state(self):
         if self.kernel_bridge and hasattr(self.kernel_bridge, "write_ternary_manifold"):
