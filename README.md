@@ -2,14 +2,10 @@
 
 **Current Ecosystem State**
 
-**Major Update: SHEEP Awakening Mode v2 - Levels + Trainer + Obsidian Data Lake**
+Added **SHEEP Memory** (historical awakening records) and historical performance bias:
+- Past awakenings are now logged with level, performance, and active profile.
+- During SHEEP Awakening, historical data can influence profile selection and rule injection (future enhancement point).
+- Enhanced Obsidian logging to include awakening history summaries.
+- `get_sheep_history()` exposed for long-term memory and analysis.
 
-- Added **SHEEPLevel** enum (BASIC / ELEVATED / FULL_AWAKENING)
-- Full implementation of level-based awakening behavior
-- Deep **SovereignTrainer** integration at FULL_AWAKENING level (real fine-tuning triggers on high-performance profiles)
-- **Obsidian Data Lake port**: All major SHEEP events (activations, mutations, performance updates, rule injections, trainer triggers) are automatically logged as dated Markdown notes in an Obsidian-compatible vault.
-- Performance scoring is now fully real and drives rule injection + awakening escalation.
-
-This represents one of the most advanced original autonomous adaptation systems built on BitNet 3.0 + ternary foundations.
-
-The SHEEP Awakening Mode has evolved from a fun Easter egg into a core, production-grade self-evolving mechanism for sovereign edge intelligence.
+This continues the deep, original autonomous architecture for BitNet 3.0 + custom JuniorLLM, making the system increasingly self-aware and adaptive over time.
