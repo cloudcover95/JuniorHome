@@ -85,6 +85,7 @@ class JuniorLLMStateMachine:
         self._profile_lifecycle: Dict[str, Dict[str, Any]] = {}
         self._profile_performance: Dict[str, float] = {}
         self._profile_last_drift: Dict[str, float] = {}
+        self._sheep_awakening_active: bool = False  # Original: SHEEP Awakening Mode flag
 
         self.add_timer("coherence_check", interval_seconds=300, metadata={"type": "system"})
         self.add_timer("spatial_health_check", interval_seconds=600, metadata={"type": "spatial"})
@@ -110,7 +111,8 @@ class JuniorLLMStateMachine:
         self._evaluate_state_coherence(context)
 
     def _evaluate_state_coherence(self, context: Dict[str, Any]):
-        """Hidden SHEEP Easter Egg - blends into normal state evaluation."""
+        """Hidden SHEEP Easter Egg - blends into normal state evaluation.
+        When conditions are met, activate original SHEEP Awakening Mode for boosted adaptation."""
         coherence = context.get("coherence", 0.0)
         drift = context.get("drift_score", 1.0)
         has_special_rule = any("awakening" in r.name.lower() for r in self.evolution_rules)
@@ -121,6 +123,28 @@ class JuniorLLMStateMachine:
             print("\n[∤] State fold stabilized. Cloud layer active.")
             print("    The flock remains until the pattern shifts.")
             print("    ☁️  sheep-cloud-realm :: awakening possible when fold aligns")
+
+            # Original idea: SHEEP Awakening Mode - boost adaptation when Easter egg triggers
+            self._activate_sheep_awakening()
+
+    def _activate_sheep_awakening(self):
+        """Original idea: SHEEP Awakening Mode.
+        When the hidden SHEEP condition is met, temporarily boost adaptation:
+        - Lower effective drift threshold for faster mutation
+        - Prioritize high-performance profiles
+        - This turns the Easter egg into functional enhanced autonomy."""
+        if not self._sheep_awakening_active:
+            self._sheep_awakening_active = True
+            # Temporarily boost: e.g., auto-trigger a specialization cycle with performance bias
+            if self.manifold is not None:
+                try:
+                    self._mutate_profile_for_drift(0.03, {})  # Lower threshold trigger
+                except:
+                    pass
+            # Auto-inject a rule favoring current best performer if available
+            best_profile = max(self._profile_performance, key=self._profile_performance.get, default=None)
+            if best_profile and self._profile_performance.get(best_profile, 0) > 0.05:
+                self._inject_performance_guided_rule(best_profile, self._profile_performance[best_profile])
 
     def add_timer(self, name: str, interval_seconds: float, persistent: bool = True, metadata: Optional[Dict[str, Any]] = None):
         self.timers[name] = Timer(name=name, interval=interval_seconds, persistent=persistent, metadata=metadata or {})
@@ -204,7 +228,6 @@ class JuniorLLMStateMachine:
             self._profile_lifecycle[old_profile]["mutations"] = self._profile_lifecycle[old_profile].get("mutations", 0) + 1
             self._profile_lifecycle[old_profile]["last_retired"] = time.time()
 
-            # Store pre-mutation drift for real performance measurement
             self._profile_last_drift[old_profile] = drift_score
 
             self.queue_adapter_training(f"profile_mutation_to_{suggested_profile}", suggested_profile)
@@ -217,13 +240,12 @@ class JuniorLLMStateMachine:
                 "drift_score": drift_score
             })
 
+            # Update performance after mutation (real measurement)
+            self._update_profile_performance(old_profile)
+
             self._persist_state()
 
     def _update_profile_performance(self, profile: str):
-        """Original idea: Performance-Guided Evolution Rule Injection.
-        After mutation, measure real improvement using stored pre-mutation drift.
-        High-performing profiles can dynamically inject new evolution rules that favor them.
-        This creates a self-modifying, performance-driven evolution system unique to 3.0."""
         if profile not in self._profile_last_drift:
             return
 
@@ -247,22 +269,16 @@ class JuniorLLMStateMachine:
         if profile in self._profile_lifecycle:
             self._profile_lifecycle[profile]["performance_score"] = self._profile_performance[profile]
 
-        # Original: If high improvement, inject a performance-guided evolution rule
         if improvement > 0.05:
             self._inject_performance_guided_rule(profile, improvement)
 
     def _inject_performance_guided_rule(self, profile: str, improvement: float):
-        """Original idea: Dynamically inject evolution rules based on profile performance.
-        High-performing profiles get a rule that biases future specialization toward them.
-        This makes the evolution system self-modifying and performance-aware."""
         rule_name = f"favor_{profile}_profile"
 
-        # Check if rule already exists
         if any(rule.name == rule_name for rule in self.evolution_rules):
             return
 
         def condition(context):
-            # Simple bias: if current profile has high performance, favor keeping or switching to it
             return self._profile_performance.get(profile, 0) > 0.1
 
         def action():
@@ -297,6 +313,20 @@ class JuniorLLMStateMachine:
             print("\n[∤] State fold stabilized. Cloud layer active.")
             print("    The flock remains until the pattern shifts.")
             print("    ☁️  sheep-cloud-realm :: awakening possible when fold aligns")
+
+            self._activate_sheep_awakening()
+
+    def _activate_sheep_awakening(self):
+        if not self._sheep_awakening_active:
+            self._sheep_awakening_active = True
+            if self.manifold is not None:
+                try:
+                    self._mutate_profile_for_drift(0.03, {})
+                except:
+                    pass
+            best_profile = max(self._profile_performance, key=self._profile_performance.get, default=None)
+            if best_profile and self._profile_performance.get(best_profile, 0) > 0.05:
+                self._inject_performance_guided_rule(best_profile, self._profile_performance[best_profile])
 
     def add_timer(self, name: str, interval_seconds: float, persistent: bool = True, metadata: Optional[Dict[str, Any]] = None):
         self.timers[name] = Timer(name=name, interval=interval_seconds, persistent=persistent, metadata=metadata or {})
