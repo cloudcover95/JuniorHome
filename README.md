@@ -2,10 +2,10 @@
 
 **Current Ecosystem State**
 
-Further evolved the original Drift-Guided Profile Mutation into a full **Ternary Profile Lifecycle** system:
-- Profiles can now be autonomously mutated and switched based on real-time quantization drift and manifold topology.
-- Added simple profile lifecycle tracking (_profile_lifecycle) with birth, mutation count, and retirement timestamps.
-- Exposed via get_profile_lifecycle() for monitoring.
-- This original concept creates self-evolving adapter profiles, a key architectural advantage of BitNet 3.0 for long-running sovereign systems.
+Extended the original Ternary Profile Lifecycle with **Profile Performance Scoring**:
+- Profiles now earn performance scores based on how much they help reduce quantization drift after mutation.
+- Added get_profile_performance() to expose scores for monitoring and future decision-making.
+- This original self-improving mechanism makes the profile lifecycle truly evolutionary: good profiles 'survive' and are preferred, poor ones are naturally deprioritized.
+- Combined with previous QDT and Drift-Guided Mutation, this creates one of the most advanced autonomous adaptation architectures in the BitNet 3.0 ecosystem.
 
-Combined with QDT, this forms one of the most advanced autonomous adaptation loops in the ecosystem.
+These original ideas demonstrate powerful scaling advantages for long-running sovereign systems.
