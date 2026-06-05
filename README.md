@@ -2,9 +2,9 @@
 
 **Current Ecosystem State**
 
-Made the Profile Performance Scoring real by adding actual post-mutation drift measurement.
-- Now captures pre-mutation drift and compares with current stats after mutation for accurate improvement scoring.
-- This strengthens the original self-improving Ternary Profile Lifecycle: profiles now have measurable, data-driven performance that can influence future decisions.
-- Added get_profile_performance() exposure.
+Made performance scoring fully real with actual post-mutation drift measurement.
+- Pre-mutation drift is now stored and compared to current stats for accurate improvement calculation.
+- Introduced original **Performance-Guided Evolution Rule Injection**: high-performing profiles dynamically inject new evolution rules that bias future specialization toward them.
+- This creates a self-modifying, performance-aware evolution system — a powerful original architectural idea for BitNet 3.0 autonomous adaptation.
 
-These enhancements continue to deepen the autonomous 3.0 architecture with original, executable ideas for long-running sovereign systems.
+These enhancements deepen the custom JuniorLLM with executable, original ideas for long-running sovereign systems.

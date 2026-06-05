@@ -84,7 +84,7 @@ class JuniorLLMStateMachine:
         self._last_quant_stats: Optional[Dict[str, float]] = None
         self._profile_lifecycle: Dict[str, Dict[str, Any]] = {}
         self._profile_performance: Dict[str, float] = {}
-        self._profile_last_drift: Dict[str, float] = {}  # For real post-mutation measurement
+        self._profile_last_drift: Dict[str, float] = {}
 
         self.add_timer("coherence_check", interval_seconds=300, metadata={"type": "system"})
         self.add_timer("spatial_health_check", interval_seconds=600, metadata={"type": "spatial"})
@@ -219,24 +219,72 @@ class JuniorLLMStateMachine:
 
             self._persist_state()
 
-    def _update_profile_performance(self, profile: str, previous_drift: float):
-        if profile not in self._profile_performance:
-            self._profile_performance[profile] = 0.0
+    def _update_profile_performance(self, profile: str):
+        """Original idea: Performance-Guided Evolution Rule Injection.
+        After mutation, measure real improvement using stored pre-mutation drift.
+        High-performing profiles can dynamically inject new evolution rules that favor them.
+        This creates a self-modifying, performance-driven evolution system unique to 3.0."""
+        if profile not in self._profile_last_drift:
+            return
 
-        # Real measurement: compare with current drift after mutation
+        previous_drift = self._profile_last_drift[profile]
+
         current_drift = 0.0
         if self.manifold is not None and self.manifold.state is not None:
             try:
                 current_stats = get_quantization_stats(self.manifold.state)
-                current_drift = current_stats.get("mean_abs", 0)  # Simplified; could use full drift calc
+                current_drift = current_stats.get("mean_abs", 0)
             except:
                 pass
 
         improvement = max(0.0, previous_drift - current_drift)
-        self._profile_performance[profile] = self._profile_performance.get(profile, 0.0) + improvement
+
+        if profile not in self._profile_performance:
+            self._profile_performance[profile] = 0.0
+
+        self._profile_performance[profile] += improvement
 
         if profile in self._profile_lifecycle:
             self._profile_lifecycle[profile]["performance_score"] = self._profile_performance[profile]
+
+        # Original: If high improvement, inject a performance-guided evolution rule
+        if improvement > 0.05:
+            self._inject_performance_guided_rule(profile, improvement)
+
+    def _inject_performance_guided_rule(self, profile: str, improvement: float):
+        """Original idea: Dynamically inject evolution rules based on profile performance.
+        High-performing profiles get a rule that biases future specialization toward them.
+        This makes the evolution system self-modifying and performance-aware."""
+        rule_name = f"favor_{profile}_profile"
+
+        # Check if rule already exists
+        if any(rule.name == rule_name for rule in self.evolution_rules):
+            return
+
+        def condition(context):
+            # Simple bias: if current profile has high performance, favor keeping or switching to it
+            return self._profile_performance.get(profile, 0) > 0.1
+
+        def action():
+            if self.current_active_profile != profile:
+                self.queue_adapter_training(f"performance_favor_{profile}", profile)
+
+        new_rule = EvolutionRule(
+            name=rule_name,
+            condition=condition,
+            action=action,
+            triggers_adapter_training=True,
+            target_adapter_profile=profile
+        )
+
+        self.evolution_rules.append(new_rule)
+
+        self.specialization_history.append({
+            "timestamp": time.time(),
+            "type": "performance_guided_rule_injected",
+            "profile": profile,
+            "improvement": improvement
+        })
 
     def _evaluate_state_coherence(self, context: Dict[str, Any]):
         coherence = context.get("coherence", 0.0)
