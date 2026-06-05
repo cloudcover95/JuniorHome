@@ -3,18 +3,14 @@
 """
 SHEEP Memory System
 
-Biologically-inspired memory for the JuniorLLMStateMachine.
+Biologically-inspired memory + learning for JuniorLLM.
 
-This module contains the core memory structures and algorithms:
-- History of awakenings
-- Reflection (short-term boost)
-- Consolidation (long-term insights)
-- Replay (hippocampal-style reinforcement)
-- Plasticity rules (Hebbian + homeostatic)
+Core features:
+- History, Reflection, Consolidation, Replay
+- Plasticity rules with eligibility traces and reward modulation
 - Cued retrieval
 
-Future: This can be backed by JuniorMemSys-Suite for persistent,
-TDA-based long-term storage (the 'neocortex' layer).
+Designed to eventually integrate with JuniorMemSys-Suite for persistent storage.
 """
 
 import time
@@ -39,9 +35,59 @@ class SHEEPMemory:
         self.performance: Dict[str, float] = {}
         self.lifecycle: Dict[str, Dict[str, Any]] = {}
 
+        # Eligibility traces (decaying memory of recent activity)
+        self.eligibility_traces: Dict[str, float] = {}
+        self.eligibility_decay: float = 0.9          # Decay factor per step
+
         # Plasticity parameters
         self.plasticity_lr: float = 0.01
         self.homeostatic_target: float = 0.15
+
+    def update_eligibility_trace(self, profile: str, strength: float = 1.0):
+        """Update eligibility trace for a profile (like pre-synaptic activity)."""
+        if profile not in self.eligibility_traces:
+            self.eligibility_traces[profile] = 0.0
+        self.eligibility_traces[profile] = min(1.0, self.eligibility_traces[profile] + strength)
+
+    def decay_eligibility_traces(self):
+        """Decay all eligibility traces (biological time constant)."""
+        for profile in list(self.eligibility_traces.keys()):
+            self.eligibility_traces[profile] *= self.eligibility_decay
+            if self.eligibility_traces[profile] < 0.01:
+                del self.eligibility_traces[profile]
+
+    def apply_plasticity(self, profile: str, outcome: float, reward: float = 1.0, coactivation: float = 1.0):
+        """Deepened biologically-inspired plasticity rule.
+
+        Combines:
+        - Eligibility trace (credit assignment over time)
+        - Reward modulation (stronger plasticity on positive outcomes)
+        - Hebbian co-activation
+        - Homeostatic scaling
+
+        This approximates reward-modulated STDP / three-factor plasticity rules.
+        """
+        if profile not in self.performance:
+            self.performance[profile] = 0.0
+
+        # Get current eligibility trace (decayed memory of recent activity)
+        eligibility = self.eligibility_traces.get(profile, 0.0)
+
+        # Modulated update: eligibility * reward * outcome
+        modulated_update = self.plasticity_lr * eligibility * reward * outcome * coactivation
+        self.performance[profile] += modulated_update
+
+        # Homeostatic scaling
+        current_avg = sum(self.performance.values()) / max(len(self.performance), 1)
+        if current_avg > self.homeostatic_target:
+            self.performance[profile] *= 0.995
+
+        if profile in self.lifecycle:
+            self.lifecycle[profile]["performance_score"] = self.performance[profile]
+
+        # Decay trace after use (biological reset)
+        if profile in self.eligibility_traces:
+            self.eligibility_traces[profile] *= 0.5
 
     def record_awakening(self, level: str, performance: float, active_profile: str):
         record = {
@@ -51,6 +97,9 @@ class SHEEPMemory:
             "active_profile": active_profile
         }
         self.history.append(record)
+
+        # Update eligibility trace when a profile is active during an event
+        self.update_eligibility_trace(active_profile, strength=1.0)
         return record
 
     def reflect_on_recent(self):
@@ -63,10 +112,8 @@ class SHEEPMemory:
         if level in ("ELEVATED", "FULL_AWAKENING") and perf > 0.05:
             profile = latest.get("active_profile")
             if profile:
-                boost = 0.02 if level == "FULL_AWAKENING" else 0.01
-                self.performance[profile] = self.performance.get(profile, 0) + boost
-                if profile in self.lifecycle:
-                    self.lifecycle[profile]["performance_score"] = self.performance[profile]
+                # Use reward-modulated plasticity for reflection
+                self.apply_plasticity(profile, outcome=perf, reward=1.2 if level == "FULL_AWAKENING" else 1.0)
 
     def consolidate(self):
         if len(self.history) < 3:
@@ -89,10 +136,8 @@ class SHEEPMemory:
         avg = scores[best] / len(high_level)
 
         if best in self.performance:
-            boost = 0.05 * (avg / 0.1)
-            self.performance[best] += boost
-            if best in self.lifecycle:
-                self.lifecycle[best]["performance_score"] = self.performance[best]
+            # Stronger modulated update during consolidation
+            self.apply_plasticity(best, outcome=avg, reward=1.5)
 
             self.consolidated_insights = {
                 "best_profile_over_time": best,
@@ -112,12 +157,12 @@ class SHEEPMemory:
             perf = best.get("performance_at_activation", 0)
 
             if profile and profile in self.performance and perf > 0.08:
-                boost = 0.04 * (perf / 0.1)
-                self.performance[profile] += boost
-                if profile in self.lifecycle:
-                    self.lifecycle[profile]["performance_score"] = self.performance[profile]
+                # Replay uses strong reward modulation
+                self.apply_plasticity(profile, outcome=perf, reward=2.0)
 
-        # Gentle decay + prune
+        # Decay + prune
+        self.decay_eligibility_traces()
+
         if len(self.history) > 25:
             for old in self.history[:-25]:
                 if old.get("performance_at_activation", 0) < 0.08:
@@ -136,21 +181,7 @@ class SHEEPMemory:
                 score += 0.1
             scored.append((score, r))
         scored.sort(reverse=True)
-        return [r for _, r in scored[:top_k]]
-
-    def apply_plasticity(self, profile: str, outcome: float, coactivation: float = 1.0):
-        if profile not in self.performance:
-            self.performance[profile] = 0.0
-
-        self.performance[profile] += self.plasticity_lr * outcome * coactivation
-
-        # Homeostatic scaling
-        avg = sum(self.performance.values()) / max(len(self.performance), 1)
-        if avg > self.homeostatic_target:
-            self.performance[profile] *= 0.995
-
-        if profile in self.lifecycle:
-            self.lifecycle[profile]["performance_score"] = self.performance[profile]
+        return [r for score, r in scored[:top_k]]
 
     def get_insights(self) -> Dict[str, Any]:
         return self.consolidated_insights.copy()

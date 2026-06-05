@@ -2,16 +2,15 @@
 
 **Current Ecosystem State**
 
-**Started integration path with JuniorMemSys + made SHEEP memory reusable**
+**Deepened Plasticity Rules with Eligibility Traces + Reward Modulation**
 
-- Extracted core SHEEP memory logic into `src/juniorllm/memory/sheep_memory.py` as a standalone `SHEEPMemory` class.
-- This module now contains all biologically-inspired memory features (history, reflection, consolidation, replay, plasticity, retrieval).
-- The state machine is being refactored to delegate to this module (initial integration points added).
+The `SHEEPMemory` class now implements a more biologically accurate plasticity system:
 
-This is the foundation for proper two-tier memory architecture:
-- **SHEEPMemory** (in state machine) = fast, online, reasoning-time memory
-- **JuniorMemSys-Suite** = persistent, topological long-term memory (future backend)
+- **Eligibility traces**: Decaying memory of recent profile activity, enabling credit assignment over time.
+- **Reward modulation**: Plasticity strength is scaled by a reward signal (stronger updates on high-value outcomes like FULL_AWAKENING).
+- **Integrated** into Reflection, Consolidation, and Replay.
+- Traces are decayed during replay and after plasticity application.
 
-We have now started actual integration work by making the memory system modular and ready to connect to JuniorMemSys.
+This brings the learning rules closer to reward-modulated STDP / three-factor plasticity models while remaining lightweight for edge deployment.
 
-Next steps can include fully wiring the delegation in the state machine and beginning to add a MemSys backend interface.
+The modular `SHEEPMemory` continues to serve as the foundation for future integration with JuniorMemSys-Suite.
