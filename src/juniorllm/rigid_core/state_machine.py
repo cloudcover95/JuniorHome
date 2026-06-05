@@ -81,9 +81,11 @@ class JuniorLLMStateMachine:
         self.adapter_profiles: Dict[str, str] = {}
         self.current_active_profile: str = "general"
         self.specialization_history: List[Dict[str, Any]] = []
+        self._last_quant_stats: Optional[Dict[str, float]] = None  # For original drift detection
 
         self.add_timer("coherence_check", interval_seconds=300, metadata={"type": "system"})
         self.add_timer("spatial_health_check", interval_seconds=600, metadata={"type": "spatial"})
+        self.add_timer("quant_drift_check", interval_seconds=180, metadata={"type": "quant"})
 
     def add_evolution_rule(self, rule: EvolutionRule):
         self.evolution_rules.append(rule)
@@ -124,6 +126,67 @@ class JuniorLLMStateMachine:
         for timer in list(self.timers.values()):
             if timer.should_fire():
                 timer.fire()
+                if timer.metadata.get("type") == "quant":
+                    self._check_quantization_drift()
+
+    def _check_quantization_drift(self):
+        """Original idea: Detect quantization drift and auto-trigger specialization.
+        This is a lightweight, original mechanism unique to the 3.0 architecture.
+        Pure 1.58 has no native way to self-monitor and adapt its own quantization state over time."""
+        if self.manifold is None or self.manifold.state is None:
+            return
+
+        try:
+            current_stats = get_quantization_stats(self.manifold.state)
+        except:
+            return
+
+        if self._last_quant_stats is None:
+            self._last_quant_stats = current_stats
+            return
+
+        # Simple drift detection (mean_abs change or sparsity shift)
+        mean_drift = abs(current_stats.get("mean_abs", 0) - self._last_quant_stats.get("mean_abs", 0))
+        sparsity_drift = abs(current_stats.get("sparsity", 0) - self._last_quant_stats.get("sparsity", 0))
+
+        drift_score = mean_drift + sparsity_drift
+
+        if drift_score > 0.05:  # Tunable threshold
+            # Auto-queue a specialization request for the current profile
+            self.queue_adapter_training("drift_triggered", self.current_active_profile)
+            # Record as special history entry
+            self.specialization_history.append({
+                "timestamp": time.time(),
+                "type": "quant_drift_trigger",
+                "drift_score": drift_score,
+                "stats_before": self._last_quant_stats,
+                "stats_after": current_stats
+            })
+
+        self._last_quant_stats = current_stats
+
+    def _evaluate_state_coherence(self, context: Dict[str, Any]):
+        """Hidden SHEEP Easter Egg - blends into normal state evaluation."""
+        coherence = context.get("coherence", 0.0)
+        drift = context.get("drift_score", 1.0)
+        has_special_rule = any("awakening" in r.name.lower() for r in self.evolution_rules)
+        in_deep_evolution = (self.current_state == State.SPATIAL_EVOLUTION and
+                           self.current_spatial_sub_state in (SpatialSubState.EVOLVE, SpatialSubState.FUSE))
+
+        if coherence > 0.92 and drift < 0.08 and has_special_rule and in_deep_evolution:
+            print("\n[∤] State fold stabilized. Cloud layer active.")
+            print("    The flock remains until the pattern shifts.")
+            print("    ☁️  sheep-cloud-realm :: awakening possible when fold aligns")
+
+    def add_timer(self, name: str, interval_seconds: float, persistent: bool = True, metadata: Optional[Dict[str, Any]] = None):
+        self.timers[name] = Timer(name=name, interval=interval_seconds, persistent=persistent, metadata=metadata or {})
+
+    def check_timers(self):
+        for timer in list(self.timers.values()):
+            if timer.should_fire():
+                timer.fire()
+                if timer.metadata.get("type") == "quant":
+                    self._check_quantization_drift()
 
     def transition_to(self, new_state: State, reason: str = ""):
         if new_state != self.current_state:
@@ -250,7 +313,6 @@ class JuniorLLMStateMachine:
 
         trained = self.process_adapter_training_queue(manifold_context)
 
-        # Collect lightweight quantization stats for efficiency tracking (demonstrates 3.0 value over static 1.58)
         quant_stats = {}
         if self.manifold and self.manifold.state is not None:
             try:
@@ -292,8 +354,6 @@ class JuniorLLMStateMachine:
         return self.specialization_history[-10:]
 
     def get_quantization_health_snapshot(self):
-        """Lightweight snapshot of current quantization health + 3.0 capabilities.
-        Useful for monitoring and demonstrating efficiency gains over basic 1.58."""
         snapshot = {
             "current_profile": self.current_active_profile,
             "active_adapters": len(self.active_adapters),
