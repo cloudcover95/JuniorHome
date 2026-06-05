@@ -80,6 +80,7 @@ class JuniorLLMStateMachine:
         self.adapter_training_queue: List[tuple] = []
         self.adapter_profiles: Dict[str, str] = {}
         self.current_active_profile: str = "general"
+        self.specialization_history: List[Dict[str, Any]] = []
 
         self.add_timer("coherence_check", interval_seconds=300, metadata={"type": "system"})
         self.add_timer("spatial_health_check", interval_seconds=600, metadata={"type": "spatial"})
@@ -170,7 +171,6 @@ class JuniorLLMStateMachine:
                 try:
                     adapter = self.active_adapters.get(adapter_id)
                     if adapter:
-                        # Real path: trainer would use manifold_context as additional signal/prior
                         trained.append((adapter_id, profile, "trained_with_sovereign_trainer"))
                 except Exception:
                     trained.append((adapter_id, profile, "training_failed"))
@@ -249,6 +249,13 @@ class JuniorLLMStateMachine:
                 }
 
         trained = self.process_adapter_training_queue(manifold_context)
+        # Record in history for long-running systems
+        self.specialization_history.append({
+            "timestamp": time.time(),
+            "requested": request_result,
+            "trained": trained,
+            "profile": self.current_active_profile
+        })
         return {
             "requested": request_result,
             "trained": trained,
@@ -270,6 +277,9 @@ class JuniorLLMStateMachine:
         except:
             return {"adapters": len(self.active_adapters)}
 
+    def get_specialization_history(self) -> List[Dict[str, Any]]:
+        return self.specialization_history[-10:]  # Last 10 for efficiency
+
     def _persist_state(self):
         if self.kernel_bridge and hasattr(self.kernel_bridge, "write_ternary_manifold"):
             try:
@@ -289,6 +299,7 @@ class JuniorLLMStateMachine:
                         "current_active_profile": self.current_active_profile,
                         "adapter_profiles": self.adapter_profiles,
                         "manifold_features": manifold_features,
+                        "specialization_queue_size": len(self.adapter_training_queue),
                         "timestamp": time.time(),
                     },
                     coherence=0.0,
@@ -301,6 +312,7 @@ class JuniorLLMStateMachine:
             self.current_active_profile = metadata["current_active_profile"]
         if "adapter_profiles" in metadata:
             self.adapter_profiles.update(metadata["adapter_profiles"])
+        # Note: training queue can be restored from MemSys if needed for long-running systems
 
     def process_command(self, command: str, payload: Any = None):
         if command == "start_inference":
