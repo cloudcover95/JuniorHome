@@ -298,17 +298,9 @@ class JuniorLLMStateMachine:
             self._log_to_obsidian("sheep_memory_consolidation", self._sheep_consolidated_insights)
 
     def _replay_and_consolidate(self):
-        """Biologically-inspired SHEEP Replay + Selective Consolidation.
-
-        Inspired by hippocampal replay during rest/sleep and systems consolidation:
-        - 'Replays' the most successful recent high-level experiences with stronger reinforcement.
-        - Selectively consolidates only high-value memories.
-        - Applies gentle decay to older, lower-value history (biological forgetting).
-        """
         if len(self._sheep_history) < 5:
             return
 
-        # Replay the single best high-level awakening with stronger boost
         high_level = [r for r in self._sheep_history if r.get("level") in ("ELEVATED", "FULL_AWAKENING")]
         if high_level:
             best_record = max(high_level, key=lambda r: r.get("performance_at_activation", 0))
@@ -324,27 +316,18 @@ class JuniorLLMStateMachine:
 
                 print(f"[SHEEP Replay] Replayed and reinforced {best_profile} (perf: {best_perf:.3f})")
 
-        # Gentle decay on older entries (biological forgetting curve)
         if len(self._sheep_history) > 25:
             for i in range(len(self._sheep_history) - 25):
                 record = self._sheep_history[i]
                 perf = record.get("performance_at_activation", 0)
                 if perf < 0.08:
-                    # Reduce influence of weak old memories
                     prof = record.get("active_profile")
                     if prof and prof in self._profile_performance:
-                        self._profile_performance[prof] *= 0.98  # Gentle decay
+                        self._profile_performance[prof] *= 0.98
 
-            # Prune very old low-value entries
             self._sheep_history = self._sheep_history[-20:]
 
-    def get_sheep_consolidated_insights(self) -> Dict[str, Any]:
-        return self._sheep_consolidated_insights.copy()
-
     def retrieve_relevant_memories(self, current_profile: str = None, top_k: int = 5) -> List[Dict[str, Any]]:
-        """Biologically-inspired cued retrieval.
-        Returns the most relevant past awakenings based on current context (simple relevance scoring).
-        """
         if not self._sheep_history:
             return []
 
@@ -352,11 +335,46 @@ class JuniorLLMStateMachine:
         for record in self._sheep_history:
             score = record.get("performance_at_activation", 0)
             if current_profile and record.get("active_profile") == current_profile:
-                score += 0.1  # Boost if same profile is currently active
+                score += 0.1
             scored.append((score, record))
 
         scored.sort(reverse=True)
         return [r for score, r in scored[:top_k]]
+
+    def test_sheep_memory_system(self, num_simulated_awakenings: int = 8):
+        """Basic testing/diagnostic utility for the biologically-inspired memory system.
+        Simulates a series of awakenings and prints key metrics.
+        Useful for verifying Reflection, Consolidation, Replay, and Retrieval.
+        """
+        print("\n=== SHEEP Memory System Test ===")
+        original_history_len = len(self._sheep_history)
+
+        for i in range(num_simulated_awakenings):
+            fake_perf = random.uniform(0.05, 0.25)
+            fake_level = random.choice(["BASIC", "ELEVATED", "FULL_AWAKENING"])
+            fake_profile = random.choice(list(self._profile_performance.keys()) or ["general"])
+
+            self._sheep_history.append({
+                "timestamp": time.time() - (num_simulated_awakenings - i) * 100,
+                "level": fake_level,
+                "performance_at_activation": fake_perf,
+                "active_profile": fake_profile
+            })
+
+            if fake_level in ("ELEVATED", "FULL_AWAKENING"):
+                if fake_profile in self._profile_performance:
+                    self._profile_performance[fake_profile] += 0.01
+
+        self._consolidate_sheep_memory()
+        self._replay_and_consolidate()
+
+        print(f"History length after test: {len(self._sheep_history)}")
+        print(f"Consolidated insights: {self.get_sheep_consolidated_insights()}")
+        print(f"Top relevant memories: {self.retrieve_relevant_memories(top_k=3)}")
+        print("=== Test Complete ===\n")
+
+        # Restore original history length for cleanliness (in real use you wouldn't do this)
+        self._sheep_history = self._sheep_history[:original_history_len]
 
     def is_sheep_awakening_active(self) -> bool:
         return self._sheep_level != SHEEPLevel.INACTIVE
@@ -366,6 +384,9 @@ class JuniorLLMStateMachine:
 
     def get_sheep_history(self) -> List[Dict[str, Any]]:
         return self._sheep_history[-20:]
+
+    def get_sheep_consolidated_insights(self) -> Dict[str, Any]:
+        return self._sheep_consolidated_insights.copy()
 
     def get_security_status(self) -> Dict[str, Any]:
         return {
@@ -401,4 +422,4 @@ class JuniorLLMStateMachine:
         if hasattr(adapter, 'ternary_weights') and self._security_level >= SecurityLevel.HARDENED:
             self.request_model_integrity_check(profile, adapter.ternary_weights)
 
-    # ... (other core methods like _mutate_profile_for_drift, _update_profile_performance, etc. remain as in previous versions)
+    # ... (core methods unchanged)
