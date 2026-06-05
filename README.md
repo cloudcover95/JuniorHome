@@ -2,12 +2,15 @@
 
 **Current Ecosystem State**
 
-**Expanded Inference Comparison Pipeline for Best-Fit Theoretical Math**
+**Added BitNetVoiceEngine + Robust Benchmark Suite**
 
-- Added `VoiceVerificationEngine` specialized for call/audio verification tasks.
-- The general `InferenceEngineComparison` now makes it easy to benchmark multiple black-box theoretical math variants (or quant engines) against each other and baselines to find the best fit for any task, including voice recognition in DigitalCallManager.
-- You can now systematically test different theoretical math implementations and automatically see which one performs best for non-bot human verification (or any other inference problem).
+- New `BitNetVoiceEngine` for pure quantized voice verification path.
+- `run_benchmark_suite()` now supports multi-trial statistical comparison — perfect for testing your real theoretical math functions and automatically finding the best fit.
+- The pipeline is ready for you to plug in actual black-box theoretical math and run real benchmarks (not just placeholders).
 
-This fulfills the request to pipeline other inference methods and black-box theoretical mathematics as engines and determine best fits in a repeatable, architecture-level way.
+This advances:
+- Running actual benchmarks with real theoretical math
+- Adding specialized engines (BitNet voice path)
+- Continued architecture unification between inference, calling, and memory systems
 
-The pipeline is now directly usable with the calling system for production-grade, sovereign voice verification.
+JuniorMemSys integration (CallPatternStore) is already started and can now receive benchmarked verification patterns.
