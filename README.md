@@ -2,15 +2,14 @@
 
 **Current Ecosystem State**
 
-Fully implemented **SHEEP Awakening Mode** as a first-class original feature:
+**Major Update: SHEEP Awakening Mode v2 - Levels + Trainer + Obsidian Data Lake**
 
-- When the hidden high-coherence + low-drift condition in deep spatial evolution is met, the system enters SHEEP Awakening Mode.
-- During awakening:
-  - Drift detection becomes significantly more sensitive (lower threshold).
-  - High-performance profiles are automatically prioritized via guided rules.
-  - A full specialization cycle is triggered with awakening awareness.
-  - The mode has a configurable duration and auto-deactivates.
+- Added **SHEEPLevel** enum (BASIC / ELEVATED / FULL_AWAKENING)
+- Full implementation of level-based awakening behavior
+- Deep **SovereignTrainer** integration at FULL_AWAKENING level (real fine-tuning triggers on high-performance profiles)
+- **Obsidian Data Lake port**: All major SHEEP events (activations, mutations, performance updates, rule injections, trainer triggers) are automatically logged as dated Markdown notes in an Obsidian-compatible vault.
+- Performance scoring is now fully real and drives rule injection + awakening escalation.
 
-This turns the original playful Easter egg into a meaningful autonomous enhancement phase, representing one of the most distinctive original ideas in the BitNet 3.0 + custom JuniorLLM architecture.
+This represents one of the most advanced original autonomous adaptation systems built on BitNet 3.0 + ternary foundations.
 
-Combined with Quantization Drift Trigger, Profile Lifecycle, Performance Scoring, and Performance-Guided Rule Injection, this creates a deeply self-evolving, sovereign adaptation system.
+The SHEEP Awakening Mode has evolved from a fun Easter egg into a core, production-grade self-evolving mechanism for sovereign edge intelligence.
