@@ -250,7 +250,7 @@ class JuniorLLMStateMachine:
 
         trained = self.process_adapter_training_queue(manifold_context)
 
-        # Collect quantization stats for efficiency tracking (lightweight, useful for scaling justification)
+        # Collect lightweight quantization stats for efficiency tracking (demonstrates 3.0 value over static 1.58)
         quant_stats = {}
         if self.manifold and self.manifold.state is not None:
             try:
@@ -258,7 +258,6 @@ class JuniorLLMStateMachine:
             except:
                 pass
 
-        # Record in history
         self.specialization_history.append({
             "timestamp": time.time(),
             "requested": request_result,
@@ -291,6 +290,24 @@ class JuniorLLMStateMachine:
 
     def get_specialization_history(self) -> List[Dict[str, Any]]:
         return self.specialization_history[-10:]
+
+    def get_quantization_health_snapshot(self):
+        """Lightweight snapshot of current quantization health + 3.0 capabilities.
+        Useful for monitoring and demonstrating efficiency gains over basic 1.58."""
+        snapshot = {
+            "current_profile": self.current_active_profile,
+            "active_adapters": len(self.active_adapters),
+            "training_queue_size": len(self.adapter_training_queue),
+            "specialization_count": len(self.specialization_history),
+        }
+
+        if self.manifold and self.manifold.state is not None:
+            try:
+                snapshot["manifold_quant_stats"] = get_quantization_stats(self.manifold.state)
+            except:
+                pass
+
+        return snapshot
 
     def _persist_state(self):
         if self.kernel_bridge and hasattr(self.kernel_bridge, "write_ternary_manifold"):
