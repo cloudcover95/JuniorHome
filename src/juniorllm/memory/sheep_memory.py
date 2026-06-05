@@ -1,9 +1,14 @@
 # path: src/juniorllm/memory/sheep_memory.py
 
 """
-SHEEPMemory
+SHEEPMemory with Multi-Scale Consolidation
 
-Now backend-aware. Can use InMemoryBackend (default) or future JuniorMemSysBackend.
+Biological inspiration:
+- Fast synaptic consolidation (immediate reflection)
+- Systems consolidation (replay + pattern extraction over multiple events)
+- Long-term / meta consolidation (global strategy updates over many sessions)
+
+This implements multi-scale memory consolidation.
 """
 
 import time
@@ -27,7 +32,6 @@ class SHEEPMemory:
         self.node_id = node_id
         self.backend = backend or InMemoryBackend()
 
-        # Local caches for fast access (synced with backend)
         self.history: List[Dict[str, Any]] = []
         self.consolidated_insights: Dict[str, Any] = {}
         self.performance: Dict[str, float] = {}
@@ -38,13 +42,18 @@ class SHEEPMemory:
         self.plasticity_lr: float = 0.01
         self.homeostatic_target: float = 0.15
 
-        # Load initial state from backend
+        # Multi-scale state
+        self.consolidation_scales: Dict[int, Dict[str, Any]] = {
+            0: {"last_run": 0, "interval": 1},      # Fast / immediate
+            1: {"last_run": 0, "interval": 5},      # Medium / systems
+            2: {"last_run": 0, "interval": 20},     # Long-term / meta
+        }
+
         self._sync_from_backend()
 
     def _sync_from_backend(self):
         self.history = self.backend.get_history(last_n=100)
         self.consolidated_insights = self.backend.get_consolidated_insights()
-        # Performance and lifecycle can be loaded on demand or in bulk in future
 
     def update_eligibility_trace(self, profile: str, strength: float = 1.0):
         if profile not in self.eligibility_traces:
@@ -65,7 +74,6 @@ class SHEEPMemory:
         modulated_update = self.plasticity_lr * eligibility * reward * outcome * coactivation
         self.performance[profile] += modulated_update
 
-        # Homeostatic
         current_avg = sum(self.performance.values()) / max(len(self.performance), 1)
         if current_avg > self.homeostatic_target:
             self.performance[profile] *= 0.995
@@ -73,7 +81,6 @@ class SHEEPMemory:
         if profile in self.lifecycle:
             self.lifecycle[profile]["performance_score"] = self.performance[profile]
 
-        # Persist to backend
         self.backend.store_performance(profile, self.performance[profile])
         if profile in self.lifecycle:
             self.backend.store_lifecycle(profile, self.lifecycle[profile])
@@ -95,6 +102,7 @@ class SHEEPMemory:
         return record
 
     def reflect_on_recent(self):
+        """Fast scale (Scale 0) - immediate synaptic-like consolidation."""
         if not self.history:
             return
         latest = self.history[-1]
@@ -106,7 +114,24 @@ class SHEEPMemory:
             if profile:
                 self.apply_plasticity(profile, outcome=perf, reward=1.2 if level == "FULL_AWAKENING" else 1.0)
 
-    def consolidate(self):
+    def consolidate(self, scale: int = 1):
+        """Multi-scale consolidation.
+
+        scale=0: Fast / immediate (handled in reflect_on_recent)
+        scale=1: Medium / systems consolidation (pattern extraction from recent history)
+        scale=2: Long-term / meta consolidation (global insights, strategy updates)
+        """
+        if scale == 0:
+            self.reflect_on_recent()
+            return
+
+        if scale == 1:
+            self._systems_consolidation()
+        elif scale == 2:
+            self._meta_consolidation()
+
+    def _systems_consolidation(self):
+        """Medium-scale systems consolidation (inspired by hippocampal-neocortical transfer)."""
         if len(self.history) < 3:
             return
 
@@ -133,9 +158,34 @@ class SHEEPMemory:
                 "best_profile_over_time": best,
                 "average_high_level_performance": round(avg, 4),
                 "last_consolidation": time.time(),
-                "total_awakenings_analyzed": len(high_level)
+                "total_awakenings_analyzed": len(high_level),
+                "scale": 1
             }
             self.backend.store_consolidated_insights(self.consolidated_insights)
+
+    def _meta_consolidation(self):
+        """Long-term meta consolidation (global strategy / meta-learning level)."""
+        if len(self.history) < 10:
+            return
+
+        # Analyze overall trends across all scales
+        high_level_count = len([r for r in self.history if r.get("level") in ("ELEVATED", "FULL_AWAKENING")])
+        avg_perf = sum(r.get("performance_at_activation", 0) for r in self.history) / len(self.history)
+
+        # Update global meta-insights
+        meta = {
+            "total_awakenings": len(self.history),
+            "high_level_ratio": high_level_count / len(self.history),
+            "average_performance": round(avg_perf, 4),
+            "last_meta_consolidation": time.time(),
+            "scale": 2
+        }
+
+        # Merge with existing consolidated insights
+        self.consolidated_insights.update(meta)
+        self.backend.store_consolidated_insights(self.consolidated_insights)
+
+        print(f"[SHEEP Meta Consolidation] Global insights updated. High-level ratio: {meta['high_level_ratio']:.2f}")
 
     def replay_and_consolidate(self):
         if len(self.history) < 5:
