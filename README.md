@@ -2,14 +2,16 @@
 
 **Current Ecosystem State**
 
-**Further Modularization of SHEEP Memory**
+**Deepened Plasticity Rules with STDP-style Timing**
 
-- Extracted plasticity logic into `PlasticityEngine` (eligibility traces, reward modulation, homeostatic scaling).
-- Extracted retrieval logic into `MemoryRetriever` (context-dependent scoring).
-- `SHEEPMemory` now composes these smaller, reusable components.
+The `PlasticityEngine` has been significantly deepened:
 
-This improves testability, extensibility, and prepares the system for more advanced strategies (different plasticity rules, alternative retrieval scorers, etc.).
+- Eligibility trace now explicitly acts as a **timing signal** (STDP approximation).
+- High eligibility (recent activity) → stronger potentiation on positive outcomes.
+- Low eligibility → weaker effect.
+- Negative outcomes trigger depression with inverse timing (classic STDP behavior).
+- Still includes reward modulation and homeostatic scaling.
 
-The architecture continues to become cleaner while biological fidelity (multi-scale consolidation, sleep-like offline consolidation, plasticity) remains strong.
+This brings the learning rules much closer to biological reward-modulated STDP while remaining simple and efficient for edge deployment.
 
-JuniorMemSys integration path remains open via the `MemoryBackend` abstraction.
+The modular `PlasticityEngine` can be easily extended or replaced with more advanced rules in the future.
