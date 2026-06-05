@@ -104,6 +104,7 @@ class JuniorLLMStateMachine:
         self._sheep_awakening_start_time: Optional[float] = None
         self._sheep_awakening_duration: float = 300.0
         self._sheep_history: List[Dict[str, Any]] = []
+        self._sheep_consolidated_insights: Dict[str, Any] = {}
         self._security_level: SecurityLevel = SecurityLevel.STANDARD
         self._model_hashes: Dict[str, str] = {}
         self._credential_isolation_enabled: bool = True
@@ -229,14 +230,10 @@ class JuniorLLMStateMachine:
             self._sheep_awakening_start_time = None
             self._log_to_obsidian("sheep_awakening_deactivated", {})
 
-            # New: Reflect on this awakening after it ends
             self._reflect_on_recent_awakening()
+            self._consolidate_sheep_memory()  # New: Memory consolidation after every awakening
 
     def _reflect_on_recent_awakening(self):
-        """Original idea: SHEEP Reflection.
-        After an awakening ends, analyze the most recent record and historical performance
-        to slightly boost profiles that performed well during high-coherence states.
-        This creates a self-improving memory loop."""
         if not self._sheep_history:
             return
 
@@ -245,7 +242,6 @@ class JuniorLLMStateMachine:
         perf = latest.get("performance_at_activation", 0)
 
         if level in ("ELEVATED", "FULL_AWAKENING") and perf > 0.05:
-            # Boost the profile that was active during a successful high-level awakening
             active_profile = latest.get("active_profile")
             if active_profile and active_profile in self._profile_performance:
                 boost = 0.02 if level == "FULL_AWAKENING" else 0.01
@@ -261,6 +257,59 @@ class JuniorLLMStateMachine:
                     "awakening_level": level
                 })
 
+    def _consolidate_sheep_memory(self):
+        """Original idea: SHEEP Memory Consolidation.
+
+        Periodically (after awakenings) analyzes the full history to extract long-term insights
+        and applies stronger, more persistent performance adjustments.
+
+        This prevents memory from growing unbounded while turning raw awakening history
+        into actionable, long-term behavioral improvements.
+        """
+        if len(self._sheep_history) < 3:
+            return  # Not enough data yet
+
+        # Simple consolidation: Find the profile with the highest average performance during high-level awakenings
+        high_level_records = [r for r in self._sheep_history if r.get("level") in ("ELEVATED", "FULL_AWAKENING")]
+
+        if not high_level_records:
+            return
+
+        profile_scores = {}
+        for record in high_level_records:
+            prof = record.get("active_profile")
+            if prof:
+                profile_scores[prof] = profile_scores.get(prof, 0) + record.get("performance_at_activation", 0)
+
+        if not profile_scores:
+            return
+
+        best_profile = max(profile_scores, key=profile_scores.get)
+        avg_performance = profile_scores[best_profile] / len(high_level_records)
+
+        # Apply a consolidation boost (stronger and more lasting than reflection)
+        if best_profile in self._profile_performance:
+            consolidation_boost = 0.05 * (avg_performance / 0.1)  # Scale with how good the average was
+            self._profile_performance[best_profile] += consolidation_boost
+
+            if best_profile in self._profile_lifecycle:
+                self._profile_lifecycle[best_profile]["performance_score"] = self._profile_performance[best_profile]
+
+            # Store consolidated insight
+            self._sheep_consolidated_insights = {
+                "best_profile_over_time": best_profile,
+                "average_high_level_performance": round(avg_performance, 4),
+                "last_consolidation": time.time(),
+                "total_awakenings_analyzed": len(high_level_records)
+            }
+
+            print(f"[SHEEP Consolidation] Long-term boost applied to {best_profile} (avg perf: {avg_performance:.3f})")
+            self._log_to_obsidian("sheep_memory_consolidation", self._sheep_consolidated_insights)
+
+    def get_sheep_consolidated_insights(self) -> Dict[str, Any]:
+        """Public access to long-term consolidated memory insights."""
+        return self._sheep_consolidated_insights.copy()
+
     def is_sheep_awakening_active(self) -> bool:
         return self._sheep_level != SHEEPLevel.INACTIVE
 
@@ -269,8 +318,6 @@ class JuniorLLMStateMachine:
 
     def get_sheep_history(self) -> List[Dict[str, Any]]:
         return self._sheep_history[-20:]
-
-    # ... other methods (security hooks, etc.) remain as in previous lean version
 
     def get_security_status(self) -> Dict[str, Any]:
         return {
@@ -306,4 +353,4 @@ class JuniorLLMStateMachine:
         if hasattr(adapter, 'ternary_weights') and self._security_level >= SecurityLevel.HARDENED:
             self.request_model_integrity_check(profile, adapter.ternary_weights)
 
-    # ... (rest of methods like _mutate..., _update..., etc. unchanged)
+    # ... (other methods like _mutate_profile_for_drift, etc. remain as before)
