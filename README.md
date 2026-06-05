@@ -2,15 +2,22 @@
 
 **Current Ecosystem State**
 
-**Added SecureDigitalCallHandler with anti-bot voice verification**
+**Added Digital Calling + Mobile Integration**
 
-New module `src/juniorllm/telephony/secure_call_handler.py` implements secure digital/mobile calling:
+New module `src/juniorhome/calling/digital_call_manager.py`:
 
-- Calls always start **MUTED** upon acceptance.
-- Real-time verification for "non-bot verbal reflection" (live human speech vs TTS/bot).
-- Only unmutes for full communication once verified.
-- Extensible voice verifier injection (can use local STT, VAD + liveness detection, or BitNet-based models).
-- Clean state machine (muted → verifying → verified unmuted).
-- Designed to integrate with SHEEP memory (call logging), JuniorHome orchestrator, and crispy-mouse for hardware input.
+- Full support for digital/mobile calling.
+- **Always starts muted** on call acceptance.
+- Stays muted until **verified non-bot human verbal speech** is detected.
+- Once verified, automatically **unmutes** for complete two-way communication.
+- Verification is fully pluggable — you can connect:
+  - Simple VAD
+  - BitNet / MLX voice models
+  - Your black-box theoretical math engines
+  - Advanced bot detection
+- Optional integration with SHEEPMemory / JuniorMemSys for call event logging.
+- Clean status API and force-mute / end-call controls.
 
-This adds a sovereign, privacy-first digital calling capability to the ecosystem while strongly protecting against bot/spam calls.
+This brings mobile calling into the sovereign edge orchestrator while maintaining strong privacy and anti-bot protection.
+
+The feature is designed to work alongside the existing inference pipelines, plasticity, and memory systems.
