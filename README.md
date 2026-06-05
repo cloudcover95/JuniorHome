@@ -2,9 +2,10 @@
 
 **Current Ecosystem State**
 
-Further evolved the original Quantization Drift Trigger (QDT):
-- Now optionally invokes the real SovereignTrainer when drift is detected (deeper 3.0 integration)
-- Drift is injected as an evolution signal that can influence broader state behavior
-- This original closed-loop mechanism (quant health → adaptation → evolution) is a unique architectural contribution
+Introduced another original idea: **Drift-Guided Profile Mutation**
+- When quantization drift is detected, the state machine can autonomously suggest a better-suited profile
+  (e.g. 'spatial' if manifold activity is high).
+- This creates dynamic, self-evolving adapter profiles based on real-time quant health.
+- Combined with the existing QDT, this forms a powerful original closed-loop adaptation system unique to BitNet 3.0.
 
-These enhancements make the 3.0 stack more autonomous and demonstrate clear scaling advantages over static 1.58 inference.
+These original mechanisms demonstrate clear architectural advantages for autonomous, efficient sovereign systems.

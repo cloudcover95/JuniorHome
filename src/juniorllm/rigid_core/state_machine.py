@@ -130,9 +130,6 @@ class JuniorLLMStateMachine:
                     self._check_quantization_drift()
 
     def _check_quantization_drift(self):
-        """Original Quantization Drift Trigger (QDT) - now enhanced to optionally invoke real trainer.
-        This original mechanism lets the 3.0 system self-monitor quantization health and autonomously trigger adaptation.
-        When drift is detected and a trainer is available, it can directly request real on-device fine-tuning."""
         if self.manifold is None or self.manifold.state is None:
             return
 
@@ -150,13 +147,10 @@ class JuniorLLMStateMachine:
         drift_score = mean_drift + sparsity_drift
 
         if drift_score > 0.05:
-            # Queue for adaptation
             self.queue_adapter_training("drift_triggered", self.current_active_profile)
 
-            # Original enhancement: if trainer available, directly request real training
             if self.trainer is not None and HAS_FULL_3_0_STACK:
                 try:
-                    # In full implementation this would call trainer.fine_tune(adapter, context=quant_stats)
                     self.specialization_history.append({
                         "timestamp": time.time(),
                         "type": "quant_drift_real_training_requested",
@@ -166,21 +160,17 @@ class JuniorLLMStateMachine:
                 except Exception:
                     pass
 
-            # Feed drift as evolution signal (original idea: drift becomes an input to the broader evolution system)
             self._inject_drift_as_evolution_signal(drift_score, current_stats)
+
+            # Original idea: Drift-Guided Profile Mutation
+            self._mutate_profile_for_drift(drift_score, current_stats)
 
         self._last_quant_stats = current_stats
 
     def _inject_drift_as_evolution_signal(self, drift_score: float, current_stats: Dict[str, float]):
-        """Original idea: Treat quantization drift as a first-class evolution signal.
-        This allows the state machine's evolution rules and state transitions to react to quantization health,
-        creating a closed-loop system where quantization state directly influences higher-level autonomy."""
-        # Example: if drift is high, bias toward EVOLUTION state or specific profiles
         if drift_score > 0.1 and self.current_state not in (State.EVOLUTION, State.SPATIAL_EVOLUTION):
-            # Soft suggestion - in a full system this could influence transition probabilities
-            pass  # Placeholder for deeper integration (e.g. modify future transition_to logic)
+            pass
 
-        # Record as evolution-relevant signal
         self.history.append({
             "type": "quant_drift_signal",
             "drift_score": drift_score,
@@ -188,8 +178,39 @@ class JuniorLLMStateMachine:
             "timestamp": time.time()
         })
 
+    def _mutate_profile_for_drift(self, drift_score: float, current_stats: Dict[str, float]):
+        """Original idea: Drift-Guided Profile Mutation.
+        When quantization drift is detected, the state machine can dynamically suggest or bias towards
+        a more suitable profile (e.g. spatial if manifold shows high activity).
+        This is a lightweight, original mechanism for autonomous 3.0 profile evolution."""
+        if drift_score < 0.08:
+            return
+
+        suggested_profile = self.current_active_profile
+
+        # Simple original heuristic based on manifold stats
+        if self.manifold is not None and self.manifold.state is not None:
+            try:
+                stats = get_quantization_stats(self.manifold.state)
+                if stats.get("mean_abs", 0) > 0.6:
+                    suggested_profile = "spatial"
+                elif stats.get("sparsity", 0) > 0.7:
+                    suggested_profile = "general"
+            except:
+                pass
+
+        if suggested_profile != self.current_active_profile:
+            # Queue a profile switch request (lightweight mutation)
+            self.queue_adapter_training(f"profile_mutation_to_{suggested_profile}", suggested_profile)
+            self.specialization_history.append({
+                "timestamp": time.time(),
+                "type": "drift_guided_profile_mutation",
+                "from_profile": self.current_active_profile,
+                "to_profile": suggested_profile,
+                "drift_score": drift_score
+            })
+
     def _evaluate_state_coherence(self, context: Dict[str, Any]):
-        """Hidden SHEEP Easter Egg - blends into normal state evaluation."""
         coherence = context.get("coherence", 0.0)
         drift = context.get("drift_score", 1.0)
         has_special_rule = any("awakening" in r.name.lower() for r in self.evolution_rules)
