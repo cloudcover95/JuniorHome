@@ -249,17 +249,29 @@ class JuniorLLMStateMachine:
                 }
 
         trained = self.process_adapter_training_queue(manifold_context)
-        # Record in history for long-running systems
+
+        # Collect quantization stats for efficiency tracking (lightweight, useful for scaling justification)
+        quant_stats = {}
+        if self.manifold and self.manifold.state is not None:
+            try:
+                quant_stats = get_quantization_stats(self.manifold.state)
+            except:
+                pass
+
+        # Record in history
         self.specialization_history.append({
             "timestamp": time.time(),
             "requested": request_result,
             "trained": trained,
-            "profile": self.current_active_profile
+            "profile": self.current_active_profile,
+            "quant_stats": quant_stats
         })
+
         return {
             "requested": request_result,
             "trained": trained,
-            "current_profile": self.current_active_profile
+            "current_profile": self.current_active_profile,
+            "quant_stats": quant_stats
         }
 
     def get_quantization_efficiency(self) -> Dict[str, Any]:
@@ -278,7 +290,7 @@ class JuniorLLMStateMachine:
             return {"adapters": len(self.active_adapters)}
 
     def get_specialization_history(self) -> List[Dict[str, Any]]:
-        return self.specialization_history[-10:]  # Last 10 for efficiency
+        return self.specialization_history[-10:]
 
     def _persist_state(self):
         if self.kernel_bridge and hasattr(self.kernel_bridge, "write_ternary_manifold"):
@@ -312,7 +324,6 @@ class JuniorLLMStateMachine:
             self.current_active_profile = metadata["current_active_profile"]
         if "adapter_profiles" in metadata:
             self.adapter_profiles.update(metadata["adapter_profiles"])
-        # Note: training queue can be restored from MemSys if needed for long-running systems
 
     def process_command(self, command: str, payload: Any = None):
         if command == "start_inference":

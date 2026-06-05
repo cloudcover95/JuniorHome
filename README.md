@@ -2,9 +2,9 @@
 
 **Current Ecosystem State**
 
-Continued BitNet 3.0 + custom JuniorLLM development:
-- Added persistence support for adapter training queue and specialization history (via _persist_state and restore hooks)
-- Specialization history tracking for long-running autonomous systems
-- Focus remains on executable 3.0 paths and efficient quantization without runtime bloat
+Continued BitNet 3.0 + custom JuniorLLM development with efficient quantization focus:
+- run_specialization_cycle now collects quantization stats for efficiency tracking
+- Stronger support for long-running autonomous systems with persistent adaptation state
+- Focus on executable 3.0 paths and lightweight utilities (heavy comparisons in MemSys)
 
-Utility for scaling: The 3.0 extensions enable persistent, autonomous adaptation with minimal overhead, making it practical for production sovereign systems on standard hardware.
+Utility for scaling (1.58 → 3.0): Persistent specialization + manifold integration enables continuous efficiency gains over static 1.58 inference, with minimal runtime overhead.
