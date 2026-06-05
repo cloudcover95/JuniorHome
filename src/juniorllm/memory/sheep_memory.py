@@ -1,14 +1,15 @@
 # path: src/juniorllm/memory/sheep_memory.py
 
 """
-SHEEPMemory with Multi-Scale Consolidation
+SHEEPMemory
 
-Biological inspiration:
-- Fast synaptic consolidation (immediate reflection)
-- Systems consolidation (replay + pattern extraction over multiple events)
-- Long-term / meta consolidation (global strategy updates over many sessions)
+Advanced biologically-inspired memory system with:
+- Multi-scale consolidation
+- Eligibility traces + reward-modulated plasticity
+- Sleep-like offline consolidation
+- Improved context-dependent retrieval
 
-This implements multi-scale memory consolidation.
+Designed for future integration with JuniorMemSys-Suite.
 """
 
 import time
@@ -42,11 +43,10 @@ class SHEEPMemory:
         self.plasticity_lr: float = 0.01
         self.homeostatic_target: float = 0.15
 
-        # Multi-scale state
         self.consolidation_scales: Dict[int, Dict[str, Any]] = {
-            0: {"last_run": 0, "interval": 1},      # Fast / immediate
-            1: {"last_run": 0, "interval": 5},      # Medium / systems
-            2: {"last_run": 0, "interval": 20},     # Long-term / meta
+            0: {"last_run": 0, "interval": 1},
+            1: {"last_run": 0, "interval": 5},
+            2: {"last_run": 0, "interval": 20},
         }
 
         self._sync_from_backend()
@@ -102,7 +102,6 @@ class SHEEPMemory:
         return record
 
     def reflect_on_recent(self):
-        """Fast scale (Scale 0) - immediate synaptic-like consolidation."""
         if not self.history:
             return
         latest = self.history[-1]
@@ -115,23 +114,15 @@ class SHEEPMemory:
                 self.apply_plasticity(profile, outcome=perf, reward=1.2 if level == "FULL_AWAKENING" else 1.0)
 
     def consolidate(self, scale: int = 1):
-        """Multi-scale consolidation.
-
-        scale=0: Fast / immediate (handled in reflect_on_recent)
-        scale=1: Medium / systems consolidation (pattern extraction from recent history)
-        scale=2: Long-term / meta consolidation (global insights, strategy updates)
-        """
         if scale == 0:
             self.reflect_on_recent()
             return
-
         if scale == 1:
             self._systems_consolidation()
         elif scale == 2:
             self._meta_consolidation()
 
     def _systems_consolidation(self):
-        """Medium-scale systems consolidation (inspired by hippocampal-neocortical transfer)."""
         if len(self.history) < 3:
             return
 
@@ -164,15 +155,12 @@ class SHEEPMemory:
             self.backend.store_consolidated_insights(self.consolidated_insights)
 
     def _meta_consolidation(self):
-        """Long-term meta consolidation (global strategy / meta-learning level)."""
         if len(self.history) < 10:
             return
 
-        # Analyze overall trends across all scales
         high_level_count = len([r for r in self.history if r.get("level") in ("ELEVATED", "FULL_AWAKENING")])
         avg_perf = sum(r.get("performance_at_activation", 0) for r in self.history) / len(self.history)
 
-        # Update global meta-insights
         meta = {
             "total_awakenings": len(self.history),
             "high_level_ratio": high_level_count / len(self.history),
@@ -181,44 +169,80 @@ class SHEEPMemory:
             "scale": 2
         }
 
-        # Merge with existing consolidated insights
         self.consolidated_insights.update(meta)
         self.backend.store_consolidated_insights(self.consolidated_insights)
 
         print(f"[SHEEP Meta Consolidation] Global insights updated. High-level ratio: {meta['high_level_ratio']:.2f}")
 
-    def replay_and_consolidate(self):
+    def sleep_like_offline_consolidation(self, iterations: int = 3):
+        """Sleep-like offline consolidation.
+
+        Biological inspiration: During 'sleep' (offline periods), the brain replays
+        experiences to consolidate memories without new input.
+
+        This method performs multiple rounds of replay + deeper consolidation
+        on existing high-value memories. It improves long-term retention and
+        generalization with no external data required.
+        """
         if len(self.history) < 5:
             return
 
-        high_level = [r for r in self.history if r.get("level") in ("ELEVATED", "FULL_AWAKENING")]
-        if high_level:
-            best = max(high_level, key=lambda r: r.get("performance_at_activation", 0))
-            profile = best.get("active_profile")
-            perf = best.get("performance_at_activation", 0)
+        print(f"[SHEEP Sleep] Starting offline consolidation ({iterations} iterations)...")
 
-            if profile and profile in self.performance and perf > 0.08:
-                self.apply_plasticity(profile, outcome=perf, reward=2.0)
+        for i in range(iterations):
+            # Replay strongest memories with high reward
+            high_level = [r for r in self.history if r.get("level") in ("ELEVATED", "FULL_AWAKENING")]
+            if high_level:
+                # Sort by performance and take top ones
+                sorted_memories = sorted(high_level, key=lambda r: r.get("performance_at_activation", 0), reverse=True)
+                for mem in sorted_memories[:3]:  # Replay top 3
+                    profile = mem.get("active_profile")
+                    perf = mem.get("performance_at_activation", 0)
+                    if profile and profile in self.performance:
+                        # Strong offline reinforcement
+                        self.apply_plasticity(profile, outcome=perf, reward=2.5)
 
-        self.decay_eligibility_traces()
+            # Run deeper systems + meta consolidation
+            self._systems_consolidation()
+            if i == iterations - 1:
+                self._meta_consolidation()
 
-        if len(self.history) > 25:
-            for old in self.history[:-25]:
-                if old.get("performance_at_activation", 0) < 0.08:
-                    p = old.get("active_profile")
-                    if p and p in self.performance:
-                        self.performance[p] *= 0.98
-            self.history = self.history[-20:]
+            # Decay traces (like memory fading during sleep)
+            self.decay_eligibility_traces()
 
-    def retrieve_relevant(self, current_profile: Optional[str] = None, top_k: int = 5) -> List[Dict[str, Any]]:
+        print("[SHEEP Sleep] Offline consolidation complete.")
+
+    def retrieve_relevant(self, current_profile: Optional[str] = None, context: Optional[Dict[str, Any]] = None, top_k: int = 5) -> List[Dict[str, Any]]:
+        """Improved context-dependent retrieval.
+
+        Now supports optional context dict for smarter scoring
+        (e.g., recent state, current performance level, or external cues).
+        """
         if not self.history:
             return []
+
         scored = []
         for r in self.history:
             score = r.get("performance_at_activation", 0)
+
+            # Base boost if same profile is currently active
             if current_profile and r.get("active_profile") == current_profile:
-                score += 0.1
+                score += 0.15
+
+            # Context-aware boosts
+            if context:
+                # Boost if awakening happened in similar 'level' context
+                if context.get("level") and r.get("level") == context.get("level"):
+                    score += 0.1
+
+                # Boost recent memories if 'recency' context is high
+                if context.get("prefer_recent"):
+                    age = time.time() - r.get("timestamp", 0)
+                    if age < 3600:  # Within last hour
+                        score += 0.08
+
             scored.append((score, r))
+
         scored.sort(reverse=True)
         return [r for score, r in scored[:top_k]]
 
