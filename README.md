@@ -2,15 +2,16 @@
 
 **Current Ecosystem State**
 
-**Investigation into Neural Plasticity Models for Learning**
+**Started integration path with JuniorMemSys + made SHEEP memory reusable**
 
-Added a lightweight, biologically-inspired plasticity rule (`_apply_plasticity_rule`):
+- Extracted core SHEEP memory logic into `src/juniorllm/memory/sheep_memory.py` as a standalone `SHEEPMemory` class.
+- This module now contains all biologically-inspired memory features (history, reflection, consolidation, replay, plasticity, retrieval).
+- The state machine is being refactored to delegate to this module (initial integration points added).
 
-- **Hebbian component**: Strengthens profiles when they are active during positive outcomes (co-activation strengthening).
-- **Homeostatic component**: Applies mild normalization to prevent runaway performance growth (inspired by synaptic scaling).
+This is the foundation for proper two-tier memory architecture:
+- **SHEEPMemory** (in state machine) = fast, online, reasoning-time memory
+- **JuniorMemSys-Suite** = persistent, topological long-term memory (future backend)
 
-This rule is now optionally used in `update_from_manifold` when the system detects strong manifold states, and can be extended for use in replay, consolidation, or adapter training.
+We have now started actual integration work by making the memory system modular and ready to connect to JuniorMemSys.
 
-The SHEEP memory + plasticity system is evolving toward a more complete, neuroscience-grounded learning architecture suitable for sovereign ternary inference on edge hardware.
-
-Next natural step: Integrate these plasticity rules more deeply with the LowRankAdapter training loop and/or port the memory + plasticity layer into JuniorMemSys for persistent, topological learning.
+Next steps can include fully wiring the delegation in the state machine and beginning to add a MemSys backend interface.
