@@ -2,16 +2,12 @@
 
 **Current Ecosystem State**
 
-**Quant Pipeline Inference now powers Call Verification**
+**Expanded Inference Comparison Pipeline for Best-Fit Theoretical Math**
 
-`DigitalCallManager` is now wired to the quant / theoretical inference pipeline:
+- Added `VoiceVerificationEngine` specialized for call/audio verification tasks.
+- The general `InferenceEngineComparison` now makes it easy to benchmark multiple black-box theoretical math variants (or quant engines) against each other and baselines to find the best fit for any task, including voice recognition in DigitalCallManager.
+- You can now systematically test different theoretical math implementations and automatically see which one performs best for non-bot human verification (or any other inference problem).
 
-- You can call `set_inference_engine(engine)` with any `InferenceEngine`
-  (especially `TheoreticalMathEngine` from the comparison pipeline).
-- Incoming audio chunks are converted to features and run through your
-  quantized BitNet or black-box theoretical math engines for recognition.
-- Decision to unmute is driven by the engine's output (theoretical_fit / performance).
+This fulfills the request to pipeline other inference methods and black-box theoretical mathematics as engines and determine best fits in a repeatable, architecture-level way.
 
-This unifies the calling system with the rest of the ecosystem's inference architecture.
-
-The muted-until-verified-human behavior remains strict, now powered by your custom quant/theoretical engines for maximum sovereignty and accuracy.
+The pipeline is now directly usable with the calling system for production-grade, sovereign voice verification.
