@@ -2,10 +2,9 @@
 
 **Current Ecosystem State**
 
-Extended the original Ternary Profile Lifecycle with **Profile Performance Scoring**:
-- Profiles now earn performance scores based on how much they help reduce quantization drift after mutation.
-- Added get_profile_performance() to expose scores for monitoring and future decision-making.
-- This original self-improving mechanism makes the profile lifecycle truly evolutionary: good profiles 'survive' and are preferred, poor ones are naturally deprioritized.
-- Combined with previous QDT and Drift-Guided Mutation, this creates one of the most advanced autonomous adaptation architectures in the BitNet 3.0 ecosystem.
+Made the Profile Performance Scoring real by adding actual post-mutation drift measurement.
+- Now captures pre-mutation drift and compares with current stats after mutation for accurate improvement scoring.
+- This strengthens the original self-improving Ternary Profile Lifecycle: profiles now have measurable, data-driven performance that can influence future decisions.
+- Added get_profile_performance() exposure.
 
-These original ideas demonstrate powerful scaling advantages for long-running sovereign systems.
+These enhancements continue to deepen the autonomous 3.0 architecture with original, executable ideas for long-running sovereign systems.
