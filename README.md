@@ -2,15 +2,15 @@
 
 **Current Ecosystem State**
 
-**Deepened Plasticity Rules with Eligibility Traces + Reward Modulation**
+**Started JuniorMemSys Integration + Backend Abstraction**
 
-The `SHEEPMemory` class now implements a more biologically accurate plasticity system:
+- Created `MemoryBackend` abstract interface + `InMemoryBackend` implementation.
+- Made `SHEEPMemory` fully backend-aware. It now delegates storage and retrieval to the backend.
+- This is the architectural foundation for plugging in a real `JuniorMemSysBackend` later.
+- Plasticity rules (with eligibility traces + reward modulation) continue to operate on top of the backend.
 
-- **Eligibility traces**: Decaying memory of recent profile activity, enabling credit assignment over time.
-- **Reward modulation**: Plasticity strength is scaled by a reward signal (stronger updates on high-value outcomes like FULL_AWAKENING).
-- **Integrated** into Reflection, Consolidation, and Replay.
-- Traces are decayed during replay and after plasticity application.
+The memory system is now cleanly separated:
+- **SHEEPMemory** = active reasoning + plasticity logic
+- **MemoryBackend** = storage abstraction (ready for JuniorMemSys)
 
-This brings the learning rules closer to reward-modulated STDP / three-factor plasticity models while remaining lightweight for edge deployment.
-
-The modular `SHEEPMemory` continues to serve as the foundation for future integration with JuniorMemSys-Suite.
+This is a major step toward the desired two-tier biologically-inspired memory architecture for the entire ecosystem.
