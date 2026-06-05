@@ -2,16 +2,12 @@
 
 **Current Ecosystem State**
 
-**Deepened Plasticity Rules with STDP-style Timing**
+**Advanced JuniorMemSys Integration**
 
-The `PlasticityEngine` has been significantly deepened:
+- `JuniorMemSysBackend` has been significantly improved with clear integration roadmap, helper methods (`connect_to_memsys`, `persist_to_memsys`), and detailed TODOs.
+- The backend is now the official bridge for connecting SHEEPMemory to JuniorMemSys-Suite.
+- All biological memory features (multi-scale consolidation, sleep-like offline consolidation, STDP-style plasticity, etc.) work on top of this abstraction.
 
-- Eligibility trace now explicitly acts as a **timing signal** (STDP approximation).
-- High eligibility (recent activity) → stronger potentiation on positive outcomes.
-- Low eligibility → weaker effect.
-- Negative outcomes trigger depression with inverse timing (classic STDP behavior).
-- Still includes reward modulation and homeostatic scaling.
+We have started **actual integration work** by creating a production-ready backend structure that can evolve into a real connection with the JuniorMemSys repo.
 
-This brings the learning rules much closer to biological reward-modulated STDP while remaining simple and efficient for edge deployment.
-
-The modular `PlasticityEngine` can be easily extended or replaced with more advanced rules in the future.
+Next natural steps: Begin implementing the receiving side in JuniorMemSys-Suite or fully wire `JuniorMemSysBackend` as the default in the state machine.

@@ -1,14 +1,16 @@
 # path: src/juniorllm/memory/memory_backend.py
 
 """
-MemoryBackend implementations
+MemoryBackend implementations for SHEEPMemory.
 
-- InMemoryBackend: Default fast in-memory storage
-- JuniorMemSysBackend: Stub for future integration with JuniorMemSys-Suite
-  (the persistent topological long-term memory layer)
+This module provides the storage abstraction layer.
 
-When ready, JuniorMemSysBackend can delegate to actual JuniorMemSys
-methods for persistent .parquet storage + TDA querying.
+- InMemoryBackend: Fast default
+- JuniorMemSysBackend: Designed for integration with JuniorMemSys-Suite
+  (the ecosystem's persistent topological long-term memory system).
+
+When fully integrated, JuniorMemSysBackend will delegate storage and
+complex queries (TDA, persistence landscapes, etc.) to JuniorMemSys.
 """
 
 from abc import ABC, abstractmethod
@@ -50,7 +52,7 @@ class MemoryBackend(ABC):
 
 
 class InMemoryBackend(MemoryBackend):
-    """Default fast in-memory backend."""
+    """Default in-memory implementation. Fast and simple."""
 
     def __init__(self):
         self._history: List[Dict[str, Any]] = []
@@ -85,35 +87,37 @@ class InMemoryBackend(MemoryBackend):
 
 class JuniorMemSysBackend(MemoryBackend):
     """
-    Backend stub for integration with JuniorMemSys-Suite.
+    Backend designed for integration with JuniorMemSys-Suite.
 
-    Current behavior: Falls back to in-memory storage (same as InMemoryBackend).
+    Current state: Functional stub (delegates to in-memory for compatibility).
 
-    Future behavior:
-    - store_awakening() → Persist to JuniorMemSys with topological metadata
-    - get_history() → Query from JuniorMemSys (with optional TDA filters)
-    - consolidated_insights → Store as high-level topological summaries
+    Integration roadmap:
+    - When JuniorMemSys is ready, replace internal storage with calls to
+      JuniorMemSys methods for persistent storage and topological queries.
+    - SHEEPMemory can then benefit from long-term memory, TDA-based retrieval,
+      and cross-component memory sharing.
 
-    This class acts as the bridge between fast SHEEPMemory reasoning
-    and the persistent long-term memory system (JuniorMemSys).
+    This class serves as the official bridge between the fast reasoning
+    memory (SHEEPMemory) and the ecosystem's long-term memory system.
     """
 
     def __init__(self):
-        # For now, delegate to in-memory storage.
-        # When JuniorMemSys is ready, replace these with real calls.
         self._fallback = InMemoryBackend()
-        self._connected = False  # Flag for when real JuniorMemSys connection exists
+        self._memsys_instance = None  # Will hold real JuniorMemSys connection
+        self._connected = False
 
     def store_awakening(self, record: Dict[str, Any]) -> None:
-        # TODO: When integrated, add topological features (e.g., TDA signature)
-        # and store via JuniorMemSys API.
+        # TODO: When integrated:
+        #   - Add topological features (e.g. persistence diagram summary)
+        #   - Call self._memsys_instance.store_memory(record, metadata=...)
         self._fallback.store_awakening(record)
 
     def get_history(self, last_n: int = 50) -> List[Dict[str, Any]]:
+        # TODO: Replace with topological query from JuniorMemSys when available
         return self._fallback.get_history(last_n)
 
     def store_consolidated_insights(self, insights: Dict[str, Any]) -> None:
-        # TODO: Store as high-level memory object in JuniorMemSys
+        # TODO: Store as high-level consolidated memory object in JuniorMemSys
         self._fallback.store_consolidated_insights(insights)
 
     def get_consolidated_insights(self) -> Dict[str, Any]:
@@ -131,11 +135,21 @@ class JuniorMemSysBackend(MemoryBackend):
     def get_lifecycle(self, profile: str) -> Dict[str, Any]:
         return self._fallback.get_lifecycle(profile)
 
+    # === Integration helper methods ===
+
+    def connect_to_memsys(self, memsys_instance: Any = None):
+        """Establish connection to a JuniorMemSys instance."""
+        self._memsys_instance = memsys_instance
+        self._connected = True
+        print("[JuniorMemSysBackend] Connected to JuniorMemSys (stub mode).")
+
     def is_connected(self) -> bool:
         return self._connected
 
-    # Placeholder for future real integration methods
-    def connect_to_memsys(self):
-        """Future method to establish connection to JuniorMemSys-Suite."""
-        print("[JuniorMemSysBackend] Connection to JuniorMemSys not yet implemented.")
-        self._connected = True
+    def persist_to_memsys(self):
+        """Future method: Flush current state to JuniorMemSys for long-term storage."""
+        if not self._connected:
+            print("[JuniorMemSysBackend] Not connected to JuniorMemSys yet.")
+            return
+        # TODO: Implement real persistence logic here
+        print("[JuniorMemSysBackend] Persisting to JuniorMemSys... (not yet implemented)")
