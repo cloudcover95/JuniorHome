@@ -2,7 +2,6 @@
 
 import logging
 import time
-import hashlib
 from dataclasses import dataclass, field
 from enum import Enum, auto, IntEnum
 from typing import Any, Callable, Dict, List, Optional
@@ -33,7 +32,7 @@ class SHEEPLevel(IntEnum):
 class SecurityLevel(IntEnum):
     STANDARD = 0
     HARDENED = 1
-    PARANOID = 2   # SHEEP Guardian Mode
+    PARANOID = 2
 
 
 class State(Enum):
@@ -105,8 +104,6 @@ class JuniorLLMStateMachine:
         self._sheep_awakening_start_time: Optional[float] = None
         self._sheep_awakening_duration: float = 300.0
         self._sheep_history: List[Dict[str, Any]] = []
-
-        # Lean security state (heavy logic delegated)
         self._security_level: SecurityLevel = SecurityLevel.STANDARD
         self._model_hashes: Dict[str, str] = {}
         self._credential_isolation_enabled: bool = True
@@ -116,7 +113,24 @@ class JuniorLLMStateMachine:
         self.add_timer("quant_drift_check", interval_seconds=180, metadata={"type": "quant"})
         self.add_timer("sheep_maintenance", interval_seconds=30, metadata={"type": "sheep"})
 
-    # ... existing methods remain largely unchanged ...
+    def add_evolution_rule(self, rule: EvolutionRule):
+        self.evolution_rules.append(rule)
+
+    def evaluate_evolution_rules(self, context: Dict[str, Any]):
+        for rule in self.evolution_rules:
+            if rule.condition(context):
+                if rule.security_policy == "anomaly_check":
+                    if context.get("anomaly_score", 0) > 0.8:
+                        continue
+                if rule.security_policy == "require_auth":
+                    if not context.get("authenticated", False):
+                        continue
+                rule.action()
+
+                if rule.triggers_adapter_training and rule.target_adapter_profile:
+                    self.queue_adapter_training(rule.name, rule.target_adapter_profile)
+
+        self._evaluate_state_coherence(context)
 
     def _evaluate_state_coherence(self, context: Dict[str, Any]):
         coherence = context.get("coherence", 0.0)
@@ -132,7 +146,6 @@ class JuniorLLMStateMachine:
 
             self._activate_sheep_awakening()
 
-            # Lean escalation hook
             if self._sheep_level >= SHEEPLevel.ELEVATED:
                 self._security_level = SecurityLevel.PARANOID
 
@@ -201,8 +214,65 @@ class JuniorLLMStateMachine:
                     except Exception as e:
                         print(f"[SHEEP] Trainer call failed: {e}")
 
+    def _maintain_sheep_awakening(self):
+        if self._sheep_level == SHEEPLevel.INACTIVE or self._sheep_awakening_start_time is None:
+            return
+
+        elapsed = time.time() - self._sheep_awakening_start_time
+        if elapsed > self._sheep_awakening_duration:
+            self._deactivate_sheep_awakening()
+
+    def _deactivate_sheep_awakening(self):
+        if self._sheep_level != SHEEPLevel.INACTIVE:
+            print(f"[SHEEP] Awakening Mode deactivated (was level {self._sheep_level.name})")
+            self._sheep_level = SHEEPLevel.INACTIVE
+            self._sheep_awakening_start_time = None
+            self._log_to_obsidian("sheep_awakening_deactivated", {})
+
+            # New: Reflect on this awakening after it ends
+            self._reflect_on_recent_awakening()
+
+    def _reflect_on_recent_awakening(self):
+        """Original idea: SHEEP Reflection.
+        After an awakening ends, analyze the most recent record and historical performance
+        to slightly boost profiles that performed well during high-coherence states.
+        This creates a self-improving memory loop."""
+        if not self._sheep_history:
+            return
+
+        latest = self._sheep_history[-1]
+        level = latest.get("level")
+        perf = latest.get("performance_at_activation", 0)
+
+        if level in ("ELEVATED", "FULL_AWAKENING") and perf > 0.05:
+            # Boost the profile that was active during a successful high-level awakening
+            active_profile = latest.get("active_profile")
+            if active_profile and active_profile in self._profile_performance:
+                boost = 0.02 if level == "FULL_AWAKENING" else 0.01
+                self._profile_performance[active_profile] += boost
+
+                if active_profile in self._profile_lifecycle:
+                    self._profile_lifecycle[active_profile]["performance_score"] = self._profile_performance[active_profile]
+
+                print(f"[SHEEP Reflection] Boosted performance of {active_profile} based on successful awakening")
+                self._log_to_obsidian("sheep_reflection_boost", {
+                    "profile": active_profile,
+                    "boost": boost,
+                    "awakening_level": level
+                })
+
+    def is_sheep_awakening_active(self) -> bool:
+        return self._sheep_level != SHEEPLevel.INACTIVE
+
+    def get_sheep_level(self) -> SHEEPLevel:
+        return self._sheep_level
+
+    def get_sheep_history(self) -> List[Dict[str, Any]]:
+        return self._sheep_history[-20:]
+
+    # ... other methods (security hooks, etc.) remain as in previous lean version
+
     def get_security_status(self) -> Dict[str, Any]:
-        """Lean security status - heavy verification delegated to external modules."""
         return {
             "security_level": self._security_level.name,
             "sheep_level": self._sheep_level.name,
@@ -211,8 +281,6 @@ class JuniorLLMStateMachine:
         }
 
     def request_model_integrity_check(self, profile: str, ternary_weights: Any):
-        """Hook for external security module to perform SHA256 verification.
-        Engine only stores baseline hash; actual check logic lives outside core."""
         try:
             if hasattr(ternary_weights, 'tobytes'):
                 data = ternary_weights.tobytes()
@@ -231,14 +299,11 @@ class JuniorLLMStateMachine:
         except Exception as e:
             print(f"[SECURITY] Integrity hook error: {e}")
 
-    # ... rest of the class (load_adapter, etc.) can optionally call request_model_integrity_check
-
     def load_adapter(self, adapter_id: str, adapter: Any, profile: str = "general"):
         self.active_adapters[adapter_id] = adapter
         self.adapter_profiles[adapter_id] = profile
 
-        # Optional lean hook - external security module can be wired to call request_model_integrity_check
         if hasattr(adapter, 'ternary_weights') and self._security_level >= SecurityLevel.HARDENED:
             self.request_model_integrity_check(profile, adapter.ternary_weights)
 
-    # ... remaining methods unchanged for brevity
+    # ... (rest of methods like _mutate..., _update..., etc. unchanged)
