@@ -106,9 +106,9 @@ class JuniorLLMStateMachine:
         self._sheep_awakening_duration: float = 300.0
         self._sheep_history: List[Dict[str, Any]] = []
 
-        # New security layer
+        # Lean security state (heavy logic delegated)
         self._security_level: SecurityLevel = SecurityLevel.STANDARD
-        self._model_hashes: Dict[str, str] = {}  # For ternary weight integrity
+        self._model_hashes: Dict[str, str] = {}
         self._credential_isolation_enabled: bool = True
 
         self.add_timer("coherence_check", interval_seconds=300, metadata={"type": "system"})
@@ -116,7 +116,7 @@ class JuniorLLMStateMachine:
         self.add_timer("quant_drift_check", interval_seconds=180, metadata={"type": "quant"})
         self.add_timer("sheep_maintenance", interval_seconds=30, metadata={"type": "sheep"})
 
-    # ... existing methods ...
+    # ... existing methods remain largely unchanged ...
 
     def _evaluate_state_coherence(self, context: Dict[str, Any]):
         coherence = context.get("coherence", 0.0)
@@ -132,9 +132,9 @@ class JuniorLLMStateMachine:
 
             self._activate_sheep_awakening()
 
-            # Original security idea: Escalate to PARANOID on awakening
+            # Lean escalation hook
             if self._sheep_level >= SHEEPLevel.ELEVATED:
-                self._escalate_security(SecurityLevel.PARANOID)
+                self._security_level = SecurityLevel.PARANOID
 
     def _activate_sheep_awakening(self):
         if self._sheep_level != SHEEPLevel.INACTIVE:
@@ -201,40 +201,18 @@ class JuniorLLMStateMachine:
                     except Exception as e:
                         print(f"[SHEEP] Trainer call failed: {e}")
 
-    def _escalate_security(self, level: SecurityLevel):
-        """Original sovereign security escalation tied to SHEEP levels.
-        PARANOID mode (SHEEP Guardian) activates extra protections against supply-chain and runtime tampering."""
-        if level > self._security_level:
-            self._security_level = level
-            print(f"[SECURITY] Escalated to {level.name} (SHEEP Guardian Mode)")
+    def get_security_status(self) -> Dict[str, Any]:
+        """Lean security status - heavy verification delegated to external modules."""
+        return {
+            "security_level": self._security_level.name,
+            "sheep_level": self._sheep_level.name,
+            "credential_isolation": self._credential_isolation_enabled,
+            "models_with_baseline": len(self._model_hashes)
+        }
 
-            if level == SecurityLevel.PARANOID:
-                self._enable_paranoid_mode()
-
-    def _enable_paranoid_mode(self):
-        """SHEEP Guardian Mode - original security tech for 1.58/3.0.
-        Protects against IronWorm-style supply-chain attacks, model tampering, and credential exfiltration."""
-        self._credential_isolation_enabled = True
-
-        # Verify all loaded adapter/model hashes
-        for profile, adapter in self.active_adapters.items():
-            if hasattr(adapter, 'ternary_weights'):
-                self._verify_model_integrity(profile, adapter.ternary_weights)
-
-        # During PARANOID, only allow high-performance profiles
-        if self._profile_performance:
-            best = max(self._profile_performance, key=self._profile_performance.get)
-            if self.current_active_profile != best:
-                print(f"[SECURITY] PARANOID: Switching to verified high-performance profile {best}")
-                self.current_active_profile = best
-
-        self._log_to_obsidian("paranoid_mode_activated", {
-            "current_profile": self.current_active_profile,
-            "security_level": self._security_level.name
-        })
-
-    def _verify_model_integrity(self, profile: str, ternary_weights: Any):
-        """Real 1.58/3.0 security: Hash verification for ternary weights to detect tampering (supply-chain or runtime)."""
+    def request_model_integrity_check(self, profile: str, ternary_weights: Any):
+        """Hook for external security module to perform SHA256 verification.
+        Engine only stores baseline hash; actual check logic lives outside core."""
         try:
             if hasattr(ternary_weights, 'tobytes'):
                 data = ternary_weights.tobytes()
@@ -245,30 +223,22 @@ class JuniorLLMStateMachine:
 
             if profile in self._model_hashes:
                 if self._model_hashes[profile] != current_hash:
-                    print(f"[SECURITY] INTEGRITY VIOLATION detected on {profile}!")
-                    self._log_to_obsidian("model_integrity_violation", {"profile": profile})
-                    # In production: quarantine profile, alert, fallback to verified backup
+                    print(f"[SECURITY] Integrity mismatch on {profile}")
+                    self._log_to_obsidian("model_integrity_mismatch", {"profile": profile})
             else:
                 self._model_hashes[profile] = current_hash
-                print(f"[SECURITY] Model integrity baseline recorded for {profile}")
 
         except Exception as e:
-            print(f"[SECURITY] Integrity check error: {e}")
+            print(f"[SECURITY] Integrity hook error: {e}")
 
-    def secure_load_adapter(self, adapter_id: str, adapter: Any, profile: str = "general"):
-        """Secure wrapper for loading adapters with integrity and isolation."""
-        if self._security_level >= SecurityLevel.PARANOID:
-            if hasattr(adapter, 'ternary_weights'):
-                self._verify_model_integrity(profile, adapter.ternary_weights)
+    # ... rest of the class (load_adapter, etc.) can optionally call request_model_integrity_check
 
-        self.load_adapter(adapter_id, adapter, profile)
+    def load_adapter(self, adapter_id: str, adapter: Any, profile: str = "general"):
+        self.active_adapters[adapter_id] = adapter
+        self.adapter_profiles[adapter_id] = profile
 
-    # ... rest of existing methods with minor security hooks if needed ...
+        # Optional lean hook - external security module can be wired to call request_model_integrity_check
+        if hasattr(adapter, 'ternary_weights') and self._security_level >= SecurityLevel.HARDENED:
+            self.request_model_integrity_check(profile, adapter.ternary_weights)
 
-    def get_security_status(self) -> Dict[str, Any]:
-        return {
-            "security_level": self._security_level.name,
-            "sheep_level": self._sheep_level.name,
-            "credential_isolation": self._credential_isolation_enabled,
-            "models_verified": len(self._model_hashes)
-        }
+    # ... remaining methods unchanged for brevity

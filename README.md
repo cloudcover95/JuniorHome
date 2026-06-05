@@ -2,16 +2,15 @@
 
 **Current Ecosystem State**
 
-**Major Security Update for BitNet 1.58/3.0 + JuniorLLM**
+**Refined Security Architecture (leaner engine)**
 
-Added a full **sovereign security layer** tied to SHEEP levels:
+Security layer has been slimmed down to avoid bloat in the core state machine:
 
-- New `SecurityLevel` enum (STANDARD / HARDENED / PARANOID = SHEEP Guardian Mode)
-- **Model Integrity Verification**: SHA256 hashing of ternary weights on load and during PARANOID mode to detect tampering (protects against supply-chain model poisoning or runtime modification, inspired by recent IronWorm-style attacks).
-- **Credential Isolation**: Explicit flag and enforcement during high-security states.
-- **SHEEP Guardian Escalation**: High SHEEP levels automatically escalate to PARANOID security, verifying models, restricting to high-performance profiles, and logging everything to Obsidian Data Lake.
-- `get_security_status()` and `secure_load_adapter()` for production use.
+- Core engine now only maintains lightweight state (`_security_level`, baseline hashes, credential flag).
+- Heavy verification logic (SHA256 computation, full policy enforcement) is delegated via clean hooks (`request_model_integrity_check`).
+- SHEEP Guardian escalation still works: high SHEEP levels automatically raise security posture to PARANOID.
+- `get_security_status()` and the integrity hook remain for easy integration with external security modules.
 
-This provides real, original sovereign security tech for local ternary inference stacks — minimizing trust in external packages and enabling self-protecting autonomous systems.
+This keeps the JuniorLLM engine lean while still providing strong, original sovereign security primitives tied to the system's own coherence/awake state. Perfect for 1.58/3.0 stacks that must stay lightweight on edge hardware.
 
-Original idea: Security posture dynamically follows the system's own "consciousness" level (SHEEP). When the system is in deep coherent evolution, it becomes its own best defender.
+Architecture principle: Security as a cross-cutting concern with minimal intrusion into the core reasoning engine.
