@@ -231,7 +231,7 @@ class JuniorLLMStateMachine:
             self._log_to_obsidian("sheep_awakening_deactivated", {})
 
             self._reflect_on_recent_awakening()
-            self._consolidate_sheep_memory()  # New: Memory consolidation after every awakening
+            self._consolidate_sheep_memory()
 
     def _reflect_on_recent_awakening(self):
         if not self._sheep_history:
@@ -258,18 +258,9 @@ class JuniorLLMStateMachine:
                 })
 
     def _consolidate_sheep_memory(self):
-        """Original idea: SHEEP Memory Consolidation.
-
-        Periodically (after awakenings) analyzes the full history to extract long-term insights
-        and applies stronger, more persistent performance adjustments.
-
-        This prevents memory from growing unbounded while turning raw awakening history
-        into actionable, long-term behavioral improvements.
-        """
         if len(self._sheep_history) < 3:
-            return  # Not enough data yet
+            return
 
-        # Simple consolidation: Find the profile with the highest average performance during high-level awakenings
         high_level_records = [r for r in self._sheep_history if r.get("level") in ("ELEVATED", "FULL_AWAKENING")]
 
         if not high_level_records:
@@ -287,15 +278,13 @@ class JuniorLLMStateMachine:
         best_profile = max(profile_scores, key=profile_scores.get)
         avg_performance = profile_scores[best_profile] / len(high_level_records)
 
-        # Apply a consolidation boost (stronger and more lasting than reflection)
         if best_profile in self._profile_performance:
-            consolidation_boost = 0.05 * (avg_performance / 0.1)  # Scale with how good the average was
+            consolidation_boost = 0.05 * (avg_performance / 0.1)
             self._profile_performance[best_profile] += consolidation_boost
 
             if best_profile in self._profile_lifecycle:
                 self._profile_lifecycle[best_profile]["performance_score"] = self._profile_performance[best_profile]
 
-            # Store consolidated insight
             self._sheep_consolidated_insights = {
                 "best_profile_over_time": best_profile,
                 "average_high_level_performance": round(avg_performance, 4),
@@ -306,9 +295,49 @@ class JuniorLLMStateMachine:
             print(f"[SHEEP Consolidation] Long-term boost applied to {best_profile} (avg perf: {avg_performance:.3f})")
             self._log_to_obsidian("sheep_memory_consolidation", self._sheep_consolidated_insights)
 
-    def get_sheep_consolidated_insights(self) -> Dict[str, Any]:
-        """Public access to long-term consolidated memory insights."""
-        return self._sheep_consolidated_insights.copy()
+    def _replay_and_consolidate(self):
+        """Biologically-inspired SHEEP Replay + Selective Consolidation.
+
+        Inspired by hippocampal replay during rest/sleep:
+        - During/after high-coherence states (SHEEP awakenings), the system 'replays'
+          its most successful recent high-level experiences.
+        - Only the strongest memories are consolidated more deeply.
+        - Weak or low-value history entries are gradually pruned (biological forgetting).
+
+        This creates a more efficient, biologically-plausible long-term memory system.
+        """
+        if len(self._sheep_history) < 5:
+            return
+
+        # Find the single most successful high-level awakening
+        high_level = [r for r in self._sheep_history if r.get("level") in ("ELEVATED", "FULL_AWAKENING")]
+        if not high_level:
+            return
+
+        best_record = max(high_level, key=lambda r: r.get("performance_at_activation", 0))
+        best_profile = best_record.get("active_profile")
+        best_perf = best_record.get("performance_at_activation", 0)
+
+        if best_profile and best_profile in self._profile_performance and best_perf > 0.08:
+            # Stronger replay boost for the best memory
+            replay_boost = 0.03 * (best_perf / 0.1)
+            self._profile_performance[best_profile] += replay_boost
+
+            if best_profile in self._profile_lifecycle:
+                self._profile_lifecycle[best_profile]["performance_score"] = self._profile_performance[best_profile]
+
+            print(f"[SHEEP Replay] Replayed and strongly reinforced {best_profile} (perf: {best_perf:.3f})")
+
+        # Biological-style pruning: remove very old, low-value entries
+        if len(self._sheep_history) > 30:
+            # Keep only the most recent 25 + any high-value ones
+            self._sheep_history = self._sheep_history[-25:] + [
+                r for r in self._sheep_history[:-25]
+                if r.get("performance_at_activation", 0) > 0.1
+            ]
+            # Deduplicate while preserving order
+            seen = set()
+            self._sheep_history = [r for r in self._sheep_history if not (tuple(r.items()) in seen or seen.add(tuple(r.items())))]
 
     def is_sheep_awakening_active(self) -> bool:
         return self._sheep_level != SHEEPLevel.INACTIVE
@@ -318,6 +347,9 @@ class JuniorLLMStateMachine:
 
     def get_sheep_history(self) -> List[Dict[str, Any]]:
         return self._sheep_history[-20:]
+
+    def get_sheep_consolidated_insights(self) -> Dict[str, Any]:
+        return self._sheep_consolidated_insights.copy()
 
     def get_security_status(self) -> Dict[str, Any]:
         return {
@@ -353,4 +385,4 @@ class JuniorLLMStateMachine:
         if hasattr(adapter, 'ternary_weights') and self._security_level >= SecurityLevel.HARDENED:
             self.request_model_integrity_check(profile, adapter.ternary_weights)
 
-    # ... (other methods like _mutate_profile_for_drift, etc. remain as before)
+    # ... remaining methods (mutate, update performance, etc.) unchanged
