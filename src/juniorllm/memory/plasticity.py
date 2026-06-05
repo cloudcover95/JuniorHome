@@ -3,14 +3,15 @@
 """
 PlasticityEngine
 
-Biologically-inspired plasticity with:
-- Eligibility traces (for timing/credit assignment)
-- Reward modulation
-- STDP-style timing (potentiation when pre-synaptic activity is recent)
-- Homeostatic scaling
-- Support for depression on negative outcomes
+Investigation into STDP (Spike-Timing-Dependent Plasticity) algorithms.
 
-This approximates reward-modulated STDP / three-factor learning rules.
+Current implementation approximates reward-modulated STDP using:
+- Eligibility traces as timing signal (proxy for pre-synaptic activity recency)
+- Exponential-like dependence via trace strength
+- Potentiation when pre before post (high eligibility + positive outcome)
+- Depression when timing is reversed or outcome is negative
+
+This is a lightweight, abstract version suitable for sovereign edge systems.
 """
 
 from typing import Dict
@@ -24,7 +25,7 @@ class PlasticityEngine:
         self.eligibility_decay: float = 0.9
 
     def update_eligibility_trace(self, profile: str, strength: float = 1.0):
-        """Record recent activity of a profile (pre-synaptic like)."""
+        """Record recent 'pre-synaptic' activity of a profile."""
         if profile not in self.eligibility_traces:
             self.eligibility_traces[profile] = 0.0
         self.eligibility_traces[profile] = min(1.0, self.eligibility_traces[profile] + strength)
@@ -37,35 +38,33 @@ class PlasticityEngine:
 
     def apply(self, performance: Dict[str, float], lifecycle: Dict[str, Dict], profile: str, outcome: float, reward: float = 1.0, coactivation: float = 1.0):
         """
-        Apply plasticity with STDP-style timing.
+        Apply STDP-inspired plasticity rule.
 
-        - The current eligibility trace value acts as a timing signal:
-          High trace = recent pre-synaptic activity → strong potentiation (STDP-like LTP)
-          Low/zero trace = activity was long ago → weak effect
+        Biological mapping:
+        - Eligibility trace = decaying memory of recent pre-synaptic activity
+        - Positive outcome + high eligibility = pre before post → LTP (potentiation)
+        - Negative outcome or low eligibility = post before pre or weak timing → LTD (depression)
 
-        - Reward modulates overall strength.
-        - Negative outcome can cause depression (LTD).
-        - Homeostatic scaling prevents runaway growth.
+        The update strength depends on how recent the activity was (trace value).
         """
         if profile not in performance:
             performance[profile] = 0.0
 
         eligibility = self.eligibility_traces.get(profile, 0.0)
 
-        # STDP-style: timing-dependent potentiation
-        # Stronger update when eligibility is high (recent activity before outcome)
-        timing_factor = eligibility  # 0.0 to 1.0
+        # STDP-style timing window
+        if outcome > 0:
+            # Potentiation window: stronger when eligibility is high (recent pre-activity)
+            timing_factor = eligibility
+            delta_w = self.lr * timing_factor * reward * outcome * coactivation
+        else:
+            # Depression window: stronger when eligibility is low (reversed or weak timing)
+            timing_factor = max(0.2, 1.0 - eligibility)
+            delta_w = self.lr * timing_factor * abs(outcome) * reward * coactivation * -1.0
 
-        # Allow depression for negative outcomes
-        effective_outcome = outcome
-        if outcome < 0:
-            # Long-term depression (weaker when trace is high, classic STDP)
-            timing_factor = max(0.1, 1.0 - eligibility)  # inverse timing for depression
+        performance[profile] += delta_w
 
-        modulated_update = self.lr * timing_factor * reward * effective_outcome * coactivation
-        performance[profile] += modulated_update
-
-        # Homeostatic scaling
+        # Homeostatic scaling (synaptic scaling)
         current_avg = sum(performance.values()) / max(len(performance), 1)
         if current_avg > self.homeostatic_target:
             performance[profile] *= 0.995
@@ -73,6 +72,6 @@ class PlasticityEngine:
         if profile in lifecycle:
             lifecycle[profile]["performance_score"] = performance[profile]
 
-        # Decay trace after plasticity application (biological reset)
+        # Decay trace after plasticity (biological reset after learning event)
         if profile in self.eligibility_traces:
-            self.eligibility_traces[profile] *= 0.6
+            self.eligibility_traces[profile] *= 0.55

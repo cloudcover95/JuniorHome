@@ -2,12 +2,16 @@
 
 **Current Ecosystem State**
 
-**Advanced JuniorMemSys Integration**
+**STDP Plasticity Investigation & Implementation**
 
-- `JuniorMemSysBackend` has been significantly improved with clear integration roadmap, helper methods (`connect_to_memsys`, `persist_to_memsys`), and detailed TODOs.
-- The backend is now the official bridge for connecting SHEEPMemory to JuniorMemSys-Suite.
-- All biological memory features (multi-scale consolidation, sleep-like offline consolidation, STDP-style plasticity, etc.) work on top of this abstraction.
+Deepened `PlasticityEngine` with a more explicit STDP-style algorithm:
 
-We have started **actual integration work** by creating a production-ready backend structure that can evolve into a real connection with the JuniorMemSys repo.
+- Eligibility trace acts as timing signal for pre-synaptic activity recency.
+- Clear separation of potentiation (LTP) and depression (LTD) windows.
+- Timing-dependent strength: high eligibility → stronger potentiation on positive outcomes.
+- Inverse timing for depression on negative outcomes.
+- Still includes reward modulation and homeostatic scaling.
 
-Next natural steps: Begin implementing the receiving side in JuniorMemSys-Suite or fully wire `JuniorMemSysBackend` as the default in the state machine.
+This is a practical, abstract approximation of reward-modulated STDP suitable for edge-native systems.
+
+The modular design allows easy future extension (e.g., more precise timing windows, additional neuromodulatory factors, or full three-factor rules).
