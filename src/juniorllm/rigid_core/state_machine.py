@@ -2,6 +2,7 @@
 
 import logging
 import time
+import random
 from dataclasses import dataclass, field
 from enum import Enum, auto, IntEnum
 from typing import Any, Callable, Dict, List, Optional
@@ -232,6 +233,7 @@ class JuniorLLMStateMachine:
 
             self._reflect_on_recent_awakening()
             self._consolidate_sheep_memory()
+            self._replay_and_consolidate()
 
     def _reflect_on_recent_awakening(self):
         if not self._sheep_history:
@@ -298,46 +300,63 @@ class JuniorLLMStateMachine:
     def _replay_and_consolidate(self):
         """Biologically-inspired SHEEP Replay + Selective Consolidation.
 
-        Inspired by hippocampal replay during rest/sleep:
-        - During/after high-coherence states (SHEEP awakenings), the system 'replays'
-          its most successful recent high-level experiences.
-        - Only the strongest memories are consolidated more deeply.
-        - Weak or low-value history entries are gradually pruned (biological forgetting).
-
-        This creates a more efficient, biologically-plausible long-term memory system.
+        Inspired by hippocampal replay during rest/sleep and systems consolidation:
+        - 'Replays' the most successful recent high-level experiences with stronger reinforcement.
+        - Selectively consolidates only high-value memories.
+        - Applies gentle decay to older, lower-value history (biological forgetting).
         """
         if len(self._sheep_history) < 5:
             return
 
-        # Find the single most successful high-level awakening
+        # Replay the single best high-level awakening with stronger boost
         high_level = [r for r in self._sheep_history if r.get("level") in ("ELEVATED", "FULL_AWAKENING")]
-        if not high_level:
-            return
+        if high_level:
+            best_record = max(high_level, key=lambda r: r.get("performance_at_activation", 0))
+            best_profile = best_record.get("active_profile")
+            best_perf = best_record.get("performance_at_activation", 0)
 
-        best_record = max(high_level, key=lambda r: r.get("performance_at_activation", 0))
-        best_profile = best_record.get("active_profile")
-        best_perf = best_record.get("performance_at_activation", 0)
+            if best_profile and best_profile in self._profile_performance and best_perf > 0.08:
+                replay_boost = 0.04 * (best_perf / 0.1)
+                self._profile_performance[best_profile] += replay_boost
 
-        if best_profile and best_profile in self._profile_performance and best_perf > 0.08:
-            # Stronger replay boost for the best memory
-            replay_boost = 0.03 * (best_perf / 0.1)
-            self._profile_performance[best_profile] += replay_boost
+                if best_profile in self._profile_lifecycle:
+                    self._profile_lifecycle[best_profile]["performance_score"] = self._profile_performance[best_profile]
 
-            if best_profile in self._profile_lifecycle:
-                self._profile_lifecycle[best_profile]["performance_score"] = self._profile_performance[best_profile]
+                print(f"[SHEEP Replay] Replayed and reinforced {best_profile} (perf: {best_perf:.3f})")
 
-            print(f"[SHEEP Replay] Replayed and strongly reinforced {best_profile} (perf: {best_perf:.3f})")
+        # Gentle decay on older entries (biological forgetting curve)
+        if len(self._sheep_history) > 25:
+            for i in range(len(self._sheep_history) - 25):
+                record = self._sheep_history[i]
+                perf = record.get("performance_at_activation", 0)
+                if perf < 0.08:
+                    # Reduce influence of weak old memories
+                    prof = record.get("active_profile")
+                    if prof and prof in self._profile_performance:
+                        self._profile_performance[prof] *= 0.98  # Gentle decay
 
-        # Biological-style pruning: remove very old, low-value entries
-        if len(self._sheep_history) > 30:
-            # Keep only the most recent 25 + any high-value ones
-            self._sheep_history = self._sheep_history[-25:] + [
-                r for r in self._sheep_history[:-25]
-                if r.get("performance_at_activation", 0) > 0.1
-            ]
-            # Deduplicate while preserving order
-            seen = set()
-            self._sheep_history = [r for r in self._sheep_history if not (tuple(r.items()) in seen or seen.add(tuple(r.items())))]
+            # Prune very old low-value entries
+            self._sheep_history = self._sheep_history[-20:]
+
+    def get_sheep_consolidated_insights(self) -> Dict[str, Any]:
+        return self._sheep_consolidated_insights.copy()
+
+    def retrieve_relevant_memories(self, current_profile: str = None, top_k: int = 5) -> List[Dict[str, Any]]:
+        """Biologically-inspired cued retrieval.
+        Returns the most relevant past awakenings based on current context (simple relevance scoring).
+        """
+        if not self._sheep_history:
+            return []
+
+        scored = []
+        for record in self._sheep_history:
+            score = record.get("performance_at_activation", 0)
+            if current_profile and record.get("active_profile") == current_profile:
+                score += 0.1  # Boost if same profile is currently active
+            scored.append((score, record))
+
+        scored.sort(reverse=True)
+        return [r for score, r in scored[:top_k]]
 
     def is_sheep_awakening_active(self) -> bool:
         return self._sheep_level != SHEEPLevel.INACTIVE
@@ -347,9 +366,6 @@ class JuniorLLMStateMachine:
 
     def get_sheep_history(self) -> List[Dict[str, Any]]:
         return self._sheep_history[-20:]
-
-    def get_sheep_consolidated_insights(self) -> Dict[str, Any]:
-        return self._sheep_consolidated_insights.copy()
 
     def get_security_status(self) -> Dict[str, Any]:
         return {
@@ -385,4 +401,4 @@ class JuniorLLMStateMachine:
         if hasattr(adapter, 'ternary_weights') and self._security_level >= SecurityLevel.HARDENED:
             self.request_model_integrity_check(profile, adapter.ternary_weights)
 
-    # ... remaining methods (mutate, update performance, etc.) unchanged
+    # ... (other core methods like _mutate_profile_for_drift, _update_profile_performance, etc. remain as in previous versions)

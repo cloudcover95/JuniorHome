@@ -2,10 +2,13 @@
 
 **Current Ecosystem State**
 
-Added biologically-inspired **SHEEP Replay + Selective Consolidation**:
+Further improved the biologically-inspired SHEEP memory system:
 
-- During/after high-coherence SHEEP states, the system now 'replays' its single most successful recent high-level awakening and applies a stronger reinforcement boost.
-- Low-value or very old history entries are selectively pruned (inspired by biological forgetting curves).
-- This creates a more efficient, biologically-plausible long-term memory system on top of the existing Reflection and Consolidation mechanisms.
+- Enhanced **Replay + Selective Consolidation** with stronger replay boosts and biological-style gentle decay + pruning of low-value memories.
+- Added `retrieve_relevant_memories()` — cued retrieval inspired by biological memory access.
+- Better integration between Reflection, Consolidation, and Replay layers.
+- Added basic testing/diagnostic hooks via public methods.
 
-The architecture continues to draw from neuroscience while staying lean and highly functional for sovereign edge AI.
+This continues making the memory system more robust, efficient, and biologically plausible while staying lean for edge deployment.
+
+Regarding NeoMemSys / JuniorMemSys: The long-term vision is to eventually port or deeply integrate this SHEEP memory (history, consolidated insights, replay) into the dedicated topological memory system (JuniorMemSys-Suite) for persistent storage, TDA-based querying, and cross-component memory sharing. The current in-memory implementation in the state machine serves as the active reasoning layer, while MemSys would act as the long-term archival 'neocortex'.
