@@ -2,16 +2,15 @@
 
 **Current Ecosystem State**
 
-**Added InferenceEngineComparison Pipeline**
+**Added SecureDigitalCallHandler with anti-bot voice verification**
 
-New module `src/juniorllm/comparison/inference_comparison.py` allows:
+New module `src/juniorllm/telephony/secure_call_handler.py` implements secure digital/mobile calling:
 
-- Defining multiple inference/training engines (baseline + black-box theoretical math).
-- Running them on the same tasks.
-- Automatically computing "best fits" across metrics (avg_performance, theoretical_fit, etc.).
+- Calls always start **MUTED** upon acceptance.
+- Real-time verification for "non-bot verbal reflection" (live human speech vs TTS/bot).
+- Only unmutes for full communication once verified.
+- Extensible voice verifier injection (can use local STT, VAD + liveness detection, or BitNet-based models).
+- Clean state machine (muted → verifying → verified unmuted).
+- Designed to integrate with SHEEP memory (call logging), JuniorHome orchestrator, and crispy-mouse for hardware input.
 
-`TheoreticalMathEngine` is designed as a first-class citizen so your custom black-box theoretical mathematics (manifold folding, SVD, TDA, omni-math, etc.) can be plugged in and fairly compared against standard methods.
-
-This enables systematic evaluation of which engine 'fits' best for different parts of the system (plasticity, memory retrieval, profile performance, etc.).
-
-The pipeline uses real system state where possible and avoids relying on purely simulated data for core comparisons.
+This adds a sovereign, privacy-first digital calling capability to the ecosystem while strongly protecting against bot/spam calls.
