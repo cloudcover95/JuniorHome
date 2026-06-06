@@ -3,9 +3,9 @@
 """
 RealDataRunner
 
-Enhanced with deeper integration into the ontology graph and neuromodulation affecting structural plasticity.
+Enhanced with direct plasticity updates and MemSys graph integration.
 
-Supports real data pipelines for vision tags and call events with online learning.
+Now supports calling sleep_consolidation and richer pattern storage.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -62,6 +62,11 @@ class RealDataRunner:
 
         self.step_count += 1
         return {"step": self.step_count, "event_type": event.get("type")}
+
+    def trigger_sleep_consolidation(self):
+        """Trigger biological sleep-like consolidation across learned profiles."""
+        if hasattr(self.plasticity, "sleep_consolidation"):
+            self.plasticity.sleep_consolidation()
 
     def get_stats(self) -> Dict[str, Any]:
         return {

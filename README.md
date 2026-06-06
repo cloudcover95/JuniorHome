@@ -2,10 +2,10 @@
 
 **Current Ecosystem State**
 
-**Continued development**
+**Added sleep-like consolidation + enhanced RealDataRunner**
 
-- RealDataRunner enhanced with better MemSys graph integration.
-- Neuromodulation now scales Hebbian structural growth (deeper biological coupling).
-- System is moving toward practical real-data online learning pipelines.
+- New `sleep_consolidation()` biological mechanism in PlasticityEngine (offline strengthening/pruning).
+- RealDataRunner now supports triggering consolidation and has tighter integration with plasticity + MemSys graph.
+- Continued movement toward real-data online learning with biological memory formation.
 
-The sovereign edge ecosystem continues to mature with integrated vision, memory graph, and biological plasticity.
+The sovereign edge ecosystem keeps advancing with richer biology, real data pipelines, and integrated reasoning.
