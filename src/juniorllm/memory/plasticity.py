@@ -3,12 +3,9 @@
 """
 PlasticityEngine
 
-Added neuromorphic / spiking simulation support.
+Added basic meta-plasticity hook (learning rate adaptation based on recent performance).
 
-- SpikingPlasticityModule for event-driven, STDP-like updates.
-- Integration with hardware backend hook for future neuromorphic chips (Loihi, Akida, etc.).
-
-This brings the biological mechanisms closer to true neuromorphic acceleration.
+This allows the system to become more or less plastic depending on stability.
 """
 
 from typing import Dict, Optional, Callable
@@ -57,14 +54,6 @@ class HebbianStructuralModule:
 
 
 class SpikingPlasticityModule:
-    """
-    Neuromorphic-inspired spiking plasticity.
-
-    Simulates event-driven updates similar to STDP on neuromorphic hardware.
-    Can be swapped in place of HebbianStructuralModule for spiking-style learning.
-    Future: Direct mapping to Loihi 2, Akida, or other neuromorphic accelerators.
-    """
-
     def __init__(self, decay: float = 0.95, threshold: float = 0.5):
         self.decay = decay
         self.threshold = threshold
@@ -77,17 +66,14 @@ class SpikingPlasticityModule:
         if profile not in self.connection_strength:
             self.connection_strength[profile] = 0.0
 
-        # Simple leaky integrate-and-fire style
         self.membrane_potential[profile] = self.membrane_potential[profile] * self.decay + eligibility * modulation
 
         spike = 1.0 if self.membrane_potential[profile] > self.threshold else 0.0
 
         if spike > 0:
-            # STDP-like potentiation on spike
             self.connection_strength[profile] = min(1.0, self.connection_strength[profile] + 0.1 * modulation)
-            self.membrane_potential[profile] = 0.0  # reset
+            self.membrane_potential[profile] = 0.0
         else:
-            # Slight depression / decay
             self.connection_strength[profile] *= 0.99
 
         if self.connection_strength[profile] < 0.05:
@@ -106,14 +92,13 @@ class PlasticityEngine:
         self.eligibility_traces: Dict[str, float] = {}
         self.eligibility_decay: float = 0.9
 
-        # Default to Hebbian; can be swapped with SpikingPlasticityModule for neuromorphic style
         self.hebbian = hebbian_module or HebbianStructuralModule()
         self.neuromodulator = Neuromodulator()
 
         self.hardware_backend: Optional[Callable] = None
+        self.meta_plasticity_factor: float = 1.0  # Meta-plasticity: adapts learning rate
 
     def set_hardware_backend(self, backend_fn: Callable):
-        """Set backend for future neuromorphic hardware acceleration (Loihi, Akida, etc.)."""
         self.hardware_backend = backend_fn
 
     def update_eligibility_trace(self, profile: str, strength: float = 1.0):
@@ -140,12 +125,15 @@ class PlasticityEngine:
         modulated_eligibility = eligibility * modulation
         modulated_reward = reward * modulation
 
+        # Apply meta-plasticity scaling
+        effective_lr = self.lr * self.meta_plasticity_factor
+
         if outcome > 0:
             timing_factor = modulated_eligibility
-            delta_w = self.lr * timing_factor * modulated_reward * outcome * coactivation
+            delta_w = effective_lr * timing_factor * modulated_reward * outcome * coactivation
         else:
             timing_factor = max(0.2, 1.0 - modulated_eligibility)
-            delta_w = self.lr * timing_factor * abs(outcome) * modulated_reward * coactivation * -1.0
+            delta_w = effective_lr * timing_factor * abs(outcome) * modulated_reward * coactivation * -1.0
 
         delta_w = self.hebbian.update(profile, delta_w, modulated_eligibility, outcome, modulation)
 
@@ -184,8 +172,14 @@ class PlasticityEngine:
         return True
 
     def set_spiking_mode(self, enabled: bool = True):
-        """Switch to neuromorphic spiking plasticity module."""
         if enabled:
             self.hebbian = SpikingPlasticityModule()
         else:
             self.hebbian = HebbianStructuralModule()
+
+    def adapt_meta_plasticity(self, recent_performance: float):
+        """Basic meta-plasticity: adjust learning rate based on recent stability."""
+        if recent_performance > 0.8:
+            self.meta_plasticity_factor = max(0.5, self.meta_plasticity_factor * 0.95)  # Reduce plasticity when stable
+        else:
+            self.meta_plasticity_factor = min(2.0, self.meta_plasticity_factor * 1.05)  # Increase when struggling

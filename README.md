@@ -2,13 +2,10 @@
 
 **Current Ecosystem State**
 
-**Neuromorphic investigation integrated**
+**Added meta-plasticity and spiking mode in RealDataRunner**
 
-- Added `SpikingPlasticityModule` for event-driven, STDP-like spiking simulation.
-- `set_spiking_mode()` and hardware backend hook prepared for future neuromorphic accelerators (Loihi 2, Akida, etc.).
-- Neuromodulator now also modulates eligibility traces.
-- Sleep-like consolidation remains available.
+- `adapt_meta_plasticity()` hook for dynamic learning rate adjustment.
+- RealDataRunner now supports `set_spiking_mode()` for neuromorphic-style event-driven learning on real data.
+- Continued integration of biological mechanisms with practical data pipelines.
 
-This brings the biological plasticity system closer to true neuromorphic hardware acceleration while staying fully modular and sovereign.
-
-The ecosystem now has a clear path toward low-power, event-driven, brain-like computation on edge hardware.
+The sovereign edge ecosystem is becoming more adaptive, event-driven, and ready for neuromorphic acceleration.

@@ -3,9 +3,9 @@
 """
 RealDataRunner
 
-Now supports direct calls to plasticity trace updates and consolidation.
+Now supports switching plasticity to spiking mode and basic meta-plasticity.
 
-Tighter integration for real data online learning loops.
+Enables event-driven learning on real data with neuromorphic-style plasticity.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -19,6 +19,13 @@ class RealDataRunner:
         self.memsys = memsys_store
         self.theoretical_math_fn = theoretical_math_fn
         self.step_count = 0
+        self.spiking_mode = False
+
+    def set_spiking_mode(self, enabled: bool = True):
+        """Switch plasticity to neuromorphic spiking mode."""
+        self.spiking_mode = enabled
+        if hasattr(self.plasticity, "set_spiking_mode"):
+            self.plasticity.set_spiking_mode(enabled)
 
     def process_vision_pattern(self, pattern: Dict[str, Any], outcome: float = 1.0) -> Dict[str, Any]:
         if self.theoretical_math_fn:
@@ -31,7 +38,7 @@ class RealDataRunner:
 
         profile = "vision_" + (pattern.get("detected_tags", ["general"])[0] if pattern.get("detected_tags") else "general")
 
-        # Update plasticity with real data
+        # Update plasticity (spiking or classic)
         self.plasticity.update_eligibility_trace(profile, strength=1.0)
         state = {"active_profile": profile, "performance": {}}
         self.plasticity.apply(
@@ -52,7 +59,8 @@ class RealDataRunner:
             "profile": profile,
             "connection_strength": self.plasticity.get_connection_strength(profile),
             "neuromodulation": self.plasticity.get_neuromodulation(),
-            "step": self.step_count
+            "step": self.step_count,
+            "spiking_mode": self.spiking_mode
         }
 
     def process_call_event(self, event: Dict[str, Any], outcome: float = 1.0) -> Dict[str, Any]:
@@ -72,5 +80,6 @@ class RealDataRunner:
     def get_stats(self) -> Dict[str, Any]:
         return {
             "steps_processed": self.step_count,
-            "neuromodulation_level": self.plasticity.get_neuromodulation() if hasattr(self.plasticity, "get_neuromodulation") else None
+            "neuromodulation_level": self.plasticity.get_neuromodulation() if hasattr(self.plasticity, "get_neuromodulation") else None,
+            "spiking_mode": self.spiking_mode
         }
