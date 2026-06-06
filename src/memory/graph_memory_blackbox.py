@@ -3,11 +3,13 @@
 """
 GraphMemoryBlackbox
 
-Enhanced with:
-- Optional BitNet-mlx embedding function for real ternary vectors
-- Temporal evolution tracking per node
-- Basic community detection
-- Still fully blackbox and pipeable
+Further strengthened for efficient local systems:
+- Optional fast lookup mode (simple but effective indexing)
+- Better handling of large numbers of nodes
+- Still fully compatible with BitNet ternary embeddings
+- Maintains all previous advanced inference (temporal, communities, relations)
+
+This keeps us competitive with specialized vector/search projects while staying in our sovereign + biological + ternary philosophy.
 """
 
 from typing import Any, Callable, Dict, List, Optional, Set
@@ -16,14 +18,19 @@ import hashlib
 
 
 class GraphMemoryBlackbox:
-    def __init__(self, node_id: str = "default", enable_ternary: bool = True, embedding_fn: Optional[Callable] = None):
+    def __init__(self, node_id: str = "default", enable_ternary: bool = True, embedding_fn: Optional[Callable] = None, fast_lookup: bool = True):
         self.node_id = node_id
         self.enable_ternary = enable_ternary
-        self.embedding_fn = embedding_fn  # Can be a real BitNet-mlx embedding function
+        self.embedding_fn = embedding_fn
+        self.fast_lookup = fast_lookup
+
         self.nodes: Dict[str, Dict[str, Any]] = {}
         self.edges: Dict[str, Set[str]] = {}
         self.embeddings: Dict[str, List[float]] = {}
-        self.temporal_history: Dict[str, List[Dict[str, Any]]] = {}  # For temporal evolution
+        self.temporal_history: Dict[str, List[Dict[str, Any]]] = {}
+
+        # Simple fast lookup index (by type or key tags)
+        self._fast_index: Dict[str, Set[str]] = {} if fast_lookup else None
 
     def _make_node_id(self, data: Dict[str, Any]) -> str:
         serialized = str(sorted(data.items())).encode()
@@ -32,9 +39,9 @@ class GraphMemoryBlackbox:
     def _to_ternary_vector(self, data: Dict[str, Any]) -> List[float]:
         if self.embedding_fn:
             try:
-                return self.embedding_fn(data)  # Real BitNet-mlx vector
+                return self.embedding_fn(data)
             except Exception as e:
-                print(f"[GraphMemoryBlackbox] Embedding fn error: {e}")
+                print(f"[GraphMemoryBlackbox] Embedding error: {e}")
 
         if not self.enable_ternary:
             return [0.0] * 8
@@ -52,8 +59,8 @@ class GraphMemoryBlackbox:
 
     def store_pattern(self, pattern: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None) -> str:
         node_id = self._make_node_id(pattern)
+
         if node_id in self.nodes:
-            # Update temporal history
             if node_id not in self.temporal_history:
                 self.temporal_history[node_id] = []
             self.temporal_history[node_id].append({"timestamp": time.time(), "data": pattern})
@@ -67,7 +74,14 @@ class GraphMemoryBlackbox:
         }
         self.embeddings[node_id] = self._to_ternary_vector(pattern)
 
-        # Simple auto-linking
+        # Fast index update
+        if self._fast_index is not None:
+            tag = pattern.get("type", "general")
+            if tag not in self._fast_index:
+                self._fast_index[tag] = set()
+            self._fast_index[tag].add(node_id)
+
+        # Auto linking
         for existing_id, emb in list(self.embeddings.items()):
             if existing_id == node_id:
                 continue
@@ -92,6 +106,22 @@ class GraphMemoryBlackbox:
         return dot / (norm_a * norm_b)
 
     def query_similar(self, query_pattern: Dict[str, Any], top_k: int = 5) -> List[Dict[str, Any]]:
+        # Fast path using index if available
+        if self._fast_index is not None:
+            tag = query_pattern.get("type", "general")
+            candidates = self._fast_index.get(tag, set())
+            if candidates:
+                # Only search within same type for speed
+                scored = []
+                query_vec = self._to_ternary_vector(query_pattern)
+                for node_id in list(candidates)[:500]:  # cap for efficiency
+                    if node_id in self.embeddings:
+                        sim = self._cosine_similarity(query_vec, self.embeddings[node_id])
+                        scored.append((sim, self.nodes.get(node_id, {})))
+                scored.sort(reverse=True, key=lambda x: x[0])
+                return [item[1] for item in scored[:top_k] if item[1]]
+
+        # Fallback full search
         query_vec = self._to_ternary_vector(query_pattern)
         scored = []
         for node_id, emb in self.embeddings.items():
@@ -119,13 +149,11 @@ class GraphMemoryBlackbox:
         return results
 
     def get_temporal_evolution(self, node_id: str, max_steps: int = 5) -> List[Dict[str, Any]]:
-        """Return recent changes to a node over time."""
         if node_id not in self.temporal_history:
             return []
         return self.temporal_history[node_id][-max_steps:]
 
     def detect_communities(self) -> Dict[str, List[str]]:
-        """Simple community detection based on connectivity."""
         communities = {}
         visited = set()
         community_id = 0
@@ -155,21 +183,20 @@ class GraphMemoryBlackbox:
         }
 
     def set_embedding_function(self, fn: Callable):
-        """Set a real BitNet-mlx embedding function for ternary vectors."""
         self.embedding_fn = fn
 
     def run_self_test(self) -> bool:
-        print("[GraphMemoryBlackbox] Running enhanced self-test...")
+        print("[GraphMemoryBlackbox] Running performance-enhanced self-test...")
         test_pattern = {"type": "supersonic_design", "sweep": 48, "drag": 0.011}
         node_id = self.store_pattern(test_pattern)
         similar = self.query_similar({"type": "supersonic_design", "sweep": 47})
         evolution = self.get_temporal_evolution(node_id)
         communities = self.detect_communities()
-        success = len(similar) >= 1 and len(communities) >= 0
+        success = len(similar) >= 1
         print(f"[GraphMemoryBlackbox] Self-test {'PASSED' if success else 'FAILED'}")
         return success
 
 
 if __name__ == "__main__":
-    gmb = GraphMemoryBlackbox(enable_ternary=True)
+    gmb = GraphMemoryBlackbox(enable_ternary=True, fast_lookup=True)
     gmb.run_self_test()
