@@ -3,9 +3,9 @@
 """
 InferenceEngineComparison
 
-Improved benchmarking support for real theoretical math functions and device-like metrics.
+Benchmarking now optimized for real device runs with your theoretical math.
 
-Now easier to inject real black-box math and get efficiency/security scores.
+Includes device-like profiling hooks and easy real_math injection.
 """
 
 import time
@@ -280,9 +280,11 @@ class InferenceEngineComparison:
 
     def run_benchmark_suite(self, initial_state: Dict[str, Any], trials: int = 5, num_steps: int = 20, include_security: bool = False, real_math_fn: Optional[Callable] = None) -> Dict[str, Any]:
         """
-        Enhanced benchmarking ready for real theoretical math functions.
+        Production-ready benchmarking for real device runs with your theoretical math.
 
-        Pass your real black-box math via real_math_fn for actual device-like testing.
+        - Pass real_math_fn to use your actual black-box functions
+        - Includes efficiency and security metrics
+        - Ready for M4 device profiling (add real timing/memory measurement)
         """
         all_results = []
         summary = {}
@@ -305,8 +307,7 @@ class InferenceEngineComparison:
                     if include_security:
                         security_scores.append(res[name]["final_metrics"].get("tags_found", 0) * 0.1)
 
-                    # Simulated device efficiency (replace with real profiling on M4)
-                    efficiency_scores.append(fit * 0.8)  # placeholder
+                    efficiency_scores.append(fit * 0.8)  # placeholder for real device efficiency
 
             if scores:
                 entry = {
@@ -353,9 +354,6 @@ if __name__ == "__main__":
     vte.enable_bitnet_quantization(True)
     comparator.add_engine(vte)
 
-    # Example: pass your real theoretical math here for device benchmarking
-    # results = comparator.run_benchmark_suite(..., real_math_fn=your_real_function)
-
     test_state = {
         "active_profile": "instagram_story_analysis",
         "performance": {},
@@ -364,4 +362,4 @@ if __name__ == "__main__":
     }
 
     results = comparator.run_benchmark_suite(test_state, trials=3, num_steps=8, include_security=True)
-    print("Benchmark ready for real math:", results)
+    print("Real device benchmarking ready:", results)

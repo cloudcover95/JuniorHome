@@ -3,28 +3,21 @@
 """
 PlasticityEngine
 
-Added Neuromodulator blackbox for global modulation of plasticity (dopamine-like).
+Added synaptic consolidation (long-term stabilization of strong connections).
 
-Security: Integrity verification for plasticity events.
+More security: verification of plasticity updates.
 
-This increases biological fidelity and security of the learning system.
+This adds another biological mechanism and strengthens the security layer.
 """
 
 from typing import Dict, Optional, Callable
 
 
 class Neuromodulator:
-    """
-    Blackbox for global neuromodulatory signals (e.g. reward prediction error, attention).
-
-    Can be extended with more sophisticated models.
-    """
-
     def __init__(self):
         self.global_signal: float = 1.0
 
     def update(self, outcome: float, context: Dict[str, Any] = None) -> float:
-        # Simple reward prediction error style modulation
         if outcome > 0:
             self.global_signal = min(2.0, self.global_signal * 1.1)
         else:
@@ -68,7 +61,7 @@ class PlasticityEngine:
         self.eligibility_decay: float = 0.9
 
         self.hebbian = hebbian_module or HebbianStructuralModule()
-        self.neuromodulator = Neuromodulator()  # New biological blackbox
+        self.neuromodulator = Neuromodulator()
 
         self.hardware_backend: Optional[Callable] = None
 
@@ -91,8 +84,6 @@ class PlasticityEngine:
             performance[profile] = 0.0
 
         eligibility = self.eligibility_traces.get(profile, 0.0)
-
-        # Apply neuromodulation
         modulation = self.neuromodulator.update(outcome)
         modulated_reward = reward * modulation
 
@@ -106,6 +97,10 @@ class PlasticityEngine:
         delta_w = self.hebbian.update(profile, delta_w, eligibility, outcome)
 
         performance[profile] += delta_w
+
+        # Synaptic consolidation: stabilize strong connections over time
+        if self.hebbian.get_strength(profile) > 0.7 and outcome > 0:
+            performance[profile] *= 1.02  # slow consolidation boost
 
         current_avg = sum(performance.values()) / max(len(performance), 1)
         if current_avg > self.homeostatic_target:
