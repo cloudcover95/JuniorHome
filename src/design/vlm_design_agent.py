@@ -3,15 +3,19 @@
 """
 VLMDesignAgent
 
-Improved efficiency:
-- Uses GraphMemoryBlackbox to check for similar past designs before running full iteration.
-- Skips or accelerates when strong matches exist (efficient local system behavior).
-- Added basic efficiency metrics.
+Now uses HybridSqueezeBitNetQuantizer for quantizing internal design features and model-related tensors when available.
+
+This brings sensitivity-aware + BitNet ternary quantization directly into the design iteration loop.
 """
 
 from typing import Any, Callable, Dict, List, Optional
 
 import time
+
+try:
+    from src.quantization.hybrid_squeeze_bitnet import HybridSqueezeBitNetQuantizer
+except ImportError:
+    HybridSqueezeBitNetQuantizer = None
 
 
 class DesignState:
@@ -44,6 +48,7 @@ class VLMDesignAgent:
         self.graph_memory = graph_memory
         self.real_data_runner = real_data_runner
         self.vlm_vision_fn = vlm_vision_fn
+        self.hybrid_quantizer = HybridSqueezeBitNetQuantizer() if HybridSqueezeBitNetQuantizer else None
 
         self.design_history: List[DesignState] = []
         self.current_design: Optional[DesignState] = None
@@ -92,7 +97,7 @@ class VLMDesignAgent:
                 "refine_nose_shape": "sharper_ogive",
                 "add_strake": True
             },
-            "reasoning": "Using graph memory for efficiency.",
+            "reasoning": "Using memory and hybrid quantization for efficiency.",
             "confidence": 0.65
         }
 
@@ -124,6 +129,15 @@ class VLMDesignAgent:
         if hasattr(self.plasticity, "adapt_meta_plasticity"):
             self.plasticity.adapt_meta_plasticity(design.metrics.get("drag_coefficient", 0.5))
 
+    def _quantize_design_tensor(self, tensor: Any) -> Any:
+        """Quantize internal design-related tensors using hybrid quantizer."""
+        if self.hybrid_quantizer and tensor is not None:
+            try:
+                return self.hybrid_quantizer.quantize(tensor)
+            except Exception as e:
+                print(f"[VLMDesignAgent] Quantization error: {e}")
+        return tensor
+
     def iterate_design(self, target_goals: Dict[str, float], max_iterations: int = 10) -> List[DesignState]:
         self.efficiency_stats["total_iterations"] += 1
 
@@ -133,7 +147,6 @@ class VLMDesignAgent:
                 metrics={"drag_coefficient": 0.025, "boom_overpressure": 1.2}
             )
 
-        # Efficiency optimization: Check graph memory first
         if self.graph_memory:
             similar = self.graph_memory.query_similar(
                 {"type": "supersonic_design", **self.current_design.params},
@@ -144,13 +157,18 @@ class VLMDesignAgent:
                 if (match_metrics.get("drag_coefficient", 1) < target_goals.get("max_drag", 0.01) and
                     match_metrics.get("boom_overpressure", 1) < target_goals.get("max_boom", 0.6)):
                     self.efficiency_stats["iterations_skipped"] += 1
-                    # Return early with known good design
                     return [DesignState(params=match.get("params", {}), metrics=match_metrics)]
 
         iteration_results = []
 
         for i in range(max_iterations):
             vision_analysis = self.analyze_design_image({"edge_density": 0.6, "text_density": 0.4})
+
+            # Quantize vision features if possible
+            if isinstance(vision_analysis, dict):
+                for key in vision_analysis:
+                    if isinstance(vision_analysis[key], (list, tuple)) or hasattr(vision_analysis[key], "__array__"):
+                        vision_analysis[key] = self._quantize_design_tensor(vision_analysis[key])
 
             proposal = self.propose_design_changes(self.current_design, target_goals)
 

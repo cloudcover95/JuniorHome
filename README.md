@@ -2,10 +2,10 @@
 
 **Current Ecosystem State**
 
-**GraphMemoryBlackbox now has strong portability & sovereignty features**
+**Hybrid quantizer deeply integrated**
 
-- Full export/import of the entire memory graph.
-- Clean interfaces for agents to consume memory as a blackbox.
-- This aligns the memory layer with decentralized, user-owned data principles while keeping extreme efficiency.
+- GraphMemoryBlackbox now defaults to HybridSqueezeBitNetQuantizer when available for node embeddings.
+- VLMDesignAgent uses the hybrid quantizer for internal design features and tensors.
+- Real BitNet-mlx embedding functions are fully supported end-to-end.
 
-The ecosystem continues to evolve with architectural decisions that prioritize sovereignty, modularity, and real efficiency for local systems.
+The ecosystem is advancing with tighter, production-oriented integration of advanced quantization across memory and agent layers.

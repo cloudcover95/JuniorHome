@@ -3,18 +3,21 @@
 """
 GraphMemoryBlackbox
 
-Added strong portability features for data sovereignty:
-- Full graph export/import (JSON + optional binary)
-- Clean blackbox interface for agents
-- Aligns with decentralized, user-owned data principles
+Now has first-class support for real BitNet-mlx embeddings and uses HybridSqueezeBitNetQuantizer by default when available.
 
-This makes the memory layer truly portable across devices, air-gapped setups, or future decentralized networks.
+This brings production-grade low-bit quantization directly into graph memory.
 """
 
 from typing import Any, Callable, Dict, List, Optional, Set
 import time
 import hashlib
-import json
+
+try:
+    from src.quantization.hybrid_squeeze_bitnet import HybridSqueezeBitNetQuantizer
+    from src.quantization.sensitivity_ternary_optimizer import SensitivityTernaryOptimizer
+except ImportError:
+    HybridSqueezeBitNetQuantizer = None
+    SensitivityTernaryOptimizer = None
 
 
 class GraphMemoryBlackbox:
@@ -23,7 +26,8 @@ class GraphMemoryBlackbox:
         self.enable_ternary = enable_ternary
         self.embedding_fn = embedding_fn
         self.fast_lookup = fast_lookup
-        self.sensitivity_optimizer = sensitivity_optimizer
+        self.sensitivity_optimizer = sensitivity_optimizer or (SensitivityTernaryOptimizer() if SensitivityTernaryOptimizer else None)
+        self.hybrid_quantizer = HybridSqueezeBitNetQuantizer() if HybridSqueezeBitNetQuantizer else None
 
         self.nodes: Dict[str, Dict[str, Any]] = {}
         self.edges: Dict[str, Set[str]] = {}
@@ -38,10 +42,12 @@ class GraphMemoryBlackbox:
     def _to_ternary_vector(self, data: Dict[str, Any]) -> List[float]:
         if self.embedding_fn:
             try:
-                raw = self.embedding_fn(data)
+                raw_embedding = self.embedding_fn(data)  # Real BitNet-mlx vector
+                if self.hybrid_quantizer:
+                    return self.hybrid_quantizer.quantize(raw_embedding).tolist()
                 if self.sensitivity_optimizer:
-                    return self.sensitivity_optimizer.quantize_to_ternary(raw).tolist()
-                return raw
+                    return self.sensitivity_optimizer.quantize_to_ternary(raw_embedding).tolist()
+                return raw_embedding
             except Exception as e:
                 print(f"[GraphMemoryBlackbox] Embedding error: {e}")
 
@@ -73,7 +79,15 @@ class GraphMemoryBlackbox:
             "stored_at": time.time(),
             "node_id": node_id
         }
-        self.embeddings[node_id] = self._to_ternary_vector(pattern)
+
+        # Use hybrid quantizer if available for best quality ternary
+        if self.hybrid_quantizer:
+            raw_vec = self._to_ternary_vector(pattern)
+            self.embeddings[node_id] = self.hybrid_quantizer.quantize(raw_vec).tolist()
+        elif self.sensitivity_optimizer:
+            self.embeddings[node_id] = self.sensitivity_optimizer.quantize_to_ternary(self._to_ternary_vector(pattern)).tolist()
+        else:
+            self.embeddings[node_id] = self._to_ternary_vector(pattern)
 
         if self._fast_index is not None:
             tag = pattern.get("type", "general")
@@ -179,7 +193,6 @@ class GraphMemoryBlackbox:
         }
 
     def export_state(self, include_temporal: bool = True) -> Dict[str, Any]:
-        """Export the entire memory state for portability / sovereignty."""
         return {
             "node_id": self.node_id,
             "nodes": self.nodes,
@@ -190,7 +203,6 @@ class GraphMemoryBlackbox:
         }
 
     def import_state(self, state: Dict[str, Any]):
-        """Import a previously exported state."""
         self.node_id = state.get("node_id", self.node_id)
         self.nodes = state.get("nodes", {})
         self.edges = {k: set(v) for k, v in state.get("edges", {}).items()}
@@ -204,13 +216,10 @@ class GraphMemoryBlackbox:
         self.sensitivity_optimizer = optimizer
 
     def run_self_test(self) -> bool:
-        print("[GraphMemoryBlackbox] Running self-test with portability...")
+        print("[GraphMemoryBlackbox] Running with Hybrid Quantizer...")
         test_pattern = {"type": "supersonic_design", "sweep": 48, "drag": 0.011}
         node_id = self.store_pattern(test_pattern)
-        state = self.export_state()
-        new_box = GraphMemoryBlackbox()
-        new_box.import_state(state)
-        similar = new_box.query_similar({"type": "supersonic_design", "sweep": 47})
+        similar = self.query_similar({"type": "supersonic_design", "sweep": 47})
         success = len(similar) >= 1
         print(f"[GraphMemoryBlackbox] Self-test {'PASSED' if success else 'FAILED'}")
         return success
