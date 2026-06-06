@@ -3,11 +3,7 @@
 """
 VLMDesignAgent
 
-Polished version with:
-- Querying similar past designs from MemSys graph
-- Explicit RealDataRunner usage in evaluation
-- Cleaner integration points
-- Consistent blackbox style
+Now directly wired with GraphMemoryBlackbox as primary memory backend.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -36,6 +32,7 @@ class VLMDesignAgent:
         theoretical_math_fn: Optional[Callable] = None,
         plasticity_engine=None,
         memsys_store=None,
+        graph_memory: Optional[Any] = None,  # GraphMemoryBlackbox
         real_data_runner=None,
         vlm_vision_fn: Optional[Callable] = None,
     ):
@@ -43,6 +40,7 @@ class VLMDesignAgent:
         self.theoretical_math_fn = theoretical_math_fn
         self.plasticity = plasticity_engine
         self.memsys = memsys_store
+        self.graph_memory = graph_memory
         self.real_data_runner = real_data_runner
         self.vlm_vision_fn = vlm_vision_fn
 
@@ -60,11 +58,19 @@ class VLMDesignAgent:
         }
 
     def propose_design_changes(self, current_state: DesignState, target_goals: Dict[str, float]) -> Dict[str, Any]:
+        # Get context from graph memory if available
+        context = {}
+        if self.graph_memory:
+            context = self.graph_memory.get_context_for_agent(
+                {"type": "supersonic_design", **current_state.params}
+            )
+
         prompt_context = {
             "current_params": current_state.params,
             "current_metrics": current_state.metrics,
             "goals": target_goals,
-            "history_length": len(self.design_history)
+            "history_length": len(self.design_history),
+            "graph_context": context
         }
 
         if self.theoretical_math_fn:
@@ -85,7 +91,7 @@ class VLMDesignAgent:
                 "refine_nose_shape": "sharper_ogive",
                 "add_strake": True
             },
-            "reasoning": "Optimize for low wave drag and sonic boom control.",
+            "reasoning": "Optimize using past design memory.",
             "confidence": 0.65
         }
 
@@ -98,8 +104,7 @@ class VLMDesignAgent:
             }
 
         if self.real_data_runner:
-            # Could feed to RealDataRunner for processing
-            pass
+            pass  # Could process via RealDataRunner
 
         return {
             "drag_coefficient": design.metrics.get("drag_coefficient", 0.02) * 0.95,
@@ -121,13 +126,6 @@ class VLMDesignAgent:
         if hasattr(self.plasticity, "adapt_meta_plasticity"):
             self.plasticity.adapt_meta_plasticity(design.metrics.get("drag_coefficient", 0.5))
 
-    def query_similar_past_designs(self, current_design: DesignState, limit: int = 5):
-        """Query MemSys graph for similar past designs."""
-        if not self.memsys or not hasattr(self.memsys, "infer_related_concepts"):
-            return []
-        tags = ["supersonic_design", current_design.params.get("nose_shape", "unknown")]
-        return self.memsys.infer_related_concepts(tags, max_results=limit)
-
     def iterate_design(self, target_goals: Dict[str, float], max_iterations: int = 10) -> List[DesignState]:
         if not self.current_design:
             self.current_design = DesignState(
@@ -139,9 +137,6 @@ class VLMDesignAgent:
 
         for i in range(max_iterations):
             vision_analysis = self.analyze_design_image({"edge_density": 0.6, "text_density": 0.4})
-
-            # Query past similar designs for inspiration
-            similar = self.query_similar_past_designs(self.current_design)
 
             proposal = self.propose_design_changes(self.current_design, target_goals)
 
@@ -159,15 +154,16 @@ class VLMDesignAgent:
             outcome = 1.0 if new_metrics.get("drag_coefficient", 1) < self.current_design.metrics.get("drag_coefficient", 1) else -0.5
             self.learn_from_design(new_design, outcome)
 
-            if self.memsys:
+            # Store in GraphMemoryBlackbox if available
+            if self.graph_memory:
                 try:
-                    self.memsys.store_vision_pattern({
-                        "detected_tags": ["supersonic_design", new_design.params.get("nose_shape", "unknown")],
-                        "design_params": new_design.params,
+                    self.graph_memory.store_pattern({
+                        "type": "supersonic_design",
+                        "params": new_design.params,
                         "metrics": new_design.metrics
                     })
                 except Exception as e:
-                    print(f"[VLMDesignAgent] MemSys error: {e}")
+                    print(f"[VLMDesignAgent] GraphMemory error: {e}")
 
             self.design_history.append(new_design)
             iteration_results.append(new_design)
