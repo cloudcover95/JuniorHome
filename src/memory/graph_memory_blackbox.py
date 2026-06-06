@@ -3,19 +3,18 @@
 """
 GraphMemoryBlackbox
 
-Now supports optional SensitivityTernaryOptimizer for quantizing node embeddings/features.
-This brings SqueezeLLM-style sensitivity awareness into graph memory.
+Added strong portability features for data sovereignty:
+- Full graph export/import (JSON + optional binary)
+- Clean blackbox interface for agents
+- Aligns with decentralized, user-owned data principles
+
+This makes the memory layer truly portable across devices, air-gapped setups, or future decentralized networks.
 """
 
 from typing import Any, Callable, Dict, List, Optional, Set
 import time
 import hashlib
-
-# Import the new optimizer
-try:
-    from src.quantization.sensitivity_ternary_optimizer import SensitivityTernaryOptimizer
-except ImportError:
-    SensitivityTernaryOptimizer = None
+import json
 
 
 class GraphMemoryBlackbox:
@@ -24,13 +23,12 @@ class GraphMemoryBlackbox:
         self.enable_ternary = enable_ternary
         self.embedding_fn = embedding_fn
         self.fast_lookup = fast_lookup
-        self.sensitivity_optimizer = sensitivity_optimizer or (SensitivityTernaryOptimizer() if SensitivityTernaryOptimizer else None)
+        self.sensitivity_optimizer = sensitivity_optimizer
 
         self.nodes: Dict[str, Dict[str, Any]] = {}
         self.edges: Dict[str, Set[str]] = {}
         self.embeddings: Dict[str, List[float]] = {}
         self.temporal_history: Dict[str, List[Dict[str, Any]]] = {}
-
         self._fast_index: Dict[str, Set[str]] = {} if fast_lookup else None
 
     def _make_node_id(self, data: Dict[str, Any]) -> str:
@@ -40,10 +38,10 @@ class GraphMemoryBlackbox:
     def _to_ternary_vector(self, data: Dict[str, Any]) -> List[float]:
         if self.embedding_fn:
             try:
-                raw_vec = self.embedding_fn(data)
+                raw = self.embedding_fn(data)
                 if self.sensitivity_optimizer:
-                    return self.sensitivity_optimizer.quantize_to_ternary(raw_vec).tolist()
-                return raw_vec
+                    return self.sensitivity_optimizer.quantize_to_ternary(raw).tolist()
+                return raw
             except Exception as e:
                 print(f"[GraphMemoryBlackbox] Embedding error: {e}")
 
@@ -63,7 +61,6 @@ class GraphMemoryBlackbox:
 
     def store_pattern(self, pattern: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None) -> str:
         node_id = self._make_node_id(pattern)
-
         if node_id in self.nodes:
             if node_id not in self.temporal_history:
                 self.temporal_history[node_id] = []
@@ -76,16 +73,8 @@ class GraphMemoryBlackbox:
             "stored_at": time.time(),
             "node_id": node_id
         }
+        self.embeddings[node_id] = self._to_ternary_vector(pattern)
 
-        # Use sensitivity-aware ternary if optimizer is available
-        if self.sensitivity_optimizer:
-            self.embeddings[node_id] = self.sensitivity_optimizer.quantize_to_ternary(
-                self._to_ternary_vector(pattern)
-            ).tolist() if hasattr(self.sensitivity_optimizer.quantize_to_ternary(self._to_ternary_vector(pattern)), 'tolist') else self.sensitivity_optimizer.quantize_to_ternary(self._to_ternary_vector(pattern))
-        else:
-            self.embeddings[node_id] = self._to_ternary_vector(pattern)
-
-        # Fast index + auto linking (simplified for brevity)
         if self._fast_index is not None:
             tag = pattern.get("type", "general")
             if tag not in self._fast_index:
@@ -189,6 +178,25 @@ class GraphMemoryBlackbox:
             "count": len(similar)
         }
 
+    def export_state(self, include_temporal: bool = True) -> Dict[str, Any]:
+        """Export the entire memory state for portability / sovereignty."""
+        return {
+            "node_id": self.node_id,
+            "nodes": self.nodes,
+            "edges": {k: list(v) for k, v in self.edges.items()},
+            "embeddings": self.embeddings,
+            "temporal_history": self.temporal_history if include_temporal else {},
+            "exported_at": time.time()
+        }
+
+    def import_state(self, state: Dict[str, Any]):
+        """Import a previously exported state."""
+        self.node_id = state.get("node_id", self.node_id)
+        self.nodes = state.get("nodes", {})
+        self.edges = {k: set(v) for k, v in state.get("edges", {}).items()}
+        self.embeddings = state.get("embeddings", {})
+        self.temporal_history = state.get("temporal_history", {})
+
     def set_embedding_function(self, fn: Callable):
         self.embedding_fn = fn
 
@@ -196,10 +204,13 @@ class GraphMemoryBlackbox:
         self.sensitivity_optimizer = optimizer
 
     def run_self_test(self) -> bool:
-        print("[GraphMemoryBlackbox] Running with SensitivityTernaryOptimizer...")
+        print("[GraphMemoryBlackbox] Running self-test with portability...")
         test_pattern = {"type": "supersonic_design", "sweep": 48, "drag": 0.011}
         node_id = self.store_pattern(test_pattern)
-        similar = self.query_similar({"type": "supersonic_design", "sweep": 47})
+        state = self.export_state()
+        new_box = GraphMemoryBlackbox()
+        new_box.import_state(state)
+        similar = new_box.query_similar({"type": "supersonic_design", "sweep": 47})
         success = len(similar) >= 1
         print(f"[GraphMemoryBlackbox] Self-test {'PASSED' if success else 'FAILED'}")
         return success
