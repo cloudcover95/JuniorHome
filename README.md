@@ -2,15 +2,14 @@
 
 **Current Ecosystem State**
 
-**Added BitNetVoiceEngine + Robust Benchmark Suite**
+**Added VisionTextEngine for Instagram Story Zoom Tag Inference**
 
-- New `BitNetVoiceEngine` for pure quantized voice verification path.
-- `run_benchmark_suite()` now supports multi-trial statistical comparison — perfect for testing your real theoretical math functions and automatically finding the best fit.
-- The pipeline is ready for you to plug in actual black-box theoretical math and run real benchmarks (not just placeholders).
+New `VisionTextEngine` in the comparison pipeline specifically handles the use case you described:
 
-This advances:
-- Running actual benchmarks with real theoretical math
-- Adding specialized engines (BitNet voice path)
-- Continued architecture unification between inference, calling, and memory systems
+- Zoomed video layers in Instagram stories where @account tags are embedded as text.
+- Interactive links are dead, but the text is visible in the paused/zoomed frame.
+- The engine combines con-layer style features with quant LLM / theoretical math to detect and reason about the embedded account tags.
 
-JuniorMemSys integration (CallPatternStore) is already started and can now receive benchmarked verification patterns.
+A test template is included so you can plug in your real theoretical math or BitNet vision models and benchmark how well different engines handle this "dead link but visible text" scenario.
+
+This extends the ecosystem's inference capabilities into practical social media / content analysis while staying sovereign and edge-native.

@@ -3,13 +3,11 @@
 """
 InferenceEngineComparison
 
-Enhanced with BitNetVoiceEngine and a proper benchmark suite
-for running real theoretical math functions and finding best fits.
+Added VisionTextEngine for testing Instagram story zoom-layer tag recognition.
 
-Supports:
-- Multiple engines (baseline, theoretical math variants, BitNet voice path)
-- Multi-trial benchmarking with stats
-- Direct use with DigitalCallManager for voice verification
+Use case: Detect @account tags embedded as text in zoomed video frames
+where interactive links are dead. The engine uses con-layer style feature
+extraction + quant LLM / theoretical math for entity recognition.
 """
 
 import time
@@ -84,19 +82,11 @@ class TheoreticalMathEngine(InferenceEngine):
 
 
 class BitNetVoiceEngine(InferenceEngine):
-    """
-    Specialized engine using BitNet (quantized) inference for voice verification.
-
-    Can be connected to real BitNet-MLX models or the theoretical math pipeline.
-    Designed for low-power, sovereign voice recognition in DigitalCallManager.
-    """
-
     def __init__(self, name: str = "bitnet_voice"):
         super().__init__(name)
         self.model_fn: Optional[Callable] = None
 
     def set_model(self, fn: Callable):
-        """Plug in a real BitNet or quantized model for voice scoring."""
         self.model_fn = fn
 
     def train_step(self, state: Dict[str, Any], outcome: float) -> Dict[str, Any]:
@@ -110,7 +100,6 @@ class BitNetVoiceEngine(InferenceEngine):
             except Exception as e:
                 print(f"[BitNetVoiceEngine] Model error: {e}")
         else:
-            # Fallback: simple quantized-like scoring
             energy = features.get("energy", 0.0)
             performance["voice_score"] = min(1.0, energy * 8)
 
@@ -124,6 +113,77 @@ class BitNetVoiceEngine(InferenceEngine):
             "avg_performance": score,
             "theoretical_fit": score,
             "is_human": 1.0 if score > 0.2 else 0.0
+        }
+
+
+class VisionTextEngine(InferenceEngine):
+    """
+    Engine for Instagram story zoom-layer tag recognition.
+
+    Handles cases where @account tags are embedded as text in zoomed video frames
+    (interactive links dead). Uses con-layer style features + quant LLM /
+    theoretical math to extract and reason about account mentions.
+
+    Can be connected to real vision models or your black-box theoretical math.
+    """
+
+    def __init__(self, name: str = "vision_text_tag"):
+        super().__init__(name)
+        self.vision_fn: Optional[Callable] = None
+        self.theoretical_math_fn: Optional[Callable] = None
+
+    def set_vision_model(self, fn: Callable):
+        self.vision_fn = fn
+
+    def set_theoretical_math(self, fn: Callable):
+        self.theoretical_math_fn = fn
+
+    def train_step(self, state: Dict[str, Any], outcome: float) -> Dict[str, Any]:
+        image_features = state.get("image_features", {})
+        frame_info = state.get("frame_info", {})
+        performance = state.get("performance", {})
+
+        detected_tags = []
+
+        if self.vision_fn is not None:
+            try:
+                detected_tags = self.vision_fn(image_features)
+            except Exception as e:
+                print(f"[VisionTextEngine] Vision error: {e}")
+
+        if self.theoretical_math_fn is not None:
+            try:
+                reasoning = self.theoretical_math_fn({
+                    "detected_tags": detected_tags,
+                    "frame_info": frame_info,
+                    "is_zoomed": frame_info.get("zoom_level", 1.0) > 1.5
+                }, outcome)
+                if isinstance(reasoning, dict):
+                    performance.update(reasoning)
+                    if "account_tags" in reasoning:
+                        performance["detected_account_tags"] = reasoning["account_tags"]
+            except Exception as e:
+                print(f"[VisionTextEngine] Theoretical math error: {e}")
+        else:
+            # Placeholder: simple text-like detection from features
+            if image_features.get("text_density", 0) > 0.3:
+                performance["detected_account_tags"] = ["@example_account"]
+
+        state["performance"] = performance
+        state["detected_tags"] = detected_tags
+        return state
+
+    def evaluate(self, state: Dict[str, Any]) -> Dict[str, float]:
+        perf = state.get("performance", {})
+        tags = state.get("detected_tags", [])
+        tag_count = len(tags) if isinstance(tags, list) else 0
+        score = perf.get("tag_detection_score", tag_count * 0.3)
+
+        return {
+            "avg_performance": score,
+            "theoretical_fit": score,
+            "tags_found": float(tag_count),
+            "zoom_layer_handled": 1.0 if state.get("frame_info", {}).get("zoom_level", 1) > 1.5 else 0.0
         }
 
 
@@ -196,10 +256,6 @@ class InferenceEngineComparison:
         return results
 
     def run_benchmark_suite(self, initial_state: Dict[str, Any], trials: int = 5, num_steps: int = 20) -> Dict[str, Any]:
-        """
-        Run multiple trials and compute statistics for robust best-fit analysis.
-        Ideal for comparing real theoretical math functions.
-        """
         all_results = []
         summary = {}
 
@@ -207,7 +263,6 @@ class InferenceEngineComparison:
             result = self.run_comparison(initial_state, num_steps=num_steps)
             all_results.append(result)
 
-        # Aggregate stats per engine
         for engine in self.engines:
             name = engine.name
             scores = []
@@ -232,7 +287,7 @@ class InferenceEngineComparison:
 
     def _compute_best_fits(self, results: Dict[str, Any]) -> Dict[str, str]:
         best = {}
-        for metric in ["avg_performance", "theoretical_fit", "is_human"]:
+        for metric in ["avg_performance", "theoretical_fit", "is_human", "tags_found"]:
             best_score = -float("inf")
             best_engine = None
             for engine_name, data in results.items():
@@ -247,17 +302,23 @@ class InferenceEngineComparison:
         return best
 
 
-# Quick example for running benchmarks with real theoretical math
+# Test template for Instagram story zoom tag inference
 if __name__ == "__main__":
     comparator = InferenceEngineComparison()
-    comparator.add_engine(BaselinePlasticityEngine())
-    comparator.add_engine(BitNetVoiceEngine())
+    comparator.add_engine(VisionTextEngine(name="theoretical_vision_v1"))
+    comparator.add_engine(BitNetVoiceEngine(name="bitnet_baseline"))
 
-    # Add your real theoretical math engines here
-    # theo1 = TheoreticalMathEngine(name="your_math_v1")
-    # theo1.set_theoretical_math(your_real_function)
-    # comparator.add_engine(theo1)
+    # Example state for a zoomed Instagram story frame
+    test_state = {
+        "active_profile": "instagram_story_analysis",
+        "performance": {},
+        "image_features": {"text_density": 0.6, "edge_density": 0.4},
+        "frame_info": {
+            "zoom_level": 2.8,
+            "is_story": True,
+            "timestamp": time.time()
+        }
+    }
 
-    initial = {"active_profile": "voice_verification", "performance": {}, "audio_features": {"energy": 0.25}}
-    suite_result = comparator.run_benchmark_suite(initial, trials=3, num_steps=15)
-    print(suite_result)
+    results = comparator.run_comparison(test_state, num_steps=5)
+    print("Instagram zoom tag test results:", results["best_fits"])
