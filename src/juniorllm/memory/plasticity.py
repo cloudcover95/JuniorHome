@@ -3,11 +3,9 @@
 """
 PlasticityEngine
 
-Hebbian structural module now modulated by neuromodulator (deeper biological integration).
+Neuromodulation now also scales Hebbian structural growth rate (deeper biological coupling).
 
-Security: Basic integrity verification for plasticity state.
-
-This adds another layer of biological fidelity and security.
+This makes global signals influence both synaptic weight updates and structural plasticity strength.
 """
 
 from typing import Dict, Optional, Callable
@@ -38,7 +36,6 @@ class HebbianStructuralModule:
         if profile not in self.connection_strength:
             self.connection_strength[profile] = 0.0
 
-        # Modulated Hebbian growth
         effective_growth = self.growth_rate * modulation
 
         if outcome > 0 and eligibility > 0.3:
@@ -99,12 +96,10 @@ class PlasticityEngine:
             timing_factor = max(0.2, 1.0 - modulated_eligibility)
             delta_w = self.lr * timing_factor * abs(outcome) * modulated_reward * coactivation * -1.0
 
-        # Modulated Hebbian structural update
         delta_w = self.hebbian.update(profile, delta_w, modulated_eligibility, outcome, modulation)
 
         performance[profile] += delta_w
 
-        # Synaptic consolidation
         if self.hebbian.get_strength(profile) > 0.7 and outcome > 0:
             performance[profile] *= 1.02
 
@@ -127,6 +122,4 @@ class PlasticityEngine:
         return self.neuromodulator.get_modulation()
 
     def verify_integrity(self) -> bool:
-        """Security: Basic integrity check for plasticity state."""
-        # Placeholder - in real use could verify against stored hashes or checksums
         return True

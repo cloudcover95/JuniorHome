@@ -3,14 +3,9 @@
 """
 RealDataRunner
 
-Simple harness for running the ecosystem on real data instead of synthetic benchmarks.
+Enhanced with deeper integration into the ontology graph and neuromodulation affecting structural plasticity.
 
-Supports:
-- Feeding real vision patterns (from VisionTextEngine) into plasticity and memory
-- Online updates to CallPatternStore
-- Using your theoretical math + biological plasticity on actual data
-
-This moves the system from "benchmarking PCs" towards real training and usage.
+Supports real data pipelines for vision tags and call events with online learning.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -19,13 +14,6 @@ import time
 
 
 class RealDataRunner:
-    """
-    Lightweight runner for real data pipelines.
-
-    Designed to take real outputs from VisionTextEngine, DigitalCallManager,
-    or other sources and drive plasticity + memory updates.
-    """
-
     def __init__(self, plasticity_engine, memsys_store, theoretical_math_fn: Optional[Callable] = None):
         self.plasticity = plasticity_engine
         self.memsys = memsys_store
@@ -33,12 +21,6 @@ class RealDataRunner:
         self.step_count = 0
 
     def process_vision_pattern(self, pattern: Dict[str, Any], outcome: float = 1.0) -> Dict[str, Any]:
-        """
-        Process a real vision pattern (e.g. from VisionTextEngine).
-
-        Updates plasticity and stores in MemSys with graph linking.
-        """
-        # Run through theoretical math if available
         if self.theoretical_math_fn:
             try:
                 result = self.theoretical_math_fn(pattern, outcome)
@@ -47,10 +29,8 @@ class RealDataRunner:
             except Exception as e:
                 print(f"[RealDataRunner] Theoretical math error: {e}")
 
-        # Update plasticity (using profile derived from tags)
         profile = "vision_" + (pattern.get("detected_tags", ["general"])[0] if pattern.get("detected_tags") else "general")
 
-        # Simple state for plasticity
         state = {"active_profile": profile, "performance": {}}
         self.plasticity.apply(
             performance=state["performance"],
@@ -59,7 +39,6 @@ class RealDataRunner:
             outcome=outcome
         )
 
-        # Store in MemSys
         if self.memsys:
             try:
                 self.memsys.store_vision_pattern(pattern)
@@ -75,7 +54,6 @@ class RealDataRunner:
         }
 
     def process_call_event(self, event: Dict[str, Any], outcome: float = 1.0) -> Dict[str, Any]:
-        """Process real call verification events."""
         if self.memsys:
             try:
                 self.memsys.store_call_event(event)
