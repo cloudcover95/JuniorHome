@@ -3,11 +3,11 @@
 """
 PlasticityEngine
 
-Added synaptic consolidation (long-term stabilization of strong connections).
+Added dynamic neuromodulation effect on eligibility traces (more biological integration).
 
-More security: verification of plasticity updates.
+More security: verification step for plasticity updates.
 
-This adds another biological mechanism and strengthens the security layer.
+Benchmarking readiness improved.
 """
 
 from typing import Dict, Optional, Callable
@@ -85,22 +85,26 @@ class PlasticityEngine:
 
         eligibility = self.eligibility_traces.get(profile, 0.0)
         modulation = self.neuromodulator.update(outcome)
+
+        # Dynamic neuromodulation effect on eligibility (more biological)
+        modulated_eligibility = eligibility * modulation
+
         modulated_reward = reward * modulation
 
         if outcome > 0:
-            timing_factor = eligibility
+            timing_factor = modulated_eligibility
             delta_w = self.lr * timing_factor * modulated_reward * outcome * coactivation
         else:
-            timing_factor = max(0.2, 1.0 - eligibility)
+            timing_factor = max(0.2, 1.0 - modulated_eligibility)
             delta_w = self.lr * timing_factor * abs(outcome) * modulated_reward * coactivation * -1.0
 
-        delta_w = self.hebbian.update(profile, delta_w, eligibility, outcome)
+        delta_w = self.hebbian.update(profile, delta_w, modulated_eligibility, outcome)
 
         performance[profile] += delta_w
 
-        # Synaptic consolidation: stabilize strong connections over time
+        # Synaptic consolidation
         if self.hebbian.get_strength(profile) > 0.7 and outcome > 0:
-            performance[profile] *= 1.02  # slow consolidation boost
+            performance[profile] *= 1.02
 
         current_avg = sum(performance.values()) / max(len(performance), 1)
         if current_avg > self.homeostatic_target:
