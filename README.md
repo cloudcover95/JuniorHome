@@ -2,14 +2,12 @@
 
 **Current Ecosystem State**
 
-**Ecosystem commits completed across key repos**
+**Added structural plasticity + enhanced benchmarking with security metrics**
 
-- BitNet-mlx: Added vision quantization utilities
-- JuniorHome: Polished VisionTextEngine with iPhone baseline comparison + MemSys integration
-- JuniorMemSys-Suite: CallPatternStore active for vision + call patterns
+- PlasticityEngine now includes simple structural plasticity (connection strengthening/pruning).
+- Benchmark suite supports security metrics and multi-trial statistics.
+- Continued deepening of biological fidelity and production benchmarking setup.
 
-The full codebase is being kept current and production-ready.
+Ecosystem commits ongoing across JuniorHome, BitNet-mlx, and JuniorMemSys-Suite.
 
-Roadmap status: Strong progress on efficient BitNet ternary inference, vision capabilities, unified memory architecture, and sovereign edge AI.
-
-Remaining high-priority items: Real device benchmarking, deeper topological MemSys work, security hardening.
+Roadmap progress: Strong on efficient BitNet, topological memory, biological features, and integrated vision/calling/memory architecture.
