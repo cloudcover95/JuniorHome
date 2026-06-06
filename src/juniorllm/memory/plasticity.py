@@ -3,9 +3,12 @@
 """
 PlasticityEngine
 
-Added dynamic modulation of eligibility traces by neuromodulator (deeper biological integration).
+Added neuromorphic / spiking simulation support.
 
-Eligibility traces now scale with global neuromodulatory signals.
+- SpikingPlasticityModule for event-driven, STDP-like updates.
+- Integration with hardware backend hook for future neuromorphic chips (Loihi, Akida, etc.).
+
+This brings the biological mechanisms closer to true neuromorphic acceleration.
 """
 
 from typing import Dict, Optional, Callable
@@ -53,6 +56,49 @@ class HebbianStructuralModule:
         return self.connection_strength.get(profile, 0.0)
 
 
+class SpikingPlasticityModule:
+    """
+    Neuromorphic-inspired spiking plasticity.
+
+    Simulates event-driven updates similar to STDP on neuromorphic hardware.
+    Can be swapped in place of HebbianStructuralModule for spiking-style learning.
+    Future: Direct mapping to Loihi 2, Akida, or other neuromorphic accelerators.
+    """
+
+    def __init__(self, decay: float = 0.95, threshold: float = 0.5):
+        self.decay = decay
+        self.threshold = threshold
+        self.membrane_potential: Dict[str, float] = {}
+        self.connection_strength: Dict[str, float] = {}
+
+    def update(self, profile: str, delta_w: float, eligibility: float, outcome: float, modulation: float = 1.0) -> float:
+        if profile not in self.membrane_potential:
+            self.membrane_potential[profile] = 0.0
+        if profile not in self.connection_strength:
+            self.connection_strength[profile] = 0.0
+
+        # Simple leaky integrate-and-fire style
+        self.membrane_potential[profile] = self.membrane_potential[profile] * self.decay + eligibility * modulation
+
+        spike = 1.0 if self.membrane_potential[profile] > self.threshold else 0.0
+
+        if spike > 0:
+            # STDP-like potentiation on spike
+            self.connection_strength[profile] = min(1.0, self.connection_strength[profile] + 0.1 * modulation)
+            self.membrane_potential[profile] = 0.0  # reset
+        else:
+            # Slight depression / decay
+            self.connection_strength[profile] *= 0.99
+
+        if self.connection_strength[profile] < 0.05:
+            self.connection_strength[profile] = 0.0
+
+        return delta_w + (spike * 0.2)
+
+    def get_strength(self, profile: str) -> float:
+        return self.connection_strength.get(profile, 0.0)
+
+
 class PlasticityEngine:
     def __init__(self, lr: float = 0.01, homeostatic_target: float = 0.15, hebbian_module: Optional[HebbianStructuralModule] = None):
         self.lr = lr
@@ -60,12 +106,14 @@ class PlasticityEngine:
         self.eligibility_traces: Dict[str, float] = {}
         self.eligibility_decay: float = 0.9
 
+        # Default to Hebbian; can be swapped with SpikingPlasticityModule for neuromorphic style
         self.hebbian = hebbian_module or HebbianStructuralModule()
         self.neuromodulator = Neuromodulator()
 
         self.hardware_backend: Optional[Callable] = None
 
     def set_hardware_backend(self, backend_fn: Callable):
+        """Set backend for future neuromorphic hardware acceleration (Loihi, Akida, etc.)."""
         self.hardware_backend = backend_fn
 
     def update_eligibility_trace(self, profile: str, strength: float = 1.0):
@@ -73,7 +121,6 @@ class PlasticityEngine:
             self.eligibility_traces[profile] = 0.0
 
         modulation = self.neuromodulator.get_modulation()
-        # Modulate eligibility trace strength by global signal
         modulated_strength = strength * modulation
         self.eligibility_traces[profile] = min(1.0, self.eligibility_traces[profile] + modulated_strength)
 
@@ -135,3 +182,10 @@ class PlasticityEngine:
 
     def verify_integrity(self) -> bool:
         return True
+
+    def set_spiking_mode(self, enabled: bool = True):
+        """Switch to neuromorphic spiking plasticity module."""
+        if enabled:
+            self.hebbian = SpikingPlasticityModule()
+        else:
+            self.hebbian = HebbianStructuralModule()

@@ -2,10 +2,13 @@
 
 **Current Ecosystem State**
 
-**Added dynamic eligibility trace modulation + tighter RealDataRunner integration**
+**Neuromorphic investigation integrated**
 
-- Neuromodulator now directly scales eligibility trace updates (stronger biological coupling).
-- RealDataRunner now calls `update_eligibility_trace` and supports full plasticity loops on real data.
-- Continued progress on real-data online learning with integrated biological memory mechanisms.
+- Added `SpikingPlasticityModule` for event-driven, STDP-like spiking simulation.
+- `set_spiking_mode()` and hardware backend hook prepared for future neuromorphic accelerators (Loihi 2, Akida, etc.).
+- Neuromodulator now also modulates eligibility traces.
+- Sleep-like consolidation remains available.
 
-The sovereign edge ecosystem keeps evolving with deeper biology and practical data pipelines.
+This brings the biological plasticity system closer to true neuromorphic hardware acceleration while staying fully modular and sovereign.
+
+The ecosystem now has a clear path toward low-power, event-driven, brain-like computation on edge hardware.
