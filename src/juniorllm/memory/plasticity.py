@@ -3,9 +3,9 @@
 """
 PlasticityEngine
 
-Added sleep-like offline consolidation (stabilization of strong connections during low-activity periods).
+Added dynamic modulation of eligibility traces by neuromodulator (deeper biological integration).
 
-This is a new biological mechanism for long-term memory formation.
+Eligibility traces now scale with global neuromodulatory signals.
 """
 
 from typing import Dict, Optional, Callable
@@ -71,7 +71,11 @@ class PlasticityEngine:
     def update_eligibility_trace(self, profile: str, strength: float = 1.0):
         if profile not in self.eligibility_traces:
             self.eligibility_traces[profile] = 0.0
-        self.eligibility_traces[profile] = min(1.0, self.eligibility_traces[profile] + strength)
+
+        modulation = self.neuromodulator.get_modulation()
+        # Modulate eligibility trace strength by global signal
+        modulated_strength = strength * modulation
+        self.eligibility_traces[profile] = min(1.0, self.eligibility_traces[profile] + modulated_strength)
 
     def decay_eligibility_traces(self):
         for profile in list(self.eligibility_traces.keys()):
@@ -100,7 +104,6 @@ class PlasticityEngine:
 
         performance[profile] += delta_w
 
-        # Synaptic consolidation during "awake" high-performance states
         if self.hebbian.get_strength(profile) > 0.7 and outcome > 0:
             performance[profile] *= 1.02
 
@@ -117,18 +120,11 @@ class PlasticityEngine:
             self.eligibility_traces[profile] *= 0.55
 
     def sleep_consolidation(self, active_profiles: list = None):
-        """Biological mechanism: Sleep-like offline consolidation.
-
-        Strengthens important connections and prunes weak ones when activity is low.
-        Call this periodically or during low-load periods.
-        """
         for profile in list(self.hebbian.connection_strength.keys()):
             strength = self.hebbian.connection_strength[profile]
             if strength > 0.6:
-                # Strengthen important connections during "sleep"
                 self.hebbian.connection_strength[profile] = min(1.0, strength * 1.05)
             elif strength < 0.2:
-                # Prune weak connections
                 self.hebbian.connection_strength[profile] = 0.0
 
     def get_connection_strength(self, profile: str) -> float:

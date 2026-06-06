@@ -2,10 +2,10 @@
 
 **Current Ecosystem State**
 
-**Added sleep-like consolidation + enhanced RealDataRunner**
+**Added dynamic eligibility trace modulation + tighter RealDataRunner integration**
 
-- New `sleep_consolidation()` biological mechanism in PlasticityEngine (offline strengthening/pruning).
-- RealDataRunner now supports triggering consolidation and has tighter integration with plasticity + MemSys graph.
-- Continued movement toward real-data online learning with biological memory formation.
+- Neuromodulator now directly scales eligibility trace updates (stronger biological coupling).
+- RealDataRunner now calls `update_eligibility_trace` and supports full plasticity loops on real data.
+- Continued progress on real-data online learning with integrated biological memory mechanisms.
 
-The sovereign edge ecosystem keeps advancing with richer biology, real data pipelines, and integrated reasoning.
+The sovereign edge ecosystem keeps evolving with deeper biology and practical data pipelines.

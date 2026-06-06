@@ -3,9 +3,9 @@
 """
 RealDataRunner
 
-Enhanced with direct plasticity updates and MemSys graph integration.
+Now supports direct calls to plasticity trace updates and consolidation.
 
-Now supports calling sleep_consolidation and richer pattern storage.
+Tighter integration for real data online learning loops.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -31,6 +31,8 @@ class RealDataRunner:
 
         profile = "vision_" + (pattern.get("detected_tags", ["general"])[0] if pattern.get("detected_tags") else "general")
 
+        # Update plasticity with real data
+        self.plasticity.update_eligibility_trace(profile, strength=1.0)
         state = {"active_profile": profile, "performance": {}}
         self.plasticity.apply(
             performance=state["performance"],
@@ -64,7 +66,6 @@ class RealDataRunner:
         return {"step": self.step_count, "event_type": event.get("type")}
 
     def trigger_sleep_consolidation(self):
-        """Trigger biological sleep-like consolidation across learned profiles."""
         if hasattr(self.plasticity, "sleep_consolidation"):
             self.plasticity.sleep_consolidation()
 
