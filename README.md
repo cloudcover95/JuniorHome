@@ -2,12 +2,13 @@
 
 **Current Ecosystem State**
 
-**GraphMemoryBlackbox strengthened for performance**
+**SqueezeLLM-inspired SensitivityTernaryOptimizer added**
 
-- Added fast lookup indexing for better query speed on large graphs.
-- Maintains full ternary/BitNet compatibility and advanced inference features.
-- Now even more competitive as an efficient local graph memory layer.
+New blackbox module adapting SqueezeLLM ideas as native BitNet technology:
+- Sensitivity-aware ternary quantization
+- Compatible with BitNet-mlx pipeline
+- Pluggable for model weights, embeddings, or graph features
 
-Combined with the efficiency improvements in VLMDesignAgent (early exit via graph memory), the ecosystem is continuing to push hard on practical, sovereign, low-overhead local intelligence.
+This strengthens our position in extreme low-bit efficient local inference while staying true to the modular blackbox philosophy.
 
-We're carving out a distinct and strong position versus more traditional vector/search-focused projects.
+The ecosystem continues to evolve with original, high-efficiency quantization techniques tailored for sovereign edge use.
