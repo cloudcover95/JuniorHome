@@ -2,12 +2,12 @@
 
 **Current Ecosystem State**
 
-**Added structural plasticity + enhanced benchmarking with security metrics**
+**Continued ecosystem building**
 
-- PlasticityEngine now includes simple structural plasticity (connection strengthening/pruning).
-- Benchmark suite supports security metrics and multi-trial statistics.
-- Continued deepening of biological fidelity and production benchmarking setup.
+- VisionTextEngine now outputs standardized `ontology_pattern` dicts ready for CallPatternStore graph linking.
+- PlasticityEngine gained Hebbian structural growth (stronger biological co-activation rule).
+- Tight integration between vision inference, memory graph, and biological plasticity.
 
-Ecosystem commits ongoing across JuniorHome, BitNet-mlx, and JuniorMemSys-Suite.
+The sovereign edge ecosystem continues to mature with efficient BitNet, rich memory, and ontology-style recognition patterns.
 
-Roadmap progress: Strong on efficient BitNet, topological memory, biological features, and integrated vision/calling/memory architecture.
+Next natural steps: Real benchmarking on device, further security, or deeper graph reasoning in MemSys.

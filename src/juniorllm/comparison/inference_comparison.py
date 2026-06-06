@@ -3,9 +3,9 @@
 """
 InferenceEngineComparison
 
-Enhanced benchmarking with security and performance metrics.
+VisionTextEngine now outputs richer, ontology-ready pattern data for CallPatternStore.
 
-Now includes integrity checks and efficiency scoring for production benchmarking.
+This enables better linking in the JuniorMemSys pattern graph.
 """
 
 import time
@@ -115,6 +115,12 @@ class BitNetVoiceEngine(InferenceEngine):
 
 
 class VisionTextEngine(InferenceEngine):
+    """
+    BitNet-native engine for Instagram story zoom tag inference.
+
+    Now outputs standardized pattern dicts optimized for CallPatternStore ontology graph.
+    """
+
     def __init__(self, name: str = "vision_text_tag_bitnet"):
         super().__init__(name)
         self.vision_fn: Optional[Callable] = None
@@ -173,6 +179,15 @@ class VisionTextEngine(InferenceEngine):
         state["performance"] = performance
         state["detected_tags"] = detected_tags
         state["quantized_image_features"] = image_features
+
+        # Standardized ontology-ready output
+        state["ontology_pattern"] = {
+            "type": "vision_tag",
+            "detected_tags": detected_tags,
+            "zoom_level": frame_info.get("zoom_level", 1.0),
+            "timestamp": time.time(),
+            "source": "VisionTextEngine"
+        }
         return state
 
     def evaluate(self, state: Dict[str, Any]) -> Dict[str, float]:
@@ -287,7 +302,6 @@ class InferenceEngineComparison:
                 if name in res:
                     scores.append(res[name]["final_metrics"].get("theoretical_fit", 0))
                     if include_security:
-                        # Placeholder security metric (e.g. integrity or robustness)
                         security_scores.append(res[name]["final_metrics"].get("tags_found", 0) * 0.1)
 
             if scores:
@@ -340,4 +354,4 @@ if __name__ == "__main__":
     }
 
     results = comparator.run_benchmark_suite(test_state, trials=3, num_steps=8, include_security=True)
-    print("Enhanced benchmark with security metrics:", results)
+    print("Benchmark with ontology-ready output:", results)

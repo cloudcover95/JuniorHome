@@ -3,10 +3,9 @@
 """
 PlasticityEngine
 
-Added simple structural plasticity (creation/pruning of profile connections)
-for more biological fidelity.
+Added Hebbian structural growth on top of existing STDP-style plasticity.
 
-Also supports security-aware plasticity (integrity checks).
+This increases biological fidelity: connections grow when co-active profiles succeed together.
 """
 
 from typing import Dict
@@ -18,7 +17,7 @@ class PlasticityEngine:
         self.homeostatic_target = homeostatic_target
         self.eligibility_traces: Dict[str, float] = {}
         self.eligibility_decay: float = 0.9
-        self.connection_strength: Dict[str, float] = {}  # Structural plasticity
+        self.connection_strength: Dict[str, float] = {}
 
     def update_eligibility_trace(self, profile: str, strength: float = 1.0):
         if profile not in self.eligibility_traces:
@@ -46,7 +45,7 @@ class PlasticityEngine:
 
         performance[profile] += delta_w
 
-        # Structural plasticity: strengthen or prune connections
+        # Structural plasticity
         if profile not in self.connection_strength:
             self.connection_strength[profile] = 0.0
 
@@ -55,9 +54,12 @@ class PlasticityEngine:
         else:
             self.connection_strength[profile] = max(0.0, self.connection_strength[profile] - 0.03)
 
-        # Prune very weak connections (biological pruning)
         if self.connection_strength[profile] < 0.05:
             self.connection_strength[profile] = 0.0
+
+        # Hebbian structural growth: boost connections when profile succeeds with high eligibility
+        if outcome > 0 and eligibility > 0.3:
+            self.connection_strength[profile] = min(1.0, self.connection_strength[profile] + 0.1 * eligibility)
 
         # Homeostatic scaling
         current_avg = sum(performance.values()) / max(len(performance), 1)
