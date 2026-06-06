@@ -2,12 +2,12 @@
 
 **Current Ecosystem State**
 
-**Continued ecosystem building**
+**Hebbian Learning Dynamics now a modular blackbox**
 
-- VisionTextEngine now outputs standardized `ontology_pattern` dicts ready for CallPatternStore graph linking.
-- PlasticityEngine gained Hebbian structural growth (stronger biological co-activation rule).
-- Tight integration between vision inference, memory graph, and biological plasticity.
+- Extracted `HebbianStructuralModule` as a swappable blackbox component.
+- PlasticityEngine can now accept custom Hebbian rules or future theoretical variants.
+- Added `set_hardware_backend()` hook for future Neo chip / CUDA / hardware-agnostic routing.
 
-The sovereign edge ecosystem continues to mature with efficient BitNet, rich memory, and ontology-style recognition patterns.
+This increases modularity for both biological learning rules and hardware backends while keeping the core STDP + reward system intact.
 
-Next natural steps: Real benchmarking on device, further security, or deeper graph reasoning in MemSys.
+Ecosystem continues to evolve toward flexible, sovereign, multi-chip capable inference + memory architecture.
