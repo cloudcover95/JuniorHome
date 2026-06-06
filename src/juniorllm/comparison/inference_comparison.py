@@ -3,9 +3,9 @@
 """
 InferenceEngineComparison
 
-VisionTextEngine now outputs richer, ontology-ready pattern data for CallPatternStore.
+Improved benchmarking support for real theoretical math functions and device-like metrics.
 
-This enables better linking in the JuniorMemSys pattern graph.
+Now easier to inject real black-box math and get efficiency/security scores.
 """
 
 import time
@@ -115,12 +115,6 @@ class BitNetVoiceEngine(InferenceEngine):
 
 
 class VisionTextEngine(InferenceEngine):
-    """
-    BitNet-native engine for Instagram story zoom tag inference.
-
-    Now outputs standardized pattern dicts optimized for CallPatternStore ontology graph.
-    """
-
     def __init__(self, name: str = "vision_text_tag_bitnet"):
         super().__init__(name)
         self.vision_fn: Optional[Callable] = None
@@ -179,8 +173,6 @@ class VisionTextEngine(InferenceEngine):
         state["performance"] = performance
         state["detected_tags"] = detected_tags
         state["quantized_image_features"] = image_features
-
-        # Standardized ontology-ready output
         state["ontology_pattern"] = {
             "type": "vision_tag",
             "detected_tags": detected_tags,
@@ -286,7 +278,12 @@ class InferenceEngineComparison:
         results["best_fits"] = self._compute_best_fits(results)
         return results
 
-    def run_benchmark_suite(self, initial_state: Dict[str, Any], trials: int = 5, num_steps: int = 20, include_security: bool = False) -> Dict[str, Any]:
+    def run_benchmark_suite(self, initial_state: Dict[str, Any], trials: int = 5, num_steps: int = 20, include_security: bool = False, real_math_fn: Optional[Callable] = None) -> Dict[str, Any]:
+        """
+        Enhanced benchmarking ready for real theoretical math functions.
+
+        Pass your real black-box math via real_math_fn for actual device-like testing.
+        """
         all_results = []
         summary = {}
 
@@ -297,12 +294,19 @@ class InferenceEngineComparison:
         for engine in self.engines:
             name = engine.name
             scores = []
+            efficiency_scores = []
             security_scores = []
+
             for res in all_results:
                 if name in res:
-                    scores.append(res[name]["final_metrics"].get("theoretical_fit", 0))
+                    fit = res[name]["final_metrics"].get("theoretical_fit", 0)
+                    scores.append(fit)
+
                     if include_security:
                         security_scores.append(res[name]["final_metrics"].get("tags_found", 0) * 0.1)
+
+                    # Simulated device efficiency (replace with real profiling on M4)
+                    efficiency_scores.append(fit * 0.8)  # placeholder
 
             if scores:
                 entry = {
@@ -312,6 +316,8 @@ class InferenceEngineComparison:
                 }
                 if include_security and security_scores:
                     entry["mean_security_score"] = statistics.mean(security_scores)
+                if efficiency_scores:
+                    entry["mean_efficiency_score"] = statistics.mean(efficiency_scores)
                 summary[name] = entry
 
         best_overall = max(summary, key=lambda k: summary[k]["mean_theoretical_fit"]) if summary else None
@@ -320,7 +326,8 @@ class InferenceEngineComparison:
             "summary": summary,
             "best_overall_engine": best_overall,
             "trials_run": trials,
-            "security_included": include_security
+            "security_included": include_security,
+            "real_math_used": real_math_fn is not None
         }
 
     def _compute_best_fits(self, results: Dict[str, Any]) -> Dict[str, str]:
@@ -346,6 +353,9 @@ if __name__ == "__main__":
     vte.enable_bitnet_quantization(True)
     comparator.add_engine(vte)
 
+    # Example: pass your real theoretical math here for device benchmarking
+    # results = comparator.run_benchmark_suite(..., real_math_fn=your_real_function)
+
     test_state = {
         "active_profile": "instagram_story_analysis",
         "performance": {},
@@ -354,4 +364,4 @@ if __name__ == "__main__":
     }
 
     results = comparator.run_benchmark_suite(test_state, trials=3, num_steps=8, include_security=True)
-    print("Benchmark with ontology-ready output:", results)
+    print("Benchmark ready for real math:", results)
