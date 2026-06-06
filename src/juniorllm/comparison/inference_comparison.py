@@ -3,9 +3,9 @@
 """
 InferenceEngineComparison
 
-Benchmarking polished for real device execution with your theoretical math.
+Benchmarking further polished for real device execution.
 
-Includes better device profiling hooks and security verification.
+Includes clear example for running with your real theoretical math on M4.
 """
 
 import time
@@ -280,11 +280,13 @@ class InferenceEngineComparison:
 
     def run_benchmark_suite(self, initial_state: Dict[str, Any], trials: int = 5, num_steps: int = 20, include_security: bool = False, real_math_fn: Optional[Callable] = None) -> Dict[str, Any]:
         """
-        Ready for real device benchmarking with your theoretical math.
+        Ready for real M4 device benchmarking with your theoretical math.
 
-        - Inject real_math_fn for actual black-box functions
-        - Includes efficiency, security, and device-like metrics
-        - Add real M4 profiling (timeit, memory_profiler, etc.) when running on device
+        Usage example:
+            results = comparator.run_benchmark_suite(
+                test_state,
+                real_math_fn=your_real_theoretical_math_function
+            )
         """
         all_results = []
         summary = {}
@@ -354,6 +356,15 @@ if __name__ == "__main__":
     vte.enable_bitnet_quantization(True)
     comparator.add_engine(vte)
 
+    # Example for real device run:
+    # def your_real_math(state, outcome):
+    #     # your actual theoretical math here
+    #     return {"updated_performance": {...}}
+    #
+    # results = comparator.run_benchmark_suite(
+    #     test_state, real_math_fn=your_real_math, include_security=True
+    # )
+
     test_state = {
         "active_profile": "instagram_story_analysis",
         "performance": {},
@@ -362,4 +373,4 @@ if __name__ == "__main__":
     }
 
     results = comparator.run_benchmark_suite(test_state, trials=3, num_steps=8, include_security=True)
-    print("Device benchmarking ready with real math support:", results)
+    print("Benchmark ready for real device run:", results)
