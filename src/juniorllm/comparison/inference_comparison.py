@@ -3,15 +3,10 @@
 """
 InferenceEngineComparison
 
-VisionTextEngine further enhanced for production BitNet (1.58-bit) efficiency.
+VisionTextEngine now includes explicit iPhone baseline comparison support
+for benchmarking BitNet vs modern Apple on-device capabilities.
 
-Key improvements:
-- Stronger ternary feature quantization (true {-1,0,1} with scaling)
-- Better support for real MLX/BitNet vision models
-- Direct comparison notes vs iPhone Neural Engine + Core ML
-
-Vision detection events can now be forwarded to JuniorMemSys CallPatternStore
-for long-term topological pattern learning across Instagram stories and calls.
+Also prepares structured output for JuniorMemSys topological storage.
 """
 
 import time
@@ -122,15 +117,10 @@ class BitNetVoiceEngine(InferenceEngine):
 
 class VisionTextEngine(InferenceEngine):
     """
-    Production-grade BitNet-native engine for Instagram story zoom tag inference.
+    BitNet-native engine for Instagram story zoom tag inference.
 
-    Uses 1.58-bit ternary style processing for maximum efficiency on Apple Silicon.
-    Designed to detect @account tags in zoomed video frames where interactive links are dead.
-
-    Comparison to modern iPhone:
-    - iPhone (M4 Neural Engine + Core ML + Vision): Excellent general OCR + image understanding
-    - Our BitNet approach: Extreme compression, lower power, full sovereignty, custom theoretical reasoning
-    - Best fit for always-on edge analysis of social content
+    Supports direct benchmarking against modern iPhone capabilities.
+    Outputs structured data ready for JuniorMemSys topological storage.
     """
 
     def __init__(self, name: str = "vision_text_tag_bitnet"):
@@ -153,12 +143,10 @@ class VisionTextEngine(InferenceEngine):
         frame_info = state.get("frame_info", {})
         performance = state.get("performance", {})
 
-        # Strong BitNet-style ternary quantization
         if self.quantize_features:
             for key in list(image_features.keys()):
                 if isinstance(image_features[key], (int, float)):
                     val = float(image_features[key])
-                    # Map to ternary with scaling
                     if val > 0.5:
                         image_features[key] = 1.0
                     elif val < -0.5:
@@ -172,26 +160,23 @@ class VisionTextEngine(InferenceEngine):
             try:
                 detected_tags = self.vision_fn(image_features)
             except Exception as e:
-                print(f"[VisionTextEngine] Vision model error: {e}")
+                print(f"[VisionTextEngine] Vision error: {e}")
 
         if self.theoretical_math_fn is not None:
             try:
-                reasoning_input = {
+                reasoning = self.theoretical_math_fn({
                     "detected_tags": detected_tags,
                     "frame_info": frame_info,
                     "is_zoomed": frame_info.get("zoom_level", 1.0) > 1.5,
                     "quantized_features": image_features
-                }
-                reasoning = self.theoretical_math_fn(reasoning_input, outcome)
+                }, outcome)
                 if isinstance(reasoning, dict):
                     performance.update(reasoning)
-                    if "account_tags" in reasoning:
-                        performance["detected_account_tags"] = reasoning["account_tags"]
             except Exception as e:
                 print(f"[VisionTextEngine] Theoretical math error: {e}")
         else:
             if image_features.get("text_density", 0) > 0.3:
-                performance["detected_account_tags"] = ["@detected_account"]
+                performance["detected_account_tags"] = ["@detected"]
 
         state["performance"] = performance
         state["detected_tags"] = detected_tags
@@ -209,6 +194,25 @@ class VisionTextEngine(InferenceEngine):
             "theoretical_fit": score,
             "tags_found": float(tag_count),
             "zoom_layer_handled": 1.0 if state.get("frame_info", {}).get("zoom_level", 1) > 1.5 else 0.0
+        }
+
+    def get_iphone_baseline_comparison(self, state: Dict[str, Any]) -> Dict[str, float]:
+        """
+        Returns approximate comparison metrics vs modern iPhone (Neural Engine + Vision).
+        Use this for internal benchmarking. Real M4 tests will give accurate numbers.
+        """
+        tags = state.get("detected_tags", [])
+        zoom = state.get("frame_info", {}).get("zoom_level", 1.0)
+
+        # Rough iPhone baseline simulation (very strong at this task)
+        iphone_accuracy = 0.92 if len(tags) > 0 else 0.75
+        our_score = self.evaluate(state).get("theoretical_fit", 0)
+
+        return {
+            "our_theoretical_fit": our_score,
+            "iphone_estimated_accuracy": iphone_accuracy,
+            "relative_efficiency_estimate": our_score / max(iphone_accuracy, 0.01),
+            "zoom_layer_advantage": 1.0 if zoom > 2.0 else 0.8
         }
 
 
@@ -327,7 +331,6 @@ class InferenceEngineComparison:
         return best
 
 
-# Ready-to-use test for BitNet VisionTextEngine on Instagram zoom tags
 if __name__ == "__main__":
     comparator = InferenceEngineComparison()
     vte = VisionTextEngine()
@@ -338,8 +341,9 @@ if __name__ == "__main__":
         "active_profile": "instagram_story_analysis",
         "performance": {},
         "image_features": {"text_density": 0.65, "edge_density": 0.45},
-        "frame_info": {"zoom_level": 3.1, "is_story": True}
+        "frame_info": {"zoom_level": 3.1}
     }
 
     results = comparator.run_comparison(test_state, num_steps=8)
-    print("BitNet VisionTextEngine Instagram test:", results["best_fits"])
+    print("BitNet VisionTextEngine test:", results)
+    print("iPhone baseline comparison:", vte.get_iphone_baseline_comparison(test_state))

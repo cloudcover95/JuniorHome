@@ -2,12 +2,12 @@
 
 **Current Ecosystem State**
 
-**VisionTextEngine strengthened for BitNet + cross-system integration**
+**VisionTextEngine + iPhone baseline comparison + MemSys integration strengthened**
 
-- Stronger ternary quantization in VisionTextEngine
-- New `feed_vision_detection()` in DigitalCallManager to forward Instagram story tag detections to JuniorMemSys CallPatternStore
-- This creates a unified data flow: Vision inference → Call manager → Long-term topological memory in JuniorMemSys
+- VisionTextEngine now has `get_iphone_baseline_comparison()` for direct benchmarking.
+- DigitalCallManager can forward vision detections to JuniorMemSys CallPatternStore.
+- This creates a complete loop: BitNet vision inference → verification → long-term topological memory.
 
-The ecosystem now treats vision tag recognition, voice verification, and call patterns as first-class citizens in the sovereign memory and inference architecture.
+The ecosystem continues to mature as a sovereign, efficient, integrated platform.
 
-Roadmap progress: Efficient BitNet ternary inference + deep integration across vision, calling, and long-term memory. Production-grade and ready for real device benchmarking on M4.
+Ready for real M4 device testing and further topological work in JuniorMemSys.

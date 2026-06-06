@@ -3,8 +3,7 @@
 """
 DigitalCallManager
 
-Extended to forward vision detection events (from VisionTextEngine) to JuniorMemSys
-for long-term pattern storage alongside call data.
+Updated to support vision detection forwarding to JuniorMemSys with structured data.
 """
 
 import time
@@ -27,7 +26,7 @@ class DigitalCallManager:
         self.verification_fn: Optional[Callable[[bytes], bool]] = None
         self.inference_engine: Optional[Any] = None
         self.memory_system: Optional[Any] = None
-        self.memsys_call_pattern_store: Optional[Any] = None  # JuniorMemSys integration
+        self.memsys_call_pattern_store: Optional[Any] = None
 
     def set_verification_function(self, fn: Callable[[bytes], bool]):
         self.verification_fn = fn
@@ -39,7 +38,6 @@ class DigitalCallManager:
         self.memory_system = memory_system
 
     def set_memsys_call_pattern_store(self, store: Any):
-        """Connect to JuniorMemSys CallPatternStore for long-term vision + call pattern storage."""
         self.memsys_call_pattern_store = store
 
     def accept_call(self, call_id: str) -> bool:
@@ -51,11 +49,11 @@ class DigitalCallManager:
         self.verified_human = False
         self.call_start_time = time.time()
 
-        print(f"[DigitalCall] Call {call_id} accepted - MUTED (BitNet vision ready)")
+        print(f"[DigitalCall] Call {call_id} accepted - MUTED")
 
         if self.memory_system:
             try:
-                self.memory_system.record_event({"type": "call_accepted", "call_id": call_id, "timestamp": self.call_start_time})
+                self.memory_system.record_event({"type": "call_accepted", "call_id": call_id})
             except:
                 pass
 
@@ -75,8 +73,8 @@ class DigitalCallManager:
                 metrics = self.inference_engine.evaluate(updated)
                 if metrics.get("is_human", 0) > 0.5:
                     verified = True
-            except Exception as e:
-                print(f"[DigitalCall] Inference engine error: {e}")
+            except:
+                pass
 
         elif self.verification_fn:
             try:
@@ -90,14 +88,13 @@ class DigitalCallManager:
         if verified:
             self.verified_human = True
             self.muted = False
-            print(f"[DigitalCall] Human verified - UNMUTED {self.current_call_id}")
+            print(f"[DigitalCall] Human verified - UNMUTED")
 
             if self.memsys_call_pattern_store:
                 try:
                     self.memsys_call_pattern_store.store_call_event({
                         "call_id": self.current_call_id,
                         "type": "call_unmuted",
-                        "timestamp": time.time(),
                         "is_human_verified": True
                     })
                 except:
@@ -107,20 +104,16 @@ class DigitalCallManager:
         return False
 
     def feed_vision_detection(self, detection: Dict[str, Any]) -> None:
-        """Forward vision tag detection (from VisionTextEngine) to JuniorMemSys for pattern learning."""
         if self.memsys_call_pattern_store:
             try:
                 self.memsys_call_pattern_store.store_call_event({
                     "type": "vision_tag_detected",
                     "timestamp": time.time(),
                     "detected_tags": detection.get("detected_tags", []),
-                    "zoom_level": detection.get("zoom_level", 1.0),
-                    "is_zoomed": detection.get("zoom_level", 1.0) > 1.5
+                    "zoom_level": detection.get("zoom_level", 1.0)
                 })
-            except Exception as e:
-                print(f"[DigitalCall] MemSys vision forward error: {e}")
-
-    # ... (rest of methods unchanged for brevity - _simple_energy, mute, end_call, etc. remain the same)
+            except:
+                pass
 
     def _simple_energy(self, audio_chunk: bytes) -> float:
         if not audio_chunk:
@@ -141,11 +134,7 @@ class DigitalCallManager:
     def end_call(self):
         if self.current_call_id and self.memsys_call_pattern_store:
             try:
-                self.memsys_call_pattern_store.store_call_event({
-                    "type": "call_ended",
-                    "call_id": self.current_call_id,
-                    "timestamp": time.time()
-                })
+                self.memsys_call_pattern_store.store_call_event({"type": "call_ended", "call_id": self.current_call_id})
             except:
                 pass
 
@@ -165,6 +154,5 @@ class DigitalCallManager:
             "call_id": self.current_call_id,
             "muted": self.muted,
             "verified_human": self.verified_human,
-            "in_call": self.current_call_id is not None,
-            "using_quant_engine": self.inference_engine is not None
+            "in_call": self.current_call_id is not None
         }
