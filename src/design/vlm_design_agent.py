@@ -3,7 +3,10 @@
 """
 VLMDesignAgent
 
-Now directly wired with GraphMemoryBlackbox as primary memory backend.
+Improved efficiency:
+- Uses GraphMemoryBlackbox to check for similar past designs before running full iteration.
+- Skips or accelerates when strong matches exist (efficient local system behavior).
+- Added basic efficiency metrics.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -31,21 +34,20 @@ class VLMDesignAgent:
         bitnet_runner=None,
         theoretical_math_fn: Optional[Callable] = None,
         plasticity_engine=None,
-        memsys_store=None,
-        graph_memory: Optional[Any] = None,  # GraphMemoryBlackbox
+        graph_memory: Optional[Any] = None,
         real_data_runner=None,
         vlm_vision_fn: Optional[Callable] = None,
     ):
         self.bitnet_runner = bitnet_runner
         self.theoretical_math_fn = theoretical_math_fn
         self.plasticity = plasticity_engine
-        self.memsys = memsys_store
         self.graph_memory = graph_memory
         self.real_data_runner = real_data_runner
         self.vlm_vision_fn = vlm_vision_fn
 
         self.design_history: List[DesignState] = []
         self.current_design: Optional[DesignState] = None
+        self.efficiency_stats = {"iterations_skipped": 0, "total_iterations": 0}
 
     def analyze_design_image(self, image_features: Dict[str, Any]) -> Dict[str, Any]:
         if self.vlm_vision_fn:
@@ -58,7 +60,6 @@ class VLMDesignAgent:
         }
 
     def propose_design_changes(self, current_state: DesignState, target_goals: Dict[str, float]) -> Dict[str, Any]:
-        # Get context from graph memory if available
         context = {}
         if self.graph_memory:
             context = self.graph_memory.get_context_for_agent(
@@ -91,7 +92,7 @@ class VLMDesignAgent:
                 "refine_nose_shape": "sharper_ogive",
                 "add_strake": True
             },
-            "reasoning": "Optimize using past design memory.",
+            "reasoning": "Using graph memory for efficiency.",
             "confidence": 0.65
         }
 
@@ -102,9 +103,6 @@ class VLMDesignAgent:
                 "boom_overpressure": simulation_results.get("boom", 0.9),
                 "structural_safety_factor": simulation_results.get("safety", 1.5)
             }
-
-        if self.real_data_runner:
-            pass  # Could process via RealDataRunner
 
         return {
             "drag_coefficient": design.metrics.get("drag_coefficient", 0.02) * 0.95,
@@ -127,11 +125,27 @@ class VLMDesignAgent:
             self.plasticity.adapt_meta_plasticity(design.metrics.get("drag_coefficient", 0.5))
 
     def iterate_design(self, target_goals: Dict[str, float], max_iterations: int = 10) -> List[DesignState]:
+        self.efficiency_stats["total_iterations"] += 1
+
         if not self.current_design:
             self.current_design = DesignState(
                 params={"wing_sweep": 35, "nose_shape": "blunt", "length": 30},
                 metrics={"drag_coefficient": 0.025, "boom_overpressure": 1.2}
             )
+
+        # Efficiency optimization: Check graph memory first
+        if self.graph_memory:
+            similar = self.graph_memory.query_similar(
+                {"type": "supersonic_design", **self.current_design.params},
+                top_k=3
+            )
+            for match in similar:
+                match_metrics = match.get("metrics", {})
+                if (match_metrics.get("drag_coefficient", 1) < target_goals.get("max_drag", 0.01) and
+                    match_metrics.get("boom_overpressure", 1) < target_goals.get("max_boom", 0.6)):
+                    self.efficiency_stats["iterations_skipped"] += 1
+                    # Return early with known good design
+                    return [DesignState(params=match.get("params", {}), metrics=match_metrics)]
 
         iteration_results = []
 
@@ -154,7 +168,6 @@ class VLMDesignAgent:
             outcome = 1.0 if new_metrics.get("drag_coefficient", 1) < self.current_design.metrics.get("drag_coefficient", 1) else -0.5
             self.learn_from_design(new_design, outcome)
 
-            # Store in GraphMemoryBlackbox if available
             if self.graph_memory:
                 try:
                     self.graph_memory.store_pattern({
@@ -179,3 +192,6 @@ class VLMDesignAgent:
         if not self.design_history:
             return None
         return min(self.design_history, key=lambda d: d.metrics.get("drag_coefficient", 999))
+
+    def get_efficiency_stats(self) -> Dict[str, Any]:
+        return self.efficiency_stats.copy()
