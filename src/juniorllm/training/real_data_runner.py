@@ -3,7 +3,7 @@
 """
 RealDataRunner
 
-Now supports optional GraphMemoryBlackbox as backend for storing processed events.
+Added efficiency profiling hooks.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -19,6 +19,7 @@ class RealDataRunner:
         self.theoretical_math_fn = theoretical_math_fn
         self.step_count = 0
         self.spiking_mode = False
+        self._start_time = time.time()
 
     def set_spiking_mode(self, enabled: bool = True):
         self.spiking_mode = enabled
@@ -51,7 +52,6 @@ class RealDataRunner:
             except Exception as e:
                 print(f"[RealDataRunner] MemSys error: {e}")
 
-        # Store to GraphMemoryBlackbox if provided
         if self.graph_memory:
             try:
                 self.graph_memory.store_pattern({
@@ -68,7 +68,8 @@ class RealDataRunner:
             "connection_strength": self.plasticity.get_connection_strength(profile),
             "neuromodulation": self.plasticity.get_neuromodulation(),
             "step": self.step_count,
-            "spiking_mode": self.spiking_mode
+            "spiking_mode": self.spiking_mode,
+            "elapsed_time": time.time() - self._start_time
         }
 
     def process_call_event(self, event: Dict[str, Any], outcome: float = 1.0) -> Dict[str, Any]:
@@ -89,15 +90,21 @@ class RealDataRunner:
                 print(f"[RealDataRunner] GraphMemory error: {e}")
 
         self.step_count += 1
-        return {"step": self.step_count, "event_type": event.get("type")}
+        return {
+            "step": self.step_count,
+            "event_type": event.get("type"),
+            "elapsed_time": time.time() - self._start_time
+        }
 
     def trigger_sleep_consolidation(self):
         if hasattr(self.plasticity, "sleep_consolidation"):
             self.plasticity.sleep_consolidation()
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_efficiency_report(self) -> Dict[str, Any]:
         return {
             "steps_processed": self.step_count,
             "neuromodulation_level": self.plasticity.get_neuromodulation() if hasattr(self.plasticity, "get_neuromodulation") else None,
-            "spiking_mode": self.spiking_mode
+            "spiking_mode": self.spiking_mode,
+            "total_runtime": time.time() - self._start_time,
+            "avg_time_per_step": (time.time() - self._start_time) / max(self.step_count, 1)
         }

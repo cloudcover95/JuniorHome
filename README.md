@@ -2,10 +2,9 @@
 
 **Current Ecosystem State**
 
-**CAD automation layer advanced**
+**Neuromorphic plasticity advanced + Efficiency profiling added**
 
-- CADScriptGenerator refactored with proper STEP export support and more formats.
-- Directly wired into VLMDesignAgent.iterate_design() with auto script output for good designs.
-- The design agent now produces executable CAD artifacts automatically.
+- SpikingPlasticityModule now has richer STDP timing windows and spike-timing modulation.
+- Efficiency profiling hooks added to PlasticityEngine and RealDataRunner (runtime, steps, neuromodulation state).
 
-This moves the ecosystem closer to a complete sovereign design-to-manufacturable pipeline.
+The ecosystem continues to mature with deeper biological fidelity and measurable efficiency characteristics across components.
