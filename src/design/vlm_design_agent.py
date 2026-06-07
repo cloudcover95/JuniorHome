@@ -3,7 +3,7 @@
 """
 VLMDesignAgent
 
-Stronger auto CAD/script generation on good designs.
+Added more granular efficiency benchmarking (time per phase).
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -51,7 +51,13 @@ class VLMDesignAgent:
 
         self.design_history: List[DesignState] = []
         self.current_design: Optional[DesignState] = None
-        self.efficiency_stats = {"iterations_skipped": 0, "total_iterations": 0, "scripts_generated": 0}
+        self.efficiency_stats = {
+            "iterations_skipped": 0,
+            "total_iterations": 0,
+            "scripts_generated": 0,
+            "quantization_time": 0.0,
+            "memory_ops_time": 0.0
+        }
         self._iteration_start_time = None
 
     def analyze_design_image(self, image_features: Dict[str, Any]) -> Dict[str, Any]:
@@ -140,10 +146,13 @@ class VLMDesignAgent:
             )
 
         if self.graph_memory:
+            t0 = time.time()
             similar = self.graph_memory.query_similar(
                 {"type": "supersonic_design", **self.current_design.params},
                 top_k=3
             )
+            self.efficiency_stats["memory_ops_time"] += time.time() - t0
+
             for match in similar:
                 match_metrics = match.get("metrics", {})
                 if (match_metrics.get("drag_coefficient", 1) < target_goals.get("max_drag", 0.01) and
@@ -156,7 +165,9 @@ class VLMDesignAgent:
         iteration_results = []
 
         for i in range(max_iterations):
+            t_quant = time.time()
             vision_analysis = self.analyze_design_image({"edge_density": 0.6, "text_density": 0.4})
+            self.efficiency_stats["quantization_time"] += time.time() - t_quant
 
             proposal = self.propose_design_changes(self.current_design, target_goals)
 
@@ -175,16 +186,14 @@ class VLMDesignAgent:
             self.learn_from_design(new_design, outcome)
 
             if self.graph_memory:
-                try:
-                    self.graph_memory.store_pattern({
-                        "type": "supersonic_design",
-                        "params": new_design.params,
-                        "metrics": new_design.metrics
-                    })
-                except Exception as e:
-                    print(f"[VLMDesignAgent] GraphMemory error: {e}")
+                t_mem = time.time()
+                self.graph_memory.store_pattern({
+                    "type": "supersonic_design",
+                    "params": new_design.params,
+                    "metrics": new_design.metrics
+                })
+                self.efficiency_stats["memory_ops_time"] += time.time() - t_mem
 
-            # Auto-export high-quality designs as STEP + Python
             if auto_export_scripts and self.cad_generator:
                 if new_metrics.get("drag_coefficient", 1) < 0.015:
                     self.cad_generator.export_to_file(new_design, f"design_iter_{i}.py", format="python_cadquery")
@@ -213,5 +222,7 @@ class VLMDesignAgent:
             "iterations_skipped": self.efficiency_stats.get("iterations_skipped", 0),
             "scripts_generated": self.efficiency_stats.get("scripts_generated", 0),
             "last_iteration_time": self.efficiency_stats.get("last_iteration_time", 0),
-            "avg_time_per_iteration": self.efficiency_stats.get("last_iteration_time", 0) / max(self.efficiency_stats.get("total_iterations", 1), 1)
+            "avg_time_per_iteration": self.efficiency_stats.get("last_iteration_time", 0) / max(self.efficiency_stats.get("total_iterations", 1), 1),
+            "quantization_time": self.efficiency_stats.get("quantization_time", 0),
+            "memory_ops_time": self.efficiency_stats.get("memory_ops_time", 0)
         }

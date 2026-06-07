@@ -3,8 +3,7 @@
 """
 CADScriptGenerator
 
-Deeper HybridSqueezeBitNetQuantizer integration for parameter optimization.
-Now quantizes design parameters before script generation for maximum BitNet efficiency.
+Added direct STEP export (no helper script) using cadquery more cleanly.
 """
 
 from typing import Any, Dict, List, Optional
@@ -91,12 +90,14 @@ nose();
         self._total_generation_time += time.time() - start
         return script
 
-    def generate_python_cadquery(self, design_state: Any, export_step: bool = False) -> str:
+    def generate_python_cadquery(self, design_state: Any, export_step: bool = False, direct_step_filename: Optional[str] = None) -> str:
         start = time.time()
         params = self._parse_design_params(design_state)
         q_params = self._quantize_features({k: v for k, v in params.items() if isinstance(v, (int, float))})
 
-        step_export = "result.val().exportStep('design.step')" if export_step else ""
+        step_code = ""
+        if export_step or direct_step_filename:
+            step_code = "result.val().exportStep('" + (direct_step_filename or "design.step") + "')"
 
         script = f"""# JuniorCloud CADScriptGenerator (HybridSqueezeBitNet optimized)
 # {time.strftime("%Y-%m-%d %H:%M:%S")}
@@ -129,7 +130,7 @@ else:
 
 result = result.union(nose)
 
-{step_export}
+{step_code}
 print("CAD generated with BitNet efficiencies.")
 """
         self._generation_count += 1
@@ -138,12 +139,35 @@ print("CAD generated with BitNet efficiencies.")
 
     def generate_step(self, design_state: Any, filename: str = "design.step") -> bool:
         try:
-            script = self.generate_python_cadquery(design_state, export_step=True)
-            with open(filename.replace(".step", "_generate.py"), "w") as f:
-                f.write(script)
+            # Direct STEP export without helper script
+            params = self._parse_design_params(design_state)
+            q_params = self._quantize_features({k: v for k, v in params.items() if isinstance(v, (int, float))})
+
+            import cadquery as cq
+            result = (
+                cq.Workplane("XY")
+                .cylinder(params["length"], 1.5)
+                .faces(">Z").workplane().circle(0.8).extrude(params["length"] * 0.3)
+            )
+            wing = (
+                cq.Workplane("XY")
+                .rect(params["length"] * 0.6, 8)
+                .extrude(0.3)
+                .rotate((0, 0, 0), (0, 0, 1), params["wing_sweep"])
+            )
+            result = result.union(wing)
+
+            if params["nose_shape"] == "ogive":
+                nose = cq.Workplane("XY").sphere(1.2).translate((0, 0, params["length"]/2))
+            else:
+                nose = cq.Workplane("XY").cylinder(3, 1.5).translate((0, 0, params["length"]/2))
+
+            result = result.union(nose)
+            result.val().exportStep(filename)
+            self._generation_count += 1
             return True
         except Exception as e:
-            print(f"[CADScriptGenerator] STEP error: {e}")
+            print(f"[CADScriptGenerator] Direct STEP export error: {e}")
             return False
 
     def generate_freecad_macro(self, design_state: Any) -> str:
@@ -196,4 +220,4 @@ if __name__ == "__main__":
     )
 
     gen = CADScriptGenerator()
-    print(gen.generate_script(test_design, "python_cadquery")[:300])
+    print("Direct STEP export test:", gen.generate_step(test_design))

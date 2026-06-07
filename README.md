@@ -2,10 +2,10 @@
 
 **Current Ecosystem State**
 
-**Quantizer integration + JuniorPython + neuromorphic refinements advanced**
+**Further neuromorphic + benchmarking + quantizer + JuniorPython progress**
 
-- CADScriptGenerator now deeply uses HybridSqueezeBitNetQuantizer for parameter optimization before script generation.
-- VLMDesignAgent auto-exports both Python and STEP on high-quality designs.
-- Further STDP timing refinements in spiking plasticity.
+- GraphMemoryBlackbox now has spiking-aware processing and selective spike inclusion in queries.
+- VLMDesignAgent has granular phase timing (quantization + memory ops).
+- CADScriptGenerator supports true direct STEP export (no helper script).
 
-The ecosystem continues to tighten integration across quantization, automation, and biological learning layers.
+The ecosystem is steadily becoming more integrated, observable, and production-ready.

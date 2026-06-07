@@ -3,8 +3,8 @@
 """
 GraphMemoryBlackbox
 
-Added basic spiking/event integration hooks.
-Patterns can now be tagged as spike events for neuromorphic workflows.
+Added spiking-aware processing for neuromorphic workflows.
+Spike events are now stored with special handling and can influence similarity queries.
 """
 
 from typing import Any, Callable, Dict, List, Optional, Set
@@ -33,6 +33,7 @@ class GraphMemoryBlackbox:
         self.embeddings: Dict[str, List[float]] = {}
         self.temporal_history: Dict[str, List[Dict[str, Any]]] = {}
         self._fast_index: Dict[str, Set[str]] = {} if fast_lookup else None
+        self._spike_nodes: Set[str] = set()
 
     def _make_node_id(self, data: Dict[str, Any]) -> str:
         serialized = str(sorted(data.items())).encode()
@@ -112,17 +113,13 @@ class GraphMemoryBlackbox:
         return node_id
 
     def store_spike_event(self, spike_data: Dict[str, Any]):
-        """Store a pattern as a spike event for neuromorphic workflows."""
+        """Store pattern as spike event with special neuromorphic tagging."""
         spike_data["is_spike_event"] = True
-        return self.store_pattern(spike_data, metadata={"event_type": "spike"})
+        node_id = self.store_pattern(spike_data, metadata={"event_type": "spike"})
+        self._spike_nodes.add(node_id)
+        return node_id
 
-    def _cosine_similarity(self, a: List[float], b: List[float]) -> float:
-        dot = sum(x * y for x, y in zip(a, b))
-        norm_a = sum(x * x for x in a) ** 0.5 or 1e-8
-        norm_b = sum(x * x for x in b) ** 0.5 or 1e-8
-        return dot / (norm_a * norm_b)
-
-    def query_similar(self, query_pattern: Dict[str, Any], top_k: int = 5) -> List[Dict[str, Any]]:
+    def query_similar(self, query_pattern: Dict[str, Any], top_k: int = 5, include_spikes: bool = True) -> List[Dict[str, Any]]:
         if self._fast_index is not None:
             tag = query_pattern.get("type", "general")
             candidates = self._fast_index.get(tag, set())
@@ -131,6 +128,8 @@ class GraphMemoryBlackbox:
                 query_vec = self._to_ternary_vector(query_pattern)
                 for node_id in list(candidates)[:300]:
                     if node_id in self.embeddings:
+                        if not include_spikes and node_id in self._spike_nodes:
+                            continue
                         sim = self._cosine_similarity(query_vec, self.embeddings[node_id])
                         scored.append((sim, self.nodes.get(node_id, {})))
                 scored.sort(reverse=True, key=lambda x: x[0])
@@ -139,6 +138,8 @@ class GraphMemoryBlackbox:
         query_vec = self._to_ternary_vector(query_pattern)
         scored = []
         for node_id, emb in self.embeddings.items():
+            if not include_spikes and node_id in self._spike_nodes:
+                continue
             sim = self._cosine_similarity(query_vec, emb)
             scored.append((sim, self.nodes.get(node_id, {})))
         scored.sort(reverse=True, key=lambda x: x[0])
@@ -220,7 +221,7 @@ class GraphMemoryBlackbox:
         self.sensitivity_optimizer = optimizer
 
     def run_self_test(self) -> bool:
-        print("[GraphMemoryBlackbox] Running with spiking hooks...")
+        print("[GraphMemoryBlackbox] Running with spiking-aware processing...")
         test_pattern = {"type": "spike_event", "sweep": 48}
         node_id = self.store_spike_event(test_pattern)
         similar = self.query_similar({"type": "spike_event"})
