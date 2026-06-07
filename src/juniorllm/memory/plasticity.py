@@ -3,10 +3,16 @@
 """
 PlasticityEngine
 
-Further neuromorphic refinement: spike-timing eligibility modulation now also influences structural plasticity.
+Added homeostatic regulation to SpikingPlasticityModule (neuromorphic refinement).
+Also integrated HybridSqueezeBitNetQuantizer for ternary weight-like updates.
 """
 
 from typing import Dict, Optional, Callable, Any
+
+try:
+    from src.quantization.hybrid_squeeze_bitnet import HybridSqueezeBitNetQuantizer
+except ImportError:
+    HybridSqueezeBitNetQuantizer = None
 
 
 class Neuromodulator:
@@ -59,6 +65,7 @@ class SpikingPlasticityModule:
         self.membrane_potential: Dict[str, float] = {}
         self.connection_strength: Dict[str, float] = {}
         self.last_spike_time: Dict[str, float] = {}
+        self.homeostatic_target = 0.15  # Homeostatic regulation target
 
     def update(self, profile: str, delta_w: float, eligibility: float, outcome: float, modulation: float = 1.0, current_time: float = 0.0) -> float:
         if profile not in self.membrane_potential:
@@ -82,6 +89,11 @@ class SpikingPlasticityModule:
         else:
             self.connection_strength[profile] *= 0.985
 
+        # Homeostatic regulation (neuromorphic refinement)
+        avg_strength = sum(self.connection_strength.values()) / max(len(self.connection_strength), 1)
+        if avg_strength > self.homeostatic_target:
+            self.connection_strength[profile] *= 0.99
+
         if self.connection_strength[profile] < 0.05:
             self.connection_strength[profile] = 0.0
 
@@ -100,6 +112,7 @@ class PlasticityEngine:
 
         self.hebbian = hebbian_module or HebbianStructuralModule()
         self.neuromodulator = Neuromodulator()
+        self.hybrid_quantizer = HybridSqueezeBitNetQuantizer() if HybridSqueezeBitNetQuantizer else None
 
         self.hardware_backend: Optional[Callable] = None
         self.meta_plasticity_factor: float = 1.0
@@ -146,6 +159,13 @@ class PlasticityEngine:
         self._last_update_time = current_time
 
         delta_w = self.hebbian.update(profile, delta_w, modulated_eligibility, outcome, modulation, current_time=current_time)
+
+        # Apply hybrid quantizer to delta_w for ternary-like updates (quantizer spread)
+        if self.hybrid_quantizer:
+            try:
+                delta_w = float(self.hybrid_quantizer.quantize([delta_w])[0])
+            except Exception:
+                pass
 
         performance[profile] += delta_w
 

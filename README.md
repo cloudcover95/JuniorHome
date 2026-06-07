@@ -2,10 +2,10 @@
 
 **Current Ecosystem State**
 
-**Further neuromorphic + benchmarking + quantizer + JuniorPython progress**
+**Continued neuromorphic + quantizer + JuniorPython progress**
 
-- GraphMemoryBlackbox now has spiking-aware processing and selective spike inclusion in queries.
-- VLMDesignAgent has granular phase timing (quantization + memory ops).
-- CADScriptGenerator supports true direct STEP export (no helper script).
+- SpikingPlasticityModule now includes homeostatic regulation.
+- PlasticityEngine uses HybridSqueezeBitNetQuantizer for ternary-like updates.
+- CADScriptGenerator can now generate optimization scripts (new JuniorPython feature).
 
-The ecosystem is steadily becoming more integrated, observable, and production-ready.
+The ecosystem keeps advancing with tighter integration across biological learning, quantization, and automation layers.
