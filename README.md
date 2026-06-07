@@ -2,10 +2,14 @@
 
 **Current Ecosystem State**
 
-**Hybrid quantizer deeply integrated**
+**JuniorPython automation layer started**
 
-- GraphMemoryBlackbox now defaults to HybridSqueezeBitNetQuantizer when available for node embeddings.
-- VLMDesignAgent uses the hybrid quantizer for internal design features and tensors.
-- Real BitNet-mlx embedding functions are fully supported end-to-end.
+New `CADScriptGenerator` module:
+- Generates clean OpenSCAD and Python (cadquery) scripts from DesignState
+- Integrates BitNet efficiencies via HybridSqueezeBitNetQuantizer
+- Proper robust parsing and formatting
+- Directly usable by VLMDesignAgent for automated CAD output
 
-The ecosystem is advancing with tighter, production-oriented integration of advanced quantization across memory and agent layers.
+This begins the practical automation layer that turns design intelligence into executable CAD artifacts.
+
+The ecosystem is advancing toward a complete sovereign design-to-prototype pipeline.
