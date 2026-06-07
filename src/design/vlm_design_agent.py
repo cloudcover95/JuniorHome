@@ -3,7 +3,7 @@
 """
 VLMDesignAgent
 
-Added deeper efficiency benchmarking.
+Stronger auto CAD/script generation on good designs.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -150,7 +150,7 @@ class VLMDesignAgent:
                     match_metrics.get("boom_overpressure", 1) < target_goals.get("max_boom", 0.6)):
                     self.efficiency_stats["iterations_skipped"] += 1
                     if auto_export_scripts and self.cad_generator:
-                        self.cad_generator.export_to_file(match, f"best_design_{int(time.time())}.py", format="python_cadquery")
+                        self.cad_generator.export_to_file(match, f"best_design_{int(time.time())}.step", format="step")
                     return [DesignState(params=match.get("params", {}), metrics=match_metrics)]
 
         iteration_results = []
@@ -184,10 +184,12 @@ class VLMDesignAgent:
                 except Exception as e:
                     print(f"[VLMDesignAgent] GraphMemory error: {e}")
 
+            # Auto-export high-quality designs as STEP + Python
             if auto_export_scripts and self.cad_generator:
                 if new_metrics.get("drag_coefficient", 1) < 0.015:
                     self.cad_generator.export_to_file(new_design, f"design_iter_{i}.py", format="python_cadquery")
-                    self.efficiency_stats["scripts_generated"] += 1
+                    self.cad_generator.export_to_file(new_design, f"design_iter_{i}.step", format="step")
+                    self.efficiency_stats["scripts_generated"] += 2
 
             self.design_history.append(new_design)
             iteration_results.append(new_design)

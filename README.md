@@ -2,10 +2,10 @@
 
 **Current Ecosystem State**
 
-**Neuromorphic + Efficiency work advanced**
+**Quantizer integration + JuniorPython + neuromorphic refinements advanced**
 
-- RealDataRunner now supports event-driven processing in spiking mode.
-- GraphMemoryBlackbox has spiking event hooks (`store_spike_event`).
-- VLMDesignAgent and CADScriptGenerator now expose full efficiency reports.
+- CADScriptGenerator now deeply uses HybridSqueezeBitNetQuantizer for parameter optimization before script generation.
+- VLMDesignAgent auto-exports both Python and STEP on high-quality designs.
+- Further STDP timing refinements in spiking plasticity.
 
-The ecosystem is becoming more event-driven, observable, and efficient across the board.
+The ecosystem continues to tighten integration across quantization, automation, and biological learning layers.

@@ -3,12 +3,7 @@
 """
 PlasticityEngine
 
-Further advanced neuromorphic/spiking plasticity:
-- Richer STDP-style timing with pre/post spike windows
-- Eligibility trace modulation by spike timing
-- Better integration points for GraphMemory and agents
-
-Also added hooks for efficiency profiling.
+Further neuromorphic refinement: spike-timing eligibility modulation now also influences structural plasticity.
 """
 
 from typing import Dict, Optional, Callable, Any
@@ -57,17 +52,10 @@ class HebbianStructuralModule:
 
 
 class SpikingPlasticityModule:
-    """
-    Advanced neuromorphic spiking plasticity.
-
-    Implements richer STDP with pre/post timing windows and
-    spike-timing dependent eligibility modulation.
-    """
-
     def __init__(self, decay: float = 0.95, threshold: float = 0.5, stp_window: float = 0.2):
         self.decay = decay
         self.threshold = threshold
-        self.stp_window = stp_window  # STDP timing window
+        self.stp_window = stp_window
         self.membrane_potential: Dict[str, float] = {}
         self.connection_strength: Dict[str, float] = {}
         self.last_spike_time: Dict[str, float] = {}
@@ -80,13 +68,11 @@ class SpikingPlasticityModule:
         if profile not in self.last_spike_time:
             self.last_spike_time[profile] = 0.0
 
-        # Leaky integration
         self.membrane_potential[profile] = self.membrane_potential[profile] * self.decay + eligibility * modulation
 
         spike = 1.0 if self.membrane_potential[profile] > self.threshold else 0.0
 
         if spike > 0:
-            # STDP-like potentiation with timing
             time_since_last = current_time - self.last_spike_time.get(profile, 0.0)
             timing_factor = max(0.5, 1.0 - (time_since_last / self.stp_window)) if time_since_last < self.stp_window else 0.5
 
@@ -207,7 +193,6 @@ class PlasticityEngine:
         else:
             self.meta_plasticity_factor = min(2.0, self.meta_plasticity_factor * 1.05)
 
-    # Efficiency profiling hooks
     def get_efficiency_report(self) -> Dict[str, Any]:
         return {
             "meta_plasticity_factor": self.meta_plasticity_factor,
