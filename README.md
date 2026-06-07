@@ -2,14 +2,10 @@
 
 **Current Ecosystem State**
 
-**JuniorPython automation layer started**
+**CAD automation layer advanced**
 
-New `CADScriptGenerator` module:
-- Generates clean OpenSCAD and Python (cadquery) scripts from DesignState
-- Integrates BitNet efficiencies via HybridSqueezeBitNetQuantizer
-- Proper robust parsing and formatting
-- Directly usable by VLMDesignAgent for automated CAD output
+- CADScriptGenerator refactored with proper STEP export support and more formats.
+- Directly wired into VLMDesignAgent.iterate_design() with auto script output for good designs.
+- The design agent now produces executable CAD artifacts automatically.
 
-This begins the practical automation layer that turns design intelligence into executable CAD artifacts.
-
-The ecosystem is advancing toward a complete sovereign design-to-prototype pipeline.
+This moves the ecosystem closer to a complete sovereign design-to-manufacturable pipeline.

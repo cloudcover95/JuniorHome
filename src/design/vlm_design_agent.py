@@ -3,9 +3,7 @@
 """
 VLMDesignAgent
 
-Now uses HybridSqueezeBitNetQuantizer for quantizing internal design features and model-related tensors when available.
-
-This brings sensitivity-aware + BitNet ternary quantization directly into the design iteration loop.
+Now directly wired with CADScriptGenerator for automatic script output.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -13,9 +11,9 @@ from typing import Any, Callable, Dict, List, Optional
 import time
 
 try:
-    from src.quantization.hybrid_squeeze_bitnet import HybridSqueezeBitNetQuantizer
+    from src.automation.cad_script_generator import CADScriptGenerator
 except ImportError:
-    HybridSqueezeBitNetQuantizer = None
+    CADScriptGenerator = None
 
 
 class DesignState:
@@ -41,6 +39,7 @@ class VLMDesignAgent:
         graph_memory: Optional[Any] = None,
         real_data_runner=None,
         vlm_vision_fn: Optional[Callable] = None,
+        cad_generator: Optional[Any] = None,
     ):
         self.bitnet_runner = bitnet_runner
         self.theoretical_math_fn = theoretical_math_fn
@@ -48,7 +47,8 @@ class VLMDesignAgent:
         self.graph_memory = graph_memory
         self.real_data_runner = real_data_runner
         self.vlm_vision_fn = vlm_vision_fn
-        self.hybrid_quantizer = HybridSqueezeBitNetQuantizer() if HybridSqueezeBitNetQuantizer else None
+        self.cad_generator = cad_generator or (CADScriptGenerator() if CADScriptGenerator else None)
+        self.hybrid_quantizer = None  # Can be injected
 
         self.design_history: List[DesignState] = []
         self.current_design: Optional[DesignState] = None
@@ -97,7 +97,7 @@ class VLMDesignAgent:
                 "refine_nose_shape": "sharper_ogive",
                 "add_strake": True
             },
-            "reasoning": "Using memory and hybrid quantization for efficiency.",
+            "reasoning": "Using memory for efficiency.",
             "confidence": 0.65
         }
 
@@ -129,16 +129,7 @@ class VLMDesignAgent:
         if hasattr(self.plasticity, "adapt_meta_plasticity"):
             self.plasticity.adapt_meta_plasticity(design.metrics.get("drag_coefficient", 0.5))
 
-    def _quantize_design_tensor(self, tensor: Any) -> Any:
-        """Quantize internal design-related tensors using hybrid quantizer."""
-        if self.hybrid_quantizer and tensor is not None:
-            try:
-                return self.hybrid_quantizer.quantize(tensor)
-            except Exception as e:
-                print(f"[VLMDesignAgent] Quantization error: {e}")
-        return tensor
-
-    def iterate_design(self, target_goals: Dict[str, float], max_iterations: int = 10) -> List[DesignState]:
+    def iterate_design(self, target_goals: Dict[str, float], max_iterations: int = 10, auto_export_scripts: bool = True) -> List[DesignState]:
         self.efficiency_stats["total_iterations"] += 1
 
         if not self.current_design:
@@ -157,18 +148,14 @@ class VLMDesignAgent:
                 if (match_metrics.get("drag_coefficient", 1) < target_goals.get("max_drag", 0.01) and
                     match_metrics.get("boom_overpressure", 1) < target_goals.get("max_boom", 0.6)):
                     self.efficiency_stats["iterations_skipped"] += 1
+                    if auto_export_scripts and self.cad_generator:
+                        self.cad_generator.export_to_file(match, f"best_design_{int(time.time())}.py", format="python_cadquery")
                     return [DesignState(params=match.get("params", {}), metrics=match_metrics)]
 
         iteration_results = []
 
         for i in range(max_iterations):
             vision_analysis = self.analyze_design_image({"edge_density": 0.6, "text_density": 0.4})
-
-            # Quantize vision features if possible
-            if isinstance(vision_analysis, dict):
-                for key in vision_analysis:
-                    if isinstance(vision_analysis[key], (list, tuple)) or hasattr(vision_analysis[key], "__array__"):
-                        vision_analysis[key] = self._quantize_design_tensor(vision_analysis[key])
 
             proposal = self.propose_design_changes(self.current_design, target_goals)
 
@@ -195,6 +182,11 @@ class VLMDesignAgent:
                     })
                 except Exception as e:
                     print(f"[VLMDesignAgent] GraphMemory error: {e}")
+
+            # Auto-export scripts for good designs
+            if auto_export_scripts and self.cad_generator:
+                if new_metrics.get("drag_coefficient", 1) < 0.015:  # Threshold for "good" design
+                    self.cad_generator.export_to_file(new_design, f"design_iter_{i}.py", format="python_cadquery")
 
             self.design_history.append(new_design)
             iteration_results.append(new_design)
