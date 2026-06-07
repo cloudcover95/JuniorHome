@@ -3,7 +3,7 @@
 """
 VLMDesignAgent
 
-Now directly wired with CADScriptGenerator for automatic script output.
+Added deeper efficiency benchmarking.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -48,11 +48,11 @@ class VLMDesignAgent:
         self.real_data_runner = real_data_runner
         self.vlm_vision_fn = vlm_vision_fn
         self.cad_generator = cad_generator or (CADScriptGenerator() if CADScriptGenerator else None)
-        self.hybrid_quantizer = None  # Can be injected
 
         self.design_history: List[DesignState] = []
         self.current_design: Optional[DesignState] = None
-        self.efficiency_stats = {"iterations_skipped": 0, "total_iterations": 0}
+        self.efficiency_stats = {"iterations_skipped": 0, "total_iterations": 0, "scripts_generated": 0}
+        self._iteration_start_time = None
 
     def analyze_design_image(self, image_features: Dict[str, Any]) -> Dict[str, Any]:
         if self.vlm_vision_fn:
@@ -131,6 +131,7 @@ class VLMDesignAgent:
 
     def iterate_design(self, target_goals: Dict[str, float], max_iterations: int = 10, auto_export_scripts: bool = True) -> List[DesignState]:
         self.efficiency_stats["total_iterations"] += 1
+        self._iteration_start_time = time.time()
 
         if not self.current_design:
             self.current_design = DesignState(
@@ -183,10 +184,10 @@ class VLMDesignAgent:
                 except Exception as e:
                     print(f"[VLMDesignAgent] GraphMemory error: {e}")
 
-            # Auto-export scripts for good designs
             if auto_export_scripts and self.cad_generator:
-                if new_metrics.get("drag_coefficient", 1) < 0.015:  # Threshold for "good" design
+                if new_metrics.get("drag_coefficient", 1) < 0.015:
                     self.cad_generator.export_to_file(new_design, f"design_iter_{i}.py", format="python_cadquery")
+                    self.efficiency_stats["scripts_generated"] += 1
 
             self.design_history.append(new_design)
             iteration_results.append(new_design)
@@ -196,6 +197,7 @@ class VLMDesignAgent:
                 new_metrics.get("boom_overpressure", 1) < target_goals.get("max_boom", 0.6)):
                 break
 
+        self.efficiency_stats["last_iteration_time"] = time.time() - self._iteration_start_time
         return iteration_results
 
     def get_best_design(self) -> Optional[DesignState]:
@@ -203,5 +205,11 @@ class VLMDesignAgent:
             return None
         return min(self.design_history, key=lambda d: d.metrics.get("drag_coefficient", 999))
 
-    def get_efficiency_stats(self) -> Dict[str, Any]:
-        return self.efficiency_stats.copy()
+    def get_efficiency_report(self) -> Dict[str, Any]:
+        return {
+            "total_iterations": self.efficiency_stats.get("total_iterations", 0),
+            "iterations_skipped": self.efficiency_stats.get("iterations_skipped", 0),
+            "scripts_generated": self.efficiency_stats.get("scripts_generated", 0),
+            "last_iteration_time": self.efficiency_stats.get("last_iteration_time", 0),
+            "avg_time_per_iteration": self.efficiency_stats.get("last_iteration_time", 0) / max(self.efficiency_stats.get("total_iterations", 1), 1)
+        }

@@ -3,7 +3,8 @@
 """
 RealDataRunner
 
-Added efficiency profiling hooks.
+Now supports event-driven mode when spiking is enabled.
+Processes data as discrete events rather than fixed steps when in neuromorphic mode.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -20,11 +21,16 @@ class RealDataRunner:
         self.step_count = 0
         self.spiking_mode = False
         self._start_time = time.time()
+        self._event_queue: List[Dict[str, Any]] = []
 
     def set_spiking_mode(self, enabled: bool = True):
         self.spiking_mode = enabled
         if hasattr(self.plasticity, "set_spiking_mode"):
             self.plasticity.set_spiking_mode(enabled)
+
+    def queue_event(self, event: Dict[str, Any]):
+        """Queue an event for processing in event-driven (spiking) mode."""
+        self._event_queue.append(event)
 
     def process_vision_pattern(self, pattern: Dict[str, Any], outcome: float = 1.0) -> Dict[str, Any]:
         if self.theoretical_math_fn:
@@ -72,6 +78,18 @@ class RealDataRunner:
             "elapsed_time": time.time() - self._start_time
         }
 
+    def process_event_queue(self):
+        """Process queued events in event-driven (spiking) mode."""
+        results = []
+        while self._event_queue:
+            event = self._event_queue.pop(0)
+            if event.get("type") == "vision":
+                res = self.process_vision_pattern(event.get("data", {}), event.get("outcome", 1.0))
+            else:
+                res = self.process_call_event(event.get("data", {}), event.get("outcome", 1.0))
+            results.append(res)
+        return results
+
     def process_call_event(self, event: Dict[str, Any], outcome: float = 1.0) -> Dict[str, Any]:
         if self.memsys:
             try:
@@ -106,5 +124,6 @@ class RealDataRunner:
             "neuromodulation_level": self.plasticity.get_neuromodulation() if hasattr(self.plasticity, "get_neuromodulation") else None,
             "spiking_mode": self.spiking_mode,
             "total_runtime": time.time() - self._start_time,
-            "avg_time_per_step": (time.time() - self._start_time) / max(self.step_count, 1)
+            "avg_time_per_step": (time.time() - self._start_time) / max(self.step_count, 1),
+            "queued_events": len(self._event_queue)
         }

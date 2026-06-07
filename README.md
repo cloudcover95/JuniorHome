@@ -2,9 +2,10 @@
 
 **Current Ecosystem State**
 
-**Neuromorphic plasticity advanced + Efficiency profiling added**
+**Neuromorphic + Efficiency work advanced**
 
-- SpikingPlasticityModule now has richer STDP timing windows and spike-timing modulation.
-- Efficiency profiling hooks added to PlasticityEngine and RealDataRunner (runtime, steps, neuromodulation state).
+- RealDataRunner now supports event-driven processing in spiking mode.
+- GraphMemoryBlackbox has spiking event hooks (`store_spike_event`).
+- VLMDesignAgent and CADScriptGenerator now expose full efficiency reports.
 
-The ecosystem continues to mature with deeper biological fidelity and measurable efficiency characteristics across components.
+The ecosystem is becoming more event-driven, observable, and efficient across the board.

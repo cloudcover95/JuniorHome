@@ -3,9 +3,8 @@
 """
 GraphMemoryBlackbox
 
-Now has first-class support for real BitNet-mlx embeddings and uses HybridSqueezeBitNetQuantizer by default when available.
-
-This brings production-grade low-bit quantization directly into graph memory.
+Added basic spiking/event integration hooks.
+Patterns can now be tagged as spike events for neuromorphic workflows.
 """
 
 from typing import Any, Callable, Dict, List, Optional, Set
@@ -26,7 +25,7 @@ class GraphMemoryBlackbox:
         self.enable_ternary = enable_ternary
         self.embedding_fn = embedding_fn
         self.fast_lookup = fast_lookup
-        self.sensitivity_optimizer = sensitivity_optimizer or (SensitivityTernaryOptimizer() if SensitivityTernaryOptimizer else None)
+        self.sensitivity_optimizer = sensitivity_optimizer
         self.hybrid_quantizer = HybridSqueezeBitNetQuantizer() if HybridSqueezeBitNetQuantizer else None
 
         self.nodes: Dict[str, Dict[str, Any]] = {}
@@ -42,7 +41,7 @@ class GraphMemoryBlackbox:
     def _to_ternary_vector(self, data: Dict[str, Any]) -> List[float]:
         if self.embedding_fn:
             try:
-                raw_embedding = self.embedding_fn(data)  # Real BitNet-mlx vector
+                raw_embedding = self.embedding_fn(data)
                 if self.hybrid_quantizer:
                     return self.hybrid_quantizer.quantize(raw_embedding).tolist()
                 if self.sensitivity_optimizer:
@@ -67,6 +66,7 @@ class GraphMemoryBlackbox:
 
     def store_pattern(self, pattern: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None) -> str:
         node_id = self._make_node_id(pattern)
+
         if node_id in self.nodes:
             if node_id not in self.temporal_history:
                 self.temporal_history[node_id] = []
@@ -80,7 +80,6 @@ class GraphMemoryBlackbox:
             "node_id": node_id
         }
 
-        # Use hybrid quantizer if available for best quality ternary
         if self.hybrid_quantizer:
             raw_vec = self._to_ternary_vector(pattern)
             self.embeddings[node_id] = self.hybrid_quantizer.quantize(raw_vec).tolist()
@@ -111,6 +110,11 @@ class GraphMemoryBlackbox:
         self.temporal_history[node_id].append({"timestamp": time.time(), "data": pattern})
 
         return node_id
+
+    def store_spike_event(self, spike_data: Dict[str, Any]):
+        """Store a pattern as a spike event for neuromorphic workflows."""
+        spike_data["is_spike_event"] = True
+        return self.store_pattern(spike_data, metadata={"event_type": "spike"})
 
     def _cosine_similarity(self, a: List[float], b: List[float]) -> float:
         dot = sum(x * y for x, y in zip(a, b))
@@ -216,10 +220,10 @@ class GraphMemoryBlackbox:
         self.sensitivity_optimizer = optimizer
 
     def run_self_test(self) -> bool:
-        print("[GraphMemoryBlackbox] Running with Hybrid Quantizer...")
-        test_pattern = {"type": "supersonic_design", "sweep": 48, "drag": 0.011}
-        node_id = self.store_pattern(test_pattern)
-        similar = self.query_similar({"type": "supersonic_design", "sweep": 47})
+        print("[GraphMemoryBlackbox] Running with spiking hooks...")
+        test_pattern = {"type": "spike_event", "sweep": 48}
+        node_id = self.store_spike_event(test_pattern)
+        similar = self.query_similar({"type": "spike_event"})
         success = len(similar) >= 1
         print(f"[GraphMemoryBlackbox] Self-test {'PASSED' if success else 'FAILED'}")
         return success
