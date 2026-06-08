@@ -1,25 +1,18 @@
 # JuniorHome
 
-**Multi-Track Ecosystem Progress**
+**Ecosystem Roadmap Progress (June 2026)**
 
-**Cross-platform packaging**
-- Improved Makefile with `cross-test` target.
-- pyproject.toml updated with OS-independent classifiers.
-- Core modules remain importable across Linux/macOS/Windows.
+**Current Focus Areas**
+- Cross-platform packaging & lean multi-OS support
+- Neuromorphic refinements inside BitNet (plasticity training signals)
+- JuniorPython automation expansion
+- Coordination layer (typed deliverables, reactive handoff, workflow orchestration, Obsidian export)
 
-**Neuromorphic refinements inside BitNet**
-- PlasticityEngine now generates structured training signals (`generate_training_signals()`).
-- These signals integrate cleanly with deliverables for historical logging.
+**BitNet Precision Routing (new)**
+- Added lean `BitNetPrecisionRouter`.
+- JuniorQuant / trading agents decide *when* to use 1.58-bit vs higher precision.
+- BitNet-mlx remains the implementation engine.
+- Default is always the efficient 1.58-bit path unless coherence or criticality requires escalation.
+- Near-zero overhead design.
 
-**JuniorPython features**
-- CADScriptGenerator gained `batch_generate_artifacts()`.
-- Stronger reactive subscription + auto artifact generation.
-
-**Coordination layer**
-- `get_next_work_items()` and dependency-aware tasks.
-- Reactive subscriptions + Obsidian export helper (`export_for_obsidian()`).
-- Full provenance chains and workflow orchestration helpers.
-
-Long-term historical logic and inference data are designed to be exportable to Obsidian vaults.
-
-All work remains sovereign, local-first, and aligned with the BitNet/ternary philosophy.
+The system is designed so that the application layer (JuniorQuant) can make lean, efficient precision decisions while the core BitNet engine stays focused on high-performance ternary math.
