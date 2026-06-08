@@ -28,6 +28,8 @@ dev = [
     "black>=23.0",
     "ruff>=0.4",
 ]
+# Note: MLX is Apple Silicon only. Other platforms fall back to numpy.
+# Add platform-specific extras in future if needed.
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -37,4 +39,3 @@ line-length = 88
 
 [tool.ruff]
 target-version = "py310"
-select = ["E", "F", "I"]

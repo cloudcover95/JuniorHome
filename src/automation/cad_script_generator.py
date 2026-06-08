@@ -3,7 +3,7 @@
 """
 CADScriptGenerator
 
-Reactive subscription + polling for automatic handoff from GraphMemoryBlackbox.
+Expanded with more JuniorPython automation features.
 """
 
 from typing import Any, Dict, List, Optional
@@ -53,8 +53,17 @@ class CADScriptGenerator:
                 quantized[key] = value
         return quantized
 
+    def batch_generate_artifacts(self, design_states: List[Any], output_dir: str = ".") -> int:
+        """JuniorPython feature: Generate multiple formats for a list of designs."""
+        count = 0
+        for i, ds in enumerate(design_states):
+            for fmt in ["python_cadquery", "step"]:
+                filename = f"{output_dir}/design_{i}.{ 'py' if fmt == 'python_cadquery' else 'step' }"
+                if self.export_to_file(ds, filename, format=fmt):
+                    count += 1
+        return count
+
     def subscribe_to_design_deliverables(self, graph_memory: Any, deliverable_type: str = "design"):
-        """Fully reactive: subscribe and auto-generate artifacts when new design deliverables appear."""
         def on_new_design(event):
             if event.get("type") == "deliverable_posted":
                 latest = graph_memory.get_latest_deliverable(deliverable_type)

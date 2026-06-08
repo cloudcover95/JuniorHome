@@ -1,12 +1,14 @@
-.PHONY: install test lint format clean build
+# path: Makefile
+
+.PHONY: install test lint format clean build check-platform cross-test
 
 install:
 	python -m pip install --upgrade pip
 	pip install -e .[dev]
 
-# Run core tests and import checks (works on Linux/macOS/Windows)
+# Core tests and import checks (Linux/macOS/Windows friendly)
 test:
-	python -m pytest tests/ -v --tb=short || echo "No tests directory or tests skipped"
+	python -m pytest tests/ -v --tb=short || echo "No tests or skipped"
 	python -c "from src.design.vlm_design_agent import VLMDesignAgent; print('VLMDesignAgent OK')"
 	python -c "from src.memory.graph_memory_blackbox import GraphMemoryBlackbox; print('GraphMemoryBlackbox OK')"
 	python -c "from src.automation.cad_script_generator import CADScriptGenerator; print('CADScriptGenerator OK')"
@@ -23,10 +25,11 @@ format:
 clean:
 	rm -rf build/ dist/ *.egg-info .pytest_cache .ruff_cache
 
-# Build source distribution and wheel (cross-platform)
 build:
 	python -m build
 
-# Quick check for Windows/macOS/Linux compatibility
 check-platform:
-	python -c "import platform; print('Running on:', platform.system(), platform.machine())"
+	python -c "import platform; print('Platform:', platform.system(), platform.machine())"
+
+# Cross-platform smoke test (run on Linux/macOS/Windows)
+cross-test: check-platform test

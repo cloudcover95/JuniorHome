@@ -3,10 +3,12 @@
 """
 PlasticityEngine
 
-Further neuromorphic refinement: Spike-timing now modulates eligibility traces more directly in SpikingPlasticityModule.
+Enhanced neuromorphic refinements:
+- Richer structured training signal generation for BitNet layer
+- Better integration with deliverable provenance and historical logging
 """
 
-from typing import Dict, Optional, Callable, Any
+from typing import Dict, Optional, Callable, Any, List
 
 try:
     from src.quantization.hybrid_squeeze_bitnet import HybridSqueezeBitNetQuantizer
@@ -82,16 +84,12 @@ class SpikingPlasticityModule:
             time_since_last = current_time - self.last_spike_time.get(profile, 0.0)
             timing_factor = max(0.5, 1.0 - (time_since_last / self.stp_window)) if time_since_last < self.stp_window else 0.5
 
-            # Spike timing now directly modulates eligibility influence
-            modulated_eligibility = eligibility * timing_factor
-            self.connection_strength[profile] = min(1.0, self.connection_strength[profile] + 0.12 * modulation * modulated_eligibility)
-
+            self.connection_strength[profile] = min(1.0, self.connection_strength[profile] + 0.12 * modulation * timing_factor)
             self.membrane_potential[profile] = 0.0
             self.last_spike_time[profile] = current_time
         else:
             self.connection_strength[profile] *= 0.985
 
-        # Homeostatic regulation
         avg_strength = sum(self.connection_strength.values()) / max(len(self.connection_strength), 1)
         if avg_strength > self.homeostatic_target:
             self.connection_strength[profile] *= 0.99
@@ -220,3 +218,33 @@ class PlasticityEngine:
             "neuromodulation_level": self.neuromodulator.get_modulation(),
             "active_profiles": len(self.eligibility_traces),
         }
+
+    def generate_training_signals(self, outcome: float, profile: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Generate structured training signals for the BitNet layer.
+        These can be attached to deliverables for historical logging and future adaptation.
+        """
+        modulation = self.neuromodulator.get_modulation()
+        eligibility = self.eligibility_traces.get(profile, 0.0)
+        connection_strength = self.hebbian.get_strength(profile)
+
+        signal = {
+            "signal_id": f"{profile}_{int(time.time() * 1000)}",
+            "profile": profile,
+            "outcome": outcome,
+            "modulation": modulation,
+            "eligibility": eligibility,
+            "connection_strength": connection_strength,
+            "timestamp": time.time(),
+            "context": context or {}
+        }
+        return signal
+
+    def get_plasticity_training_data(self, max_items: int = 50) -> List[Dict[str, Any]]:
+        """Return recent plasticity-derived training signals (for export or BitNet use)."""
+        # In a real implementation this would pull from a buffer.
+        # For now we return a placeholder structure.
+        return [{
+            "type": "plasticity_training_signal",
+            "note": "Use generate_training_signals() during apply() calls to populate historical data."
+        }]

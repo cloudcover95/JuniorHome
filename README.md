@@ -1,12 +1,25 @@
 # JuniorHome
 
-**Workflow Orchestration + Reactive Handoff + Strong Provenance**
+**Multi-Track Ecosystem Progress**
 
-- `get_next_work_items()` and `get_ready_tasks()` for basic workflow orchestration.
-- CADScriptGenerator has full reactive subscription + polling for automatic artifact generation.
-- `get_provenance_chain()` provides traceable history from design to final artifacts (with BitNet/plasticity links).
-- Type-specific pub/sub notifications enable fully reactive component handoff.
+**Cross-platform packaging**
+- Improved Makefile with `cross-test` target.
+- pyproject.toml updated with OS-independent classifiers.
+- Core modules remain importable across Linux/macOS/Windows.
 
-Note: Long-term historical logic and inference data can be exported to Obsidian vaults for second-brain analysis (future integration point).
+**Neuromorphic refinements inside BitNet**
+- PlasticityEngine now generates structured training signals (`generate_training_signals()`).
+- These signals integrate cleanly with deliverables for historical logging.
 
-The coordination layer is now quite mature for sovereign, local, BitNet-native agent-style workflows.
+**JuniorPython features**
+- CADScriptGenerator gained `batch_generate_artifacts()`.
+- Stronger reactive subscription + auto artifact generation.
+
+**Coordination layer**
+- `get_next_work_items()` and dependency-aware tasks.
+- Reactive subscriptions + Obsidian export helper (`export_for_obsidian()`).
+- Full provenance chains and workflow orchestration helpers.
+
+Long-term historical logic and inference data are designed to be exportable to Obsidian vaults.
+
+All work remains sovereign, local-first, and aligned with the BitNet/ternary philosophy.

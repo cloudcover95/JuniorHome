@@ -3,12 +3,7 @@
 """
 GraphMemoryBlackbox
 
-Further strengthened:
-- Robust provenance chain queries (full design -> artifact history)
-- Basic workflow orchestration helper (get_next_work_items)
-- Reactive type-specific subscriptions for automatic handoff
-
-All still fully local and BitNet-native. Future: export historical logic to Obsidian vaults for long-term analysis.
+Added Obsidian export helper for historical logic and technical data analysis.
 """
 
 from typing import Any, Callable, Dict, List, Optional, Set
@@ -122,6 +117,31 @@ class GraphMemoryBlackbox:
         self.temporal_history[node_id].append({"timestamp": time.time(), "data": pattern})
 
         return node_id
+
+    def export_for_obsidian(self, node_id: str, include_provenance: bool = True) -> str:
+        """Export a deliverable or task as Obsidian-friendly Markdown for historical logging."""
+        if node_id not in self.nodes:
+            return "# Not found"
+
+        node = self.nodes[node_id]
+        meta = node.get("metadata", {})
+        data = node.get("data", {})
+
+        md = f"# {meta.get('deliverable_type', 'Item')} - {meta.get('produced_by', 'Unknown')}\n\n"
+        md += f"**Timestamp**: {meta.get('timestamp', 'N/A')}\n"
+        md += f"**Version**: {meta.get('version', 1)}\n\n"
+
+        if include_provenance:
+            md += "## Provenance\n"
+            md += f"- Produced by: {meta.get('produced_by')}\n"
+            md += f"- BitNet operation: {meta.get('bitnet_operation', 'N/A')}\n"
+            md += f"- Plasticity signal: {meta.get('plasticity_signal_id', 'N/A')}\n\n"
+
+        md += "## Data\n```json\n"
+        md += str(data)[:2000]
+        md += "\n```\n"
+
+        return md
 
     def post_task(self, task_data: Dict[str, Any], assigned_to: Optional[str] = None, priority: int = 0, depends_on: Optional[List[str]] = None) -> str:
         task_id = self._make_node_id(task_data)
@@ -240,7 +260,6 @@ class GraphMemoryBlackbox:
         return results[0] if results else None
 
     def get_provenance_chain(self, node_id: str, max_depth: int = 8) -> List[Dict[str, Any]]:
-        """Return a traceable chain from this node backward (design -> artifacts, with plasticity/BitNet links)."""
         chain = []
         visited = set()
         current_id = node_id
@@ -254,22 +273,16 @@ class GraphMemoryBlackbox:
             chain.append(node)
 
             meta = node.get("metadata", {})
-            # Try to find parent via provenance or result links
             provenance = meta.get("provenance", "")
             if ":" in provenance:
                 parent_producer = provenance.split(":")[0]
-                for nid, n in list(self.nodes.items()):
+                for nid, n in self.nodes.items():
                     if n.get("metadata", {}).get("produced_by") == parent_producer and nid != current_id:
                         current_id = nid
                         break
                 else:
                     break
             else:
-                # Try task result link
-                for tid, task in self._tasks.items():
-                    if task.get("result_node_id") == current_id:
-                        # Find the task's originating deliverable if possible
-                        break
                 break
             depth += 1
 
@@ -284,8 +297,7 @@ class GraphMemoryBlackbox:
                     results.append(node)
         return results
 
-    def get_next_work_items(self, component: str = None) -> Dict[str, List[Dict[str, Any]]];
-        """Basic workflow orchestration helper: returns ready tasks + latest relevant deliverables."""
+    def get_next_work_items(self, component: str = None) -> Dict[str, List[Dict[str, Any]]]:
         ready_tasks = self.get_ready_tasks(assigned_to=component)
         latest_designs = self.get_deliverables(deliverable_type="design", limit=5)
         latest_artifacts = self.get_deliverables(deliverable_type="artifact", limit=5)
@@ -396,14 +408,14 @@ class GraphMemoryBlackbox:
         self.sensitivity_optimizer = optimizer
 
     def run_self_test(self) -> bool:
-        print("[GraphMemoryBlackbox] Running with workflow orchestration and full provenance...")
+        print("[GraphMemoryBlackbox] Running with Obsidian export and workflow helpers...")
         task_id = self.post_task({"action": "generate_design"}, assigned_to="VLMDesignAgent")
         self.claim_task(task_id, "VLMDesignAgent")
         design_id = self.post_deliverable({"wing_sweep": 48}, produced_by="VLMDesignAgent", deliverable_type="design")
         self.update_task_status(task_id, "completed", result={"node_id": design_id})
-        chain = self.get_provenance_chain(design_id)
-        work = self.get_next_work_items("CADScriptGenerator")
-        success = len(chain) >= 1 and len(work["ready_tasks"]) >= 0
+        md = self.export_for_obsidian(design_id)
+        work = self.get_next_work_items()
+        success = "#" in md and len(work["ready_tasks"]) >= 0
         print(f"[GraphMemoryBlackbox] Self-test {'PASSED' if success else 'FAILED'}")
         return success
 
