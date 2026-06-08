@@ -3,12 +3,9 @@
 """
 GraphMemoryBlackbox
 
-Deepened support for:
-- Structured Tasks + Typed Deliverables with status tracking
-- Lightweight pub/sub style notifications (local callbacks + event log)
-- Strong provenance linking back to BitNet/ternary operations and plasticity
-
-Enables clean, auditable handoffs between components in the BitNet layer.
+Further strengthened for production-grade component coordination:
+- Richer provenance linking to BitNet/ternary operations and plasticity signals
+- Better support for clean handoffs between components
 """
 
 from typing import Any, Callable, Dict, List, Optional, Set
@@ -38,12 +35,10 @@ class GraphMemoryBlackbox:
         self.temporal_history: Dict[str, List[Dict[str, Any]]] = {}
         self._fast_index: Dict[str, Set[str]] = {} if fast_lookup else None
 
-        # Deliverable & Task tracking
         self._deliverables_by_type: Dict[str, Set[str]] = {}
         self._deliverables_by_producer: Dict[str, Set[str]] = {}
-        self._tasks: Dict[str, Dict[str, Any]] = {}  # task_id -> task data
+        self._tasks: Dict[str, Dict[str, Any]] = {}
 
-        # Lightweight notification system
         self._subscribers: List[Callable] = []
         self._event_log: List[Dict[str, Any]] = []
 
@@ -124,9 +119,7 @@ class GraphMemoryBlackbox:
 
         return node_id
 
-    # === Structured Tasks + Typed Deliverables ===
     def post_task(self, task_data: Dict[str, Any], assigned_to: Optional[str] = None, priority: int = 0) -> str:
-        """Post a structured task that can be consumed by other components."""
         task_id = self._make_node_id(task_data)
         task = {
             "task_id": task_id,
@@ -154,18 +147,15 @@ class GraphMemoryBlackbox:
     def get_pending_tasks(self, assigned_to: Optional[str] = None) -> List[Dict[str, Any]]:
         return [t for t in self._tasks.values() if t["status"] == "pending" and (assigned_to is None or t.get("assigned_to") == assigned_to)]
 
-    def post_deliverable(self, data: Dict[str, Any], produced_by: str, deliverable_type: str = "general", version: int = 1, plasticity_signal: Optional[Dict] = None) -> str:
-        """
-        Post a typed deliverable with strong provenance.
-        Can optionally attach plasticity training signals.
-        """
+    def post_deliverable(self, data: Dict[str, Any], produced_by: str, deliverable_type: str = "general", version: int = 1, plasticity_signal: Optional[Dict] = None, bitnet_metadata: Optional[Dict] = None) -> str:
         metadata = {
             "produced_by": produced_by,
             "deliverable_type": deliverable_type,
             "version": version,
             "timestamp": time.time(),
             "provenance": f"{produced_by}:{deliverable_type}:v{version}",
-            "plasticity_signal_id": plasticity_signal.get("signal_id") if plasticity_signal else None
+            "plasticity_signal_id": plasticity_signal.get("signal_id") if plasticity_signal else None,
+            "bitnet_operation": bitnet_metadata.get("operation") if bitnet_metadata else None
         }
         node_id = self.store_pattern(data, metadata=metadata)
 
@@ -177,7 +167,11 @@ class GraphMemoryBlackbox:
             self._deliverables_by_producer[produced_by] = set()
         self._deliverables_by_producer[produced_by].add(node_id)
 
-        self._log_event("deliverable_posted", {"node_id": node_id, "produced_by": produced_by, "type": deliverable_type})
+        self._log_event("deliverable_posted", {
+            "node_id": node_id,
+            "produced_by": produced_by,
+            "type": deliverable_type
+        })
         return node_id
 
     def get_deliverables(self, deliverable_type: Optional[str] = None, produced_by: Optional[str] = None, limit: int = 20) -> List[Dict[str, Any]]:
@@ -200,7 +194,6 @@ class GraphMemoryBlackbox:
         results = self.get_deliverables(deliverable_type=deliverable_type, produced_by=produced_by, limit=1)
         return results[0] if results else None
 
-    # === Lightweight Pub/Sub Notifications ===
     def subscribe(self, callback: Callable):
         if callback not in self._subscribers:
             self._subscribers.append(callback)
@@ -216,7 +209,6 @@ class GraphMemoryBlackbox:
             "timestamp": time.time()
         }
         self._event_log.append(event)
-        # Notify subscribers
         for callback in self._subscribers:
             try:
                 callback(event)
@@ -238,7 +230,6 @@ class GraphMemoryBlackbox:
         self._log_event("deliverable_ready", event)
         return event
 
-    # === Utility methods ===
     def _cosine_similarity(self, a: List[float], b: List[float]) -> float:
         dot = sum(x * y for x, y in zip(a, b))
         norm_a = sum(x * x for x in a) ** 0.5 or 1e-8
@@ -295,12 +286,12 @@ class GraphMemoryBlackbox:
         self.sensitivity_optimizer = optimizer
 
     def run_self_test(self) -> bool:
-        print("[GraphMemoryBlackbox] Running deepened deliverable system...")
+        print("[GraphMemoryBlackbox] Running with strengthened handoff...")
         task_id = self.post_task({"action": "generate_design"}, assigned_to="VLMDesignAgent")
         design_id = self.post_deliverable({"wing_sweep": 48}, produced_by="VLMDesignAgent", deliverable_type="design")
         self.update_task_status(task_id, "completed", result={"design_id": design_id})
         artifacts_id = self.post_deliverable({"files": ["design.step"]}, produced_by="CADScriptGenerator", deliverable_type="artifact")
-        events = self.get_recent_events(5)
+        events = self.get_recent_events(3)
         success = len(events) >= 2
         print(f"[GraphMemoryBlackbox] Self-test {'PASSED' if success else 'FAILED'}")
         return success

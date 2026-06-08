@@ -1,13 +1,9 @@
 # JuniorHome
 
-**Deepened Typed Deliverables & Coordination System**
+**Strengthened Component Handoff & Coordination**
 
-GraphMemoryBlackbox now supports:
-- Structured Tasks (`post_task`, `update_task_status`, `get_pending_tasks`)
-- Typed Deliverables with rich provenance (including optional plasticity signals)
-- Lightweight pub/sub notifications via `subscribe()` + event log
-- `notify_deliverable_ready()` for component coordination
+- CADScriptGenerator now has `consume_from_graph_memory()` for automatic handoff from VLMDesignAgent deliverables.
+- VLMDesignAgent parallel paths now include explicit best-result merging using plasticity feedback.
+- Richer provenance in deliverables (BitNet operation references + plasticity signals).
 
-VLMDesignAgent uses parallel paths and posts structured deliverables for clean handoff to downstream components (e.g. CADScriptGenerator).
-
-This creates a robust, local, BitNet-native coordination layer for agent-style workflows.
+The ecosystem now has a more complete, local, production-oriented coordination layer between components.

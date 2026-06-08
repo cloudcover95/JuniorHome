@@ -3,8 +3,8 @@
 """
 VLMDesignAgent
 
-Improved parallel coordination with better merging using GraphMemory deliverables
-and plasticity feedback.
+Improved parallel coordination with explicit result merging using plasticity feedback
+and GraphMemory deliverables.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -169,8 +169,13 @@ class VLMDesignAgent:
                     return [DesignState(params=match.get("params", {}), metrics=match_metrics)]
 
         iteration_results = []
+        best_design = None
+        best_score = float('inf')
 
         for path in range(max(1, parallel_paths)):
+            local_best = None
+            local_best_score = float('inf')
+
             for i in range(max_iterations):
                 t_vision = time.time()
                 vision_analysis = self.analyze_design_image({"edge_density": 0.6, "text_density": 0.4})
@@ -194,7 +199,6 @@ class VLMDesignAgent:
 
                 if self.graph_memory:
                     t_mem = time.time()
-                    # Post as structured deliverable with provenance
                     self.graph_memory.post_deliverable(
                         {
                             "type": "supersonic_design",
@@ -207,8 +211,14 @@ class VLMDesignAgent:
                     )
                     self.efficiency_stats["memory_ops_time"] += time.time() - t_mem
 
+                # Track best in this parallel path
+                score = new_metrics.get("drag_coefficient", 999)
+                if score < local_best_score:
+                    local_best_score = score
+                    local_best = new_design
+
                 if auto_export_scripts and self.cad_generator:
-                    if new_metrics.get("drag_coefficient", 1) < 0.015:
+                    if score < 0.015:
                         self.cad_generator.export_to_file(new_design, f"design_iter_{i}.py", format="python_cadquery")
                         self.cad_generator.export_to_file(new_design, f"design_iter_{i}.step", format="step")
                         self.efficiency_stats["scripts_generated"] += 2
@@ -217,9 +227,16 @@ class VLMDesignAgent:
                 iteration_results.append(new_design)
                 self.current_design = new_design
 
-                if (new_metrics.get("drag_coefficient", 1) < target_goals.get("max_drag", 0.01) and
-                    new_metrics.get("boom_overpressure", 1) < target_goals.get("max_boom", 0.6)):
+                if score < target_goals.get("max_drag", 0.01) and new_metrics.get("boom_overpressure", 1) < target_goals.get("max_boom", 0.6):
                     break
+
+            # Merge: keep the best from this parallel path
+            if local_best and local_best_score < best_score:
+                best_score = local_best_score
+                best_design = local_best
+
+        if best_design:
+            self.current_design = best_design
 
         self.efficiency_stats["last_iteration_time"] = time.time() - self._iteration_start_time
         return iteration_results
