@@ -5,8 +5,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "juniorhome"
 version = "0.1.0"
-description = "JuniorCloud sovereign edge intelligence ecosystem - VLM Design Agent, Graph Memory, BitNet quantization, neuromorphic plasticity, and CAD automation"
-authors = [{name = "JuniorCloud LLC", email = "dev@juniorcloud.dev"}]
+description = "JuniorCloud sovereign edge intelligence ecosystem"
+authors = [{name = "JuniorCloud LLC"}]
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
@@ -20,15 +20,13 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
-    "black",
-    "ruff",
-    "mypy",
+    "black>=23.0",
+    "ruff>=0.4",
 ]
 
 [tool.setuptools.packages.find]
@@ -39,3 +37,4 @@ line-length = 88
 
 [tool.ruff]
 target-version = "py310"
+select = ["E", "F", "I"]
