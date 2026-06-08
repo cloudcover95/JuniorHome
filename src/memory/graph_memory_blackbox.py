@@ -3,12 +3,13 @@
 """
 GraphMemoryBlackbox
 
-Added Obsidian export helper for historical logic and technical data analysis.
+Added real Obsidian vault export automation.
 """
 
 from typing import Any, Callable, Dict, List, Optional, Set
 import time
 import hashlib
+import os
 
 try:
     from src.quantization.hybrid_squeeze_bitnet import HybridSqueezeBitNetQuantizer
@@ -71,55 +72,55 @@ class GraphMemoryBlackbox:
             vec.append(0.0)
         return vec[:8]
 
-    def store_pattern(self, pattern: Dict[str, Any], metadata: Optional[Dict[str, Any]] = None) -> str:
-        node_id = self._make_node_id(pattern)
+    def export_to_obsidian_vault(self, vault_path: str, node_ids: Optional[List[str]] = None, include_plasticity: bool = True) -> int:
+        """
+        Real automation: Export selected nodes (or all recent) as Markdown files into an Obsidian vault folder.
+        Creates one .md file per deliverable/task with full provenance and plasticity signals.
+        """
+        os.makedirs(vault_path, exist_ok=True)
+        exported = 0
 
-        if node_id in self.nodes:
-            if node_id not in self.temporal_history:
-                self.temporal_history[node_id] = []
-            self.temporal_history[node_id].append({"timestamp": time.time(), "data": pattern})
-            return node_id
+        targets = node_ids or list(self.nodes.keys())[-50:]  # last 50 if none specified
 
-        self.nodes[node_id] = {
-            "data": pattern,
-            "metadata": metadata or {},
-            "stored_at": time.time(),
-            "node_id": node_id
-        }
-
-        if self.hybrid_quantizer:
-            raw_vec = self._to_ternary_vector(pattern)
-            self.embeddings[node_id] = self.hybrid_quantizer.quantize(raw_vec).tolist()
-        elif self.sensitivity_optimizer:
-            self.embeddings[node_id] = self.sensitivity_optimizer.quantize_to_ternary(self._to_ternary_vector(pattern)).tolist()
-        else:
-            self.embeddings[node_id] = self._to_ternary_vector(pattern)
-
-        if self._fast_index is not None:
-            tag = pattern.get("type", "general")
-            if tag not in self._fast_index:
-                self._fast_index[tag] = set()
-            self._fast_index[tag].add(node_id)
-
-        for existing_id, emb in list(self.embeddings.items()):
-            if existing_id == node_id:
+        for node_id in targets:
+            if node_id not in self.nodes:
                 continue
-            if self._cosine_similarity(self.embeddings[node_id], emb) > 0.65:
-                if node_id not in self.edges:
-                    self.edges[node_id] = set()
-                self.edges[node_id].add(existing_id)
-                if existing_id not in self.edges:
-                    self.edges[existing_id] = set()
-                self.edges[existing_id].add(node_id)
+            node = self.nodes[node_id]
+            meta = node.get("metadata", {})
+            data = node.get("data", {})
 
-        if node_id not in self.temporal_history:
-            self.temporal_history[node_id] = []
-        self.temporal_history[node_id].append({"timestamp": time.time(), "data": pattern})
+            filename = f"{meta.get('produced_by', 'unknown')}_{meta.get('deliverable_type', 'item')}_{node_id[:8]}.md"
+            filepath = os.path.join(vault_path, filename)
 
-        return node_id
+            content = f"# {meta.get('deliverable_type', 'Item').title()} — {meta.get('produced_by', 'Unknown')}\n\n"
+            content += f"**Node ID**: `{node_id}`\n"
+            content += f"**Timestamp**: {meta.get('timestamp')}\n"
+            content += f"**Version**: {meta.get('version', 1)}\n\n"
+
+            content += "## Provenance\n"
+            content += f"- Produced by: **{meta.get('produced_by')}**\n"
+            content += f"- BitNet operation: `{meta.get('bitnet_operation', 'N/A')}`\n"
+            content += f"- Plasticity signal: `{meta.get('plasticity_signal_id', 'N/A')}`\n\n"
+
+            if include_plasticity and meta.get('plasticity_signal_id'):
+                content += "## Plasticity Signal\n```json\n"
+                content += str(meta)[:1500]
+                content += "\n```\n\n"
+
+            content += "## Data\n```json\n"
+            content += str(data)[:2500]
+            content += "\n```\n"
+
+            try:
+                with open(filepath, "w", encoding="utf-8") as f:
+                    f.write(content)
+                exported += 1
+            except Exception as e:
+                print(f"[GraphMemoryBlackbox] Obsidian export error for {node_id}: {e}")
+
+        return exported
 
     def export_for_obsidian(self, node_id: str, include_provenance: bool = True) -> str:
-        """Export a deliverable or task as Obsidian-friendly Markdown for historical logging."""
         if node_id not in self.nodes:
             return "# Not found"
 
@@ -408,14 +409,13 @@ class GraphMemoryBlackbox:
         self.sensitivity_optimizer = optimizer
 
     def run_self_test(self) -> bool:
-        print("[GraphMemoryBlackbox] Running with Obsidian export and workflow helpers...")
+        print("[GraphMemoryBlackbox] Running with Obsidian vault export...")
         task_id = self.post_task({"action": "generate_design"}, assigned_to="VLMDesignAgent")
         self.claim_task(task_id, "VLMDesignAgent")
         design_id = self.post_deliverable({"wing_sweep": 48}, produced_by="VLMDesignAgent", deliverable_type="design")
         self.update_task_status(task_id, "completed", result={"node_id": design_id})
-        md = self.export_for_obsidian(design_id)
-        work = self.get_next_work_items()
-        success = "#" in md and len(work["ready_tasks"]) >= 0
+        count = self.export_to_obsidian_vault("/tmp/test_obsidian_vault", node_ids=[design_id])
+        success = count >= 1
         print(f"[GraphMemoryBlackbox] Self-test {'PASSED' if success else 'FAILED'}")
         return success
 

@@ -3,13 +3,11 @@
 """
 PlasticityEngine
 
-Enhanced neuromorphic refinements:
-- Richer structured training signal generation for BitNet layer
-- Better integration with deliverable provenance and historical logging
+Deepened neuromorphic refinements:
+- More sophisticated training signal generation with trend and confidence metrics.
 """
 
 from typing import Dict, Optional, Callable, Any, List
-
 try:
     from src.quantization.hybrid_squeeze_bitnet import HybridSqueezeBitNetQuantizer
 except ImportError:
@@ -19,16 +17,25 @@ except ImportError:
 class Neuromodulator:
     def __init__(self):
         self.global_signal: float = 1.0
+        self.history: List[float] = []
 
     def update(self, outcome: float, context: Dict[str, Any] = None) -> float:
         if outcome > 0:
             self.global_signal = min(2.0, self.global_signal * 1.1)
         else:
             self.global_signal = max(0.5, self.global_signal * 0.9)
+        self.history.append(self.global_signal)
+        if len(self.history) > 20:
+            self.history.pop(0)
         return self.global_signal
 
     def get_modulation(self) -> float:
         return self.global_signal
+
+    def get_trend(self) -> float:
+        if len(self.history) < 3:
+            return 0.0
+        return self.history[-1] - self.history[0]
 
 
 class HebbianStructuralModule:
@@ -217,34 +224,37 @@ class PlasticityEngine:
             "meta_plasticity_factor": self.meta_plasticity_factor,
             "neuromodulation_level": self.neuromodulator.get_modulation(),
             "active_profiles": len(self.eligibility_traces),
+            "neuromod_trend": self.neuromodulator.get_trend()
         }
 
     def generate_training_signals(self, outcome: float, profile: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
         """
-        Generate structured training signals for the BitNet layer.
-        These can be attached to deliverables for historical logging and future adaptation.
+        Sophisticated training signal generation.
+        Includes modulation trend, connection strength, and confidence estimate.
         """
         modulation = self.neuromodulator.get_modulation()
+        trend = self.neuromodulator.get_trend()
         eligibility = self.eligibility_traces.get(profile, 0.0)
         connection_strength = self.hebbian.get_strength(profile)
+
+        confidence = min(1.0, max(0.0, (connection_strength + (trend * 0.5) + 0.5) / 2.0))
 
         signal = {
             "signal_id": f"{profile}_{int(time.time() * 1000)}",
             "profile": profile,
             "outcome": outcome,
             "modulation": modulation,
+            "modulation_trend": trend,
             "eligibility": eligibility,
             "connection_strength": connection_strength,
+            "confidence": confidence,
             "timestamp": time.time(),
             "context": context or {}
         }
         return signal
 
     def get_plasticity_training_data(self, max_items: int = 50) -> List[Dict[str, Any]]:
-        """Return recent plasticity-derived training signals (for export or BitNet use)."""
-        # In a real implementation this would pull from a buffer.
-        # For now we return a placeholder structure.
         return [{
             "type": "plasticity_training_signal",
-            "note": "Use generate_training_signals() during apply() calls to populate historical data."
+            "note": "Use generate_training_signals() during apply() calls."
         }]

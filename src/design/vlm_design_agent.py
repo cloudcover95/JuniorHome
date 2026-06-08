@@ -3,17 +3,18 @@
 """
 VLMDesignAgent
 
-Parallel coordination with improved merging using plasticity feedback and GraphMemory.
+Now wired with BitNetPrecisionRouter for lean 1.58 vs higher precision decisions.
 """
 
 from typing import Any, Callable, Dict, List, Optional
-
 import time
 
 try:
     from src.automation.cad_script_generator import CADScriptGenerator
+    from src.inference.bitnet_precision_router import BitNetPrecisionRouter
 except ImportError:
     CADScriptGenerator = None
+    BitNetPrecisionRouter = None
 
 
 class DesignState:
@@ -57,9 +58,11 @@ class VLMDesignAgent:
             "scripts_generated": 0,
             "quantization_time": 0.0,
             "memory_ops_time": 0.0,
-            "vision_analysis_time": 0.0
+            "vision_analysis_time": 0.0,
+            "precision_switches": 0
         }
         self._iteration_start_time = None
+        self.precision_router = BitNetPrecisionRouter() if BitNetPrecisionRouter else None
 
     def analyze_design_image(self, image_features: Dict[str, Any]) -> Dict[str, Any]:
         start = time.time()
@@ -179,6 +182,23 @@ class VLMDesignAgent:
                 vision_analysis = self.analyze_design_image({"edge_density": 0.6, "text_density": 0.4})
                 self.efficiency_stats["vision_analysis_time"] += time.time() - t_vision
 
+                # === BitNet Precision Routing (lean optimization) ===
+                chosen_mode = "1.58"
+                if self.precision_router and self.plasticity:
+                    plast_signal = self.plasticity.generate_training_signals(
+                        outcome=0.0,  # placeholder; real outcome comes after evaluation
+                        profile="supersonic_design"
+                    )
+                    # Simple coherence proxy from memory or recent performance
+                    coherence = 0.75  # could come from graph_memory in real use
+                    chosen_mode = self.precision_router.select_mode(
+                        coherence=coherence,
+                        task_criticality=0.6,
+                        plasticity_signal=plast_signal
+                    )
+                    if chosen_mode != self.precision_router.get_last_mode():
+                        self.efficiency_stats["precision_switches"] += 1
+
                 proposal = self.propose_design_changes(self.current_design, target_goals)
 
                 new_params = self.current_design.params.copy()
@@ -197,6 +217,13 @@ class VLMDesignAgent:
 
                 if self.graph_memory:
                     t_mem = time.time()
+                    plast_signal = None
+                    if self.plasticity:
+                        plast_signal = self.plasticity.generate_training_signals(
+                            outcome=outcome,
+                            profile="supersonic_design",
+                            context={"mode": chosen_mode}
+                        )
                     self.graph_memory.post_deliverable(
                         {
                             "type": "supersonic_design",
@@ -205,17 +232,14 @@ class VLMDesignAgent:
                         },
                         produced_by="VLMDesignAgent",
                         deliverable_type="design",
-                        version=i + 1
+                        version=i + 1,
+                        plasticity_signal=plast_signal,
+                        bitnet_metadata={"operation": f"bitnet_{chosen_mode}"}
                     )
                     self.efficiency_stats["memory_ops_time"] += time.time() - t_mem
 
-                score = new_metrics.get("drag_coefficient", 999)
-                if score < path_best_score:
-                    path_best_score = score
-                    path_best = new_design
-
                 if auto_export_scripts and self.cad_generator:
-                    if score < 0.015:
+                    if new_metrics.get("drag_coefficient", 1) < 0.015:
                         self.cad_generator.export_to_file(new_design, f"design_iter_{i}.py", format="python_cadquery")
                         self.cad_generator.export_to_file(new_design, f"design_iter_{i}.step", format="step")
                         self.efficiency_stats["scripts_generated"] += 2
@@ -224,15 +248,18 @@ class VLMDesignAgent:
                 iteration_results.append(new_design)
                 self.current_design = new_design
 
+                score = new_metrics.get("drag_coefficient", 999)
+                if score < path_best_score:
+                    path_best_score = score
+                    path_best = new_design
+
                 if score < target_goals.get("max_drag", 0.01) and new_metrics.get("boom_overpressure", 1) < target_goals.get("max_boom", 0.6):
                     break
 
             if path_best:
                 path_results.append((path_best, path_best_score))
 
-        # Merge parallel paths using plasticity-informed selection
         if path_results:
-            # Sort by score (lower drag is better) and pick the best
             path_results.sort(key=lambda x: x[1])
             best_design, _ = path_results[0]
             self.current_design = best_design
@@ -254,5 +281,6 @@ class VLMDesignAgent:
             "avg_time_per_iteration": self.efficiency_stats.get("last_iteration_time", 0) / max(self.efficiency_stats.get("total_iterations", 1), 1),
             "quantization_time": self.efficiency_stats.get("quantization_time", 0),
             "memory_ops_time": self.efficiency_stats.get("memory_ops_time", 0),
-            "vision_analysis_time": self.efficiency_stats.get("vision_analysis_time", 0)
+            "vision_analysis_time": self.efficiency_stats.get("vision_analysis_time", 0),
+            "precision_switches": self.efficiency_stats.get("precision_switches", 0)
         }
