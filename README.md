@@ -2,10 +2,10 @@
 
 **Current Ecosystem State**
 
-**Continued neuromorphic + quantizer + JuniorPython progress**
+**Continued progress on all fronts**
 
-- SpikingPlasticityModule now includes homeostatic regulation.
-- PlasticityEngine uses HybridSqueezeBitNetQuantizer for ternary-like updates.
-- CADScriptGenerator can now generate optimization scripts (new JuniorPython feature).
+- SpikingPlasticityModule has deeper spike-timing modulation of eligibility.
+- VLMDesignAgent has more granular phase timing in efficiency reports.
+- CADScriptGenerator now supports simulation_script generation (new JuniorPython feature).
 
-The ecosystem keeps advancing with tighter integration across biological learning, quantization, and automation layers.
+The ecosystem continues to advance with tighter neuromorphic, benchmarking, quantization, and automation integration.

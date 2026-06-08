@@ -3,7 +3,7 @@
 """
 VLMDesignAgent
 
-Added more granular efficiency benchmarking (time per phase).
+Added even deeper benchmarking with phase timing and quantizer usage tracking.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -56,19 +56,24 @@ class VLMDesignAgent:
             "total_iterations": 0,
             "scripts_generated": 0,
             "quantization_time": 0.0,
-            "memory_ops_time": 0.0
+            "memory_ops_time": 0.0,
+            "vision_analysis_time": 0.0
         }
         self._iteration_start_time = None
 
     def analyze_design_image(self, image_features: Dict[str, Any]) -> Dict[str, Any]:
+        start = time.time()
         if self.vlm_vision_fn:
-            return self.vlm_vision_fn(image_features)
-        return {
-            "shock_wave_strength": image_features.get("edge_density", 0.5),
-            "flow_separation_risk": 0.3,
-            "structural_stress_hotspots": image_features.get("text_density", 0.2),
-            "overall_score": 0.7
-        }
+            result = self.vlm_vision_fn(image_features)
+        else:
+            result = {
+                "shock_wave_strength": image_features.get("edge_density", 0.5),
+                "flow_separation_risk": 0.3,
+                "structural_stress_hotspots": image_features.get("text_density", 0.2),
+                "overall_score": 0.7
+            }
+        self.efficiency_stats["vision_analysis_time"] += time.time() - start
+        return result
 
     def propose_design_changes(self, current_state: DesignState, target_goals: Dict[str, float]) -> Dict[str, Any]:
         context = {}
@@ -165,9 +170,9 @@ class VLMDesignAgent:
         iteration_results = []
 
         for i in range(max_iterations):
-            t_quant = time.time()
+            t_vision = time.time()
             vision_analysis = self.analyze_design_image({"edge_density": 0.6, "text_density": 0.4})
-            self.efficiency_stats["quantization_time"] += time.time() - t_quant
+            self.efficiency_stats["vision_analysis_time"] += time.time() - t_vision
 
             proposal = self.propose_design_changes(self.current_design, target_goals)
 
@@ -224,5 +229,6 @@ class VLMDesignAgent:
             "last_iteration_time": self.efficiency_stats.get("last_iteration_time", 0),
             "avg_time_per_iteration": self.efficiency_stats.get("last_iteration_time", 0) / max(self.efficiency_stats.get("total_iterations", 1), 1),
             "quantization_time": self.efficiency_stats.get("quantization_time", 0),
-            "memory_ops_time": self.efficiency_stats.get("memory_ops_time", 0)
+            "memory_ops_time": self.efficiency_stats.get("memory_ops_time", 0),
+            "vision_analysis_time": self.efficiency_stats.get("vision_analysis_time", 0)
         }

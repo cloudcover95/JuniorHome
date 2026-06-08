@@ -3,8 +3,7 @@
 """
 PlasticityEngine
 
-Added homeostatic regulation to SpikingPlasticityModule (neuromorphic refinement).
-Also integrated HybridSqueezeBitNetQuantizer for ternary weight-like updates.
+Further neuromorphic refinement: Spike-timing now modulates eligibility traces more directly in SpikingPlasticityModule.
 """
 
 from typing import Dict, Optional, Callable, Any
@@ -65,7 +64,7 @@ class SpikingPlasticityModule:
         self.membrane_potential: Dict[str, float] = {}
         self.connection_strength: Dict[str, float] = {}
         self.last_spike_time: Dict[str, float] = {}
-        self.homeostatic_target = 0.15  # Homeostatic regulation target
+        self.homeostatic_target = 0.15
 
     def update(self, profile: str, delta_w: float, eligibility: float, outcome: float, modulation: float = 1.0, current_time: float = 0.0) -> float:
         if profile not in self.membrane_potential:
@@ -83,13 +82,16 @@ class SpikingPlasticityModule:
             time_since_last = current_time - self.last_spike_time.get(profile, 0.0)
             timing_factor = max(0.5, 1.0 - (time_since_last / self.stp_window)) if time_since_last < self.stp_window else 0.5
 
-            self.connection_strength[profile] = min(1.0, self.connection_strength[profile] + 0.12 * modulation * timing_factor)
+            # Spike timing now directly modulates eligibility influence
+            modulated_eligibility = eligibility * timing_factor
+            self.connection_strength[profile] = min(1.0, self.connection_strength[profile] + 0.12 * modulation * modulated_eligibility)
+
             self.membrane_potential[profile] = 0.0
             self.last_spike_time[profile] = current_time
         else:
             self.connection_strength[profile] *= 0.985
 
-        # Homeostatic regulation (neuromorphic refinement)
+        # Homeostatic regulation
         avg_strength = sum(self.connection_strength.values()) / max(len(self.connection_strength), 1)
         if avg_strength > self.homeostatic_target:
             self.connection_strength[profile] *= 0.99
@@ -160,7 +162,6 @@ class PlasticityEngine:
 
         delta_w = self.hebbian.update(profile, delta_w, modulated_eligibility, outcome, modulation, current_time=current_time)
 
-        # Apply hybrid quantizer to delta_w for ternary-like updates (quantizer spread)
         if self.hybrid_quantizer:
             try:
                 delta_w = float(self.hybrid_quantizer.quantize([delta_w])[0])
