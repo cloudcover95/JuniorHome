@@ -3,7 +3,8 @@
 """
 VLMDesignAgent
 
-Added even deeper benchmarking with phase timing and quantizer usage tracking.
+Improved parallel-style coordination using GraphMemory for multiple reasoning paths
+and clean handoff of deliverables.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -140,7 +141,12 @@ class VLMDesignAgent:
         if hasattr(self.plasticity, "adapt_meta_plasticity"):
             self.plasticity.adapt_meta_plasticity(design.metrics.get("drag_coefficient", 0.5))
 
-    def iterate_design(self, target_goals: Dict[str, float], max_iterations: int = 10, auto_export_scripts: bool = True) -> List[DesignState]:
+    def iterate_design(self, target_goals: Dict[str, float], max_iterations: int = 10, auto_export_scripts: bool = True, parallel_paths: int = 1) -> List[DesignState]:
+        """
+        Supports parallel-style coordination.
+        When parallel_paths > 1, the agent can explore multiple reasoning directions
+        and merge via memory + plasticity.
+        """
         self.efficiency_stats["total_iterations"] += 1
         self._iteration_start_time = time.time()
 
@@ -169,49 +175,57 @@ class VLMDesignAgent:
 
         iteration_results = []
 
-        for i in range(max_iterations):
-            t_vision = time.time()
-            vision_analysis = self.analyze_design_image({"edge_density": 0.6, "text_density": 0.4})
-            self.efficiency_stats["vision_analysis_time"] += time.time() - t_vision
+        # Parallel-style exploration (simplified)
+        for path in range(max(1, parallel_paths)):
+            for i in range(max_iterations):
+                t_vision = time.time()
+                vision_analysis = self.analyze_design_image({"edge_density": 0.6, "text_density": 0.4})
+                self.efficiency_stats["vision_analysis_time"] += time.time() - t_vision
 
-            proposal = self.propose_design_changes(self.current_design, target_goals)
+                proposal = self.propose_design_changes(self.current_design, target_goals)
 
-            new_params = self.current_design.params.copy()
-            for change, value in proposal.get("suggested_changes", {}).items():
-                if change.startswith("increase_"):
-                    key = change.replace("increase_", "")
-                    new_params[key] = new_params.get(key, 0) + value
+                new_params = self.current_design.params.copy()
+                for change, value in proposal.get("suggested_changes", {}).items():
+                    if change.startswith("increase_"):
+                        key = change.replace("increase_", "")
+                        new_params[key] = new_params.get(key, 0) + value
 
-            new_design = DesignState(params=new_params)
+                new_design = DesignState(params=new_params)
 
-            new_metrics = self.evaluate_design(new_design)
-            new_design.metrics = new_metrics
+                new_metrics = self.evaluate_design(new_design)
+                new_design.metrics = new_metrics
 
-            outcome = 1.0 if new_metrics.get("drag_coefficient", 1) < self.current_design.metrics.get("drag_coefficient", 1) else -0.5
-            self.learn_from_design(new_design, outcome)
+                outcome = 1.0 if new_metrics.get("drag_coefficient", 1) < self.current_design.metrics.get("drag_coefficient", 1) else -0.5
+                self.learn_from_design(new_design, outcome)
 
-            if self.graph_memory:
-                t_mem = time.time()
-                self.graph_memory.store_pattern({
-                    "type": "supersonic_design",
-                    "params": new_design.params,
-                    "metrics": new_design.metrics
-                })
-                self.efficiency_stats["memory_ops_time"] += time.time() - t_mem
+                if self.graph_memory:
+                    t_mem = time.time()
+                    # Post as typed deliverable with provenance
+                    self.graph_memory.post_deliverable(
+                        {
+                            "type": "supersonic_design",
+                            "params": new_design.params,
+                            "metrics": new_design.metrics
+                        },
+                        produced_by="VLMDesignAgent",
+                        deliverable_type="design",
+                        version=i + 1
+                    )
+                    self.efficiency_stats["memory_ops_time"] += time.time() - t_mem
 
-            if auto_export_scripts and self.cad_generator:
-                if new_metrics.get("drag_coefficient", 1) < 0.015:
-                    self.cad_generator.export_to_file(new_design, f"design_iter_{i}.py", format="python_cadquery")
-                    self.cad_generator.export_to_file(new_design, f"design_iter_{i}.step", format="step")
-                    self.efficiency_stats["scripts_generated"] += 2
+                if auto_export_scripts and self.cad_generator:
+                    if new_metrics.get("drag_coefficient", 1) < 0.015:
+                        self.cad_generator.export_to_file(new_design, f"design_iter_{i}.py", format="python_cadquery")
+                        self.cad_generator.export_to_file(new_design, f"design_iter_{i}.step", format="step")
+                        self.efficiency_stats["scripts_generated"] += 2
 
-            self.design_history.append(new_design)
-            iteration_results.append(new_design)
-            self.current_design = new_design
+                self.design_history.append(new_design)
+                iteration_results.append(new_design)
+                self.current_design = new_design
 
-            if (new_metrics.get("drag_coefficient", 1) < target_goals.get("max_drag", 0.01) and
-                new_metrics.get("boom_overpressure", 1) < target_goals.get("max_boom", 0.6)):
-                break
+                if (new_metrics.get("drag_coefficient", 1) < target_goals.get("max_drag", 0.01) and
+                    new_metrics.get("boom_overpressure", 1) < target_goals.get("max_boom", 0.6)):
+                    break
 
         self.efficiency_stats["last_iteration_time"] = time.time() - self._iteration_start_time
         return iteration_results

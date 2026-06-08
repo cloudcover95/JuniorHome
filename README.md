@@ -1,19 +1,16 @@
 # JuniorHome
 
-**Production Development Update**
+**Typed Deliverables + Coordination Layer Added**
 
-- Removed dependency on GitHub Actions free tier (rate limits + paid tokens avoided).
-- Added `Makefile` for easy local development, testing, linting, and building across **Linux, macOS, and Windows**.
-- Packaging improved for clean `pip install -e .` experience on all platforms.
-- Core modules remain focused on sovereign, efficient, black-box design with BitNet/ternary foundations.
+GraphMemoryBlackbox now supports:
+- `post_deliverable()` with provenance (produced_by, deliverable_type, version)
+- `get_deliverables()` and `get_latest_deliverable()` for clean handoff between components
+- Light coordination via `notify_deliverable_ready()`
 
-**Local Development (all platforms)**
-```bash
-make install
-test
-make lint
-make format
-make build
-```
+VLMDesignAgent can now run with `parallel_paths` and posts typed deliverables to GraphMemory.
 
-The ecosystem is being hardened for real production use without reliance on external CI services.
+This enables clean, efficient agent-style workflows entirely inside the BitNet layer
+without heavy external frameworks.
+
+Example flow:
+VLMDesignAgent posts design deliverable → CADScriptGenerator consumes it and posts artifacts.
