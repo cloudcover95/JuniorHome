@@ -1,16 +1,13 @@
 # JuniorHome
 
-**Typed Deliverables + Coordination Layer Added**
+**Deepened Typed Deliverables & Coordination System**
 
 GraphMemoryBlackbox now supports:
-- `post_deliverable()` with provenance (produced_by, deliverable_type, version)
-- `get_deliverables()` and `get_latest_deliverable()` for clean handoff between components
-- Light coordination via `notify_deliverable_ready()`
+- Structured Tasks (`post_task`, `update_task_status`, `get_pending_tasks`)
+- Typed Deliverables with rich provenance (including optional plasticity signals)
+- Lightweight pub/sub notifications via `subscribe()` + event log
+- `notify_deliverable_ready()` for component coordination
 
-VLMDesignAgent can now run with `parallel_paths` and posts typed deliverables to GraphMemory.
+VLMDesignAgent uses parallel paths and posts structured deliverables for clean handoff to downstream components (e.g. CADScriptGenerator).
 
-This enables clean, efficient agent-style workflows entirely inside the BitNet layer
-without heavy external frameworks.
-
-Example flow:
-VLMDesignAgent posts design deliverable → CADScriptGenerator consumes it and posts artifacts.
+This creates a robust, local, BitNet-native coordination layer for agent-style workflows.

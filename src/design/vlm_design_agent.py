@@ -3,8 +3,8 @@
 """
 VLMDesignAgent
 
-Improved parallel-style coordination using GraphMemory for multiple reasoning paths
-and clean handoff of deliverables.
+Improved parallel coordination with better merging using GraphMemory deliverables
+and plasticity feedback.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -142,11 +142,6 @@ class VLMDesignAgent:
             self.plasticity.adapt_meta_plasticity(design.metrics.get("drag_coefficient", 0.5))
 
     def iterate_design(self, target_goals: Dict[str, float], max_iterations: int = 10, auto_export_scripts: bool = True, parallel_paths: int = 1) -> List[DesignState]:
-        """
-        Supports parallel-style coordination.
-        When parallel_paths > 1, the agent can explore multiple reasoning directions
-        and merge via memory + plasticity.
-        """
         self.efficiency_stats["total_iterations"] += 1
         self._iteration_start_time = time.time()
 
@@ -175,7 +170,6 @@ class VLMDesignAgent:
 
         iteration_results = []
 
-        # Parallel-style exploration (simplified)
         for path in range(max(1, parallel_paths)):
             for i in range(max_iterations):
                 t_vision = time.time()
@@ -200,7 +194,7 @@ class VLMDesignAgent:
 
                 if self.graph_memory:
                     t_mem = time.time()
-                    # Post as typed deliverable with provenance
+                    # Post as structured deliverable with provenance
                     self.graph_memory.post_deliverable(
                         {
                             "type": "supersonic_design",

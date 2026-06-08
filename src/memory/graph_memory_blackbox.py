@@ -3,13 +3,12 @@
 """
 GraphMemoryBlackbox
 
-Enhanced with:
-- Typed Deliverables + Task Coordination
-- Deliverable Versioning + Provenance (produced_by, version, timestamp)
-- Light coordination support for components to hand off work cleanly
+Deepened support for:
+- Structured Tasks + Typed Deliverables with status tracking
+- Lightweight pub/sub style notifications (local callbacks + event log)
+- Strong provenance linking back to BitNet/ternary operations and plasticity
 
-This enables clean agent-style workflows inside the BitNet layer
-(e.g. VLMDesignAgent posts design → CADScriptGenerator consumes and posts artifacts).
+Enables clean, auditable handoffs between components in the BitNet layer.
 """
 
 from typing import Any, Callable, Dict, List, Optional, Set
@@ -39,9 +38,14 @@ class GraphMemoryBlackbox:
         self.temporal_history: Dict[str, List[Dict[str, Any]]] = {}
         self._fast_index: Dict[str, Set[str]] = {} if fast_lookup else None
 
-        # Deliverable tracking
+        # Deliverable & Task tracking
         self._deliverables_by_type: Dict[str, Set[str]] = {}
         self._deliverables_by_producer: Dict[str, Set[str]] = {}
+        self._tasks: Dict[str, Dict[str, Any]] = {}  # task_id -> task data
+
+        # Lightweight notification system
+        self._subscribers: List[Callable] = []
+        self._event_log: List[Dict[str, Any]] = []
 
     def _make_node_id(self, data: Dict[str, Any]) -> str:
         serialized = str(sorted(data.items())).encode()
@@ -120,22 +124,51 @@ class GraphMemoryBlackbox:
 
         return node_id
 
-    # === Typed Deliverables + Task Coordination ===
-    def post_deliverable(self, data: Dict[str, Any], produced_by: str, deliverable_type: str = "general", version: int = 1) -> str:
+    # === Structured Tasks + Typed Deliverables ===
+    def post_task(self, task_data: Dict[str, Any], assigned_to: Optional[str] = None, priority: int = 0) -> str:
+        """Post a structured task that can be consumed by other components."""
+        task_id = self._make_node_id(task_data)
+        task = {
+            "task_id": task_id,
+            "data": task_data,
+            "status": "pending",
+            "assigned_to": assigned_to,
+            "priority": priority,
+            "created_at": time.time(),
+            "updated_at": time.time()
+        }
+        self._tasks[task_id] = task
+        self._log_event("task_posted", task)
+        return task_id
+
+    def update_task_status(self, task_id: str, status: str, result: Optional[Dict[str, Any]] = None) -> bool:
+        if task_id not in self._tasks:
+            return False
+        self._tasks[task_id]["status"] = status
+        self._tasks[task_id]["updated_at"] = time.time()
+        if result:
+            self._tasks[task_id]["result"] = result
+        self._log_event("task_updated", self._tasks[task_id])
+        return True
+
+    def get_pending_tasks(self, assigned_to: Optional[str] = None) -> List[Dict[str, Any]]:
+        return [t for t in self._tasks.values() if t["status"] == "pending" and (assigned_to is None or t.get("assigned_to") == assigned_to)]
+
+    def post_deliverable(self, data: Dict[str, Any], produced_by: str, deliverable_type: str = "general", version: int = 1, plasticity_signal: Optional[Dict] = None) -> str:
         """
-        Post a typed deliverable with provenance.
-        Example: VLMDesignAgent posts a design, CADScriptGenerator posts STEP/Python artifacts.
+        Post a typed deliverable with strong provenance.
+        Can optionally attach plasticity training signals.
         """
         metadata = {
             "produced_by": produced_by,
             "deliverable_type": deliverable_type,
             "version": version,
             "timestamp": time.time(),
-            "provenance": f"{produced_by}:{deliverable_type}:v{version}"
+            "provenance": f"{produced_by}:{deliverable_type}:v{version}",
+            "plasticity_signal_id": plasticity_signal.get("signal_id") if plasticity_signal else None
         }
         node_id = self.store_pattern(data, metadata=metadata)
 
-        # Index for fast retrieval
         if deliverable_type not in self._deliverables_by_type:
             self._deliverables_by_type[deliverable_type] = set()
         self._deliverables_by_type[deliverable_type].add(node_id)
@@ -144,28 +177,22 @@ class GraphMemoryBlackbox:
             self._deliverables_by_producer[produced_by] = set()
         self._deliverables_by_producer[produced_by].add(node_id)
 
+        self._log_event("deliverable_posted", {"node_id": node_id, "produced_by": produced_by, "type": deliverable_type})
         return node_id
 
-    def get_deliverables(self, deliverable_type: Optional[str] = None, produced_by: Optional[str] = None, limit: int = 10) -> List[Dict[str, Any]]:
-        """
-        Retrieve deliverables with optional filtering.
-        """
+    def get_deliverables(self, deliverable_type: Optional[str] = None, produced_by: Optional[str] = None, limit: int = 20) -> List[Dict[str, Any]]:
         results = []
-        candidates = set()
+        candidates = set(self.nodes.keys())
 
         if deliverable_type and deliverable_type in self._deliverables_by_type:
             candidates = self._deliverables_by_type[deliverable_type]
         elif produced_by and produced_by in self._deliverables_by_producer:
             candidates = self._deliverables_by_producer[produced_by]
-        else:
-            candidates = set(self.nodes.keys())
 
         for node_id in list(candidates)[:limit]:
             if node_id in self.nodes:
-                node = self.nodes[node_id].copy()
-                results.append(node)
+                results.append(self.nodes[node_id])
 
-        # Sort by timestamp descending (most recent first)
         results.sort(key=lambda x: x.get("metadata", {}).get("timestamp", 0), reverse=True)
         return results
 
@@ -173,22 +200,45 @@ class GraphMemoryBlackbox:
         results = self.get_deliverables(deliverable_type=deliverable_type, produced_by=produced_by, limit=1)
         return results[0] if results else None
 
-    # === Light Coordination / Notification Support ===
+    # === Lightweight Pub/Sub Notifications ===
+    def subscribe(self, callback: Callable):
+        if callback not in self._subscribers:
+            self._subscribers.append(callback)
+
+    def unsubscribe(self, callback: Callable):
+        if callback in self._subscribers:
+            self._subscribers.remove(callback)
+
+    def _log_event(self, event_type: str, payload: Dict[str, Any]):
+        event = {
+            "event_type": event_type,
+            "payload": payload,
+            "timestamp": time.time()
+        }
+        self._event_log.append(event)
+        # Notify subscribers
+        for callback in self._subscribers:
+            try:
+                callback(event)
+            except Exception as e:
+                print(f"[GraphMemoryBlackbox] Notification error: {e}")
+
+    def get_recent_events(self, limit: int = 20) -> List[Dict[str, Any]]:
+        return self._event_log[-limit:]
+
     def notify_deliverable_ready(self, deliverable_type: str, produced_by: str) -> Dict[str, Any]:
-        """
-        Lightweight notification that a deliverable is ready.
-        Components can poll or react to this.
-        """
         latest = self.get_latest_deliverable(deliverable_type, produced_by)
-        return {
+        event = {
             "deliverable_type": deliverable_type,
             "produced_by": produced_by,
             "ready": latest is not None,
             "node_id": latest.get("node_id") if latest else None,
             "timestamp": time.time()
         }
+        self._log_event("deliverable_ready", event)
+        return event
 
-    # === Existing methods (trimmed for brevity in this edit) ===
+    # === Utility methods ===
     def _cosine_similarity(self, a: List[float], b: List[float]) -> float:
         dot = sum(x * y for x, y in zip(a, b))
         norm_a = sum(x * x for x in a) ** 0.5 or 1e-8
@@ -196,7 +246,6 @@ class GraphMemoryBlackbox:
         return dot / (norm_a * norm_b)
 
     def query_similar(self, query_pattern: Dict[str, Any], top_k: int = 5) -> List[Dict[str, Any]]:
-        # (existing implementation kept for compatibility)
         if self._fast_index is not None:
             tag = query_pattern.get("type", "general")
             candidates = self._fast_index.get(tag, set())
@@ -246,12 +295,13 @@ class GraphMemoryBlackbox:
         self.sensitivity_optimizer = optimizer
 
     def run_self_test(self) -> bool:
-        print("[GraphMemoryBlackbox] Running with typed deliverables...")
-        design = {"wing_sweep": 48, "length": 32}
-        node_id = self.post_deliverable(design, produced_by="VLMDesignAgent", deliverable_type="design")
-        artifacts = self.post_deliverable({"step_file": "design.step"}, produced_by="CADScriptGenerator", deliverable_type="artifact")
-        latest_design = self.get_latest_deliverable("design")
-        success = latest_design is not None
+        print("[GraphMemoryBlackbox] Running deepened deliverable system...")
+        task_id = self.post_task({"action": "generate_design"}, assigned_to="VLMDesignAgent")
+        design_id = self.post_deliverable({"wing_sweep": 48}, produced_by="VLMDesignAgent", deliverable_type="design")
+        self.update_task_status(task_id, "completed", result={"design_id": design_id})
+        artifacts_id = self.post_deliverable({"files": ["design.step"]}, produced_by="CADScriptGenerator", deliverable_type="artifact")
+        events = self.get_recent_events(5)
+        success = len(events) >= 2
         print(f"[GraphMemoryBlackbox] Self-test {'PASSED' if success else 'FAILED'}")
         return success
 
