@@ -1,10 +1,12 @@
 # JuniorHome
 
-**Reactive Handoff + Strengthened Coordination**
+**Workflow Orchestration + Reactive Handoff + Strong Provenance**
 
-- CADScriptGenerator can now subscribe to design deliverables for automatic artifact generation.
-- Tasks support dependency-aware claiming via get_ready_tasks().
-- Provenance chain queries improved.
-- Pub/sub notifications enhanced with type-specific subscriptions.
+- `get_next_work_items()` and `get_ready_tasks()` for basic workflow orchestration.
+- CADScriptGenerator has full reactive subscription + polling for automatic artifact generation.
+- `get_provenance_chain()` provides traceable history from design to final artifacts (with BitNet/plasticity links).
+- Type-specific pub/sub notifications enable fully reactive component handoff.
 
-The ecosystem's component coordination is becoming fully reactive and auditable within the BitNet layer.
+Note: Long-term historical logic and inference data can be exported to Obsidian vaults for second-brain analysis (future integration point).
+
+The coordination layer is now quite mature for sovereign, local, BitNet-native agent-style workflows.

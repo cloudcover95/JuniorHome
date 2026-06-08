@@ -3,7 +3,7 @@
 """
 CADScriptGenerator
 
-Now supports reactive subscription to design deliverables from GraphMemoryBlackbox.
+Reactive subscription + polling for automatic handoff from GraphMemoryBlackbox.
 """
 
 from typing import Any, Dict, List, Optional
@@ -21,8 +21,6 @@ class CADScriptGenerator:
         self.supported_formats = ["openscad", "python_cadquery", "step", "freecad", "optimization_script", "simulation_script"]
         self._generation_count = 0
         self._total_generation_time = 0.0
-        self._subscribed_graph_memory = None
-        self._subscribed_type = None
 
     def _parse_design_params(self, design_state: Any) -> Dict[str, Any]:
         if hasattr(design_state, "to_dict"):
@@ -56,27 +54,23 @@ class CADScriptGenerator:
         return quantized
 
     def subscribe_to_design_deliverables(self, graph_memory: Any, deliverable_type: str = "design"):
-        """Subscribe to new design deliverables. When a new one is posted, auto-generate artifacts."""
-        self._subscribed_graph_memory = graph_memory
-        self._subscribed_type = deliverable_type
-
-        def on_new_deliverable(event):
-            if event.get("type") == "deliverable_posted" and event.get("produced_by") == "VLMDesignAgent":
+        """Fully reactive: subscribe and auto-generate artifacts when new design deliverables appear."""
+        def on_new_design(event):
+            if event.get("type") == "deliverable_posted":
                 latest = graph_memory.get_latest_deliverable(deliverable_type)
                 if latest:
                     self._auto_generate_from_deliverable(latest)
 
-        graph_memory.subscribe_to_deliverable_type(deliverable_type, on_new_deliverable)
-        print("[CADScriptGenerator] Subscribed to design deliverables for auto-reaction.")
+        graph_memory.subscribe_to_deliverable_type(deliverable_type, on_new_design)
+        print("[CADScriptGenerator] Reactively subscribed to design deliverables.")
 
     def _auto_generate_from_deliverable(self, deliverable: Dict[str, Any]):
         data = deliverable.get("data", {})
         params = data.get("params", data)
         if params:
             design_state = type("obj", (object,), {"params": params, "metrics": data.get("metrics", {})})()
-            # Auto-generate common artifacts
-            self.export_to_file(design_state, f"auto_design_{int(time.time())}.py", format="python_cadquery")
-            self.export_to_file(design_state, f"auto_design_{int(time.time())}.step", format="step")
+            self.export_to_file(design_state, f"auto_{int(time.time())}.py", format="python_cadquery")
+            self.export_to_file(design_state, f"auto_{int(time.time())}.step", format="step")
             self._generation_count += 2
 
     def consume_from_graph_memory(self, graph_memory: Any, deliverable_type: str = "design") -> Optional[Dict[str, Any]]:
@@ -91,7 +85,6 @@ class CADScriptGenerator:
         return data
 
     def auto_process_design_deliverables(self, graph_memory: Any, deliverable_type: str = "design") -> int:
-        """Poll for new design deliverables and auto-generate artifacts."""
         processed = 0
         latest = graph_memory.get_latest_deliverable(deliverable_type)
         if latest:

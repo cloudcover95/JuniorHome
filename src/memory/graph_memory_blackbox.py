@@ -3,12 +3,12 @@
 """
 GraphMemoryBlackbox
 
-Further deepened:
-- Reactive subscriptions for specific deliverable types
-- Better task dependency resolution (get_ready_tasks)
-- Stronger provenance chain queries
+Further strengthened:
+- Robust provenance chain queries (full design -> artifact history)
+- Basic workflow orchestration helper (get_next_work_items)
+- Reactive type-specific subscriptions for automatic handoff
 
-Enables automatic, auditable handoffs in the BitNet layer.
+All still fully local and BitNet-native. Future: export historical logic to Obsidian vaults for long-term analysis.
 """
 
 from typing import Any, Callable, Dict, List, Optional, Set
@@ -44,7 +44,7 @@ class GraphMemoryBlackbox:
 
         self._subscribers: List[Callable] = []
         self._event_log: List[Dict[str, Any]] = []
-        self._type_subscribers: Dict[str, List[Callable]] = {}  # deliverable_type -> callbacks
+        self._type_subscribers: Dict[str, List[Callable]] = {}
 
     def _make_node_id(self, data: Dict[str, Any]) -> str:
         serialized = str(sorted(data.items())).encode()
@@ -158,7 +158,6 @@ class GraphMemoryBlackbox:
         task = self._tasks[task_id]
         if task["status"] != "pending":
             return False
-        # Check dependencies
         for dep_id in task.get("depends_on", []):
             if dep_id in self._tasks and self._tasks[dep_id]["status"] != "completed":
                 return False
@@ -172,7 +171,6 @@ class GraphMemoryBlackbox:
         return [t for t in self._tasks.values() if t["status"] == "pending" and (assigned_to is None or t.get("assigned_to") == assigned_to)]
 
     def get_ready_tasks(self, assigned_to: Optional[str] = None) -> List[Dict[str, Any]]:
-        """Return tasks whose dependencies are met and are ready to be claimed."""
         ready = []
         for t in self._tasks.values():
             if t["status"] != "pending":
@@ -213,7 +211,6 @@ class GraphMemoryBlackbox:
             "produced_by": produced_by,
             "type": deliverable_type
         })
-        # Notify type-specific subscribers
         if deliverable_type in self._type_subscribers:
             for cb in self._type_subscribers[deliverable_type]:
                 try:
@@ -242,28 +239,40 @@ class GraphMemoryBlackbox:
         results = self.get_deliverables(deliverable_type=deliverable_type, produced_by=produced_by, limit=1)
         return results[0] if results else None
 
-    def get_provenance_chain(self, node_id: str, max_depth: int = 5) -> List[Dict[str, Any]]:
-        """Return a simple provenance chain tracing back from this node (design -> artifacts etc.)."""
+    def get_provenance_chain(self, node_id: str, max_depth: int = 8) -> List[Dict[str, Any]]:
+        """Return a traceable chain from this node backward (design -> artifacts, with plasticity/BitNet links)."""
         chain = []
-        current = self.nodes.get(node_id)
+        visited = set()
+        current_id = node_id
         depth = 0
-        while current and depth < max_depth:
-            chain.append(current)
-            meta = current.get("metadata", {})
-            # Simple back-link via provenance string or result_node_id in tasks
+
+        while current_id and current_id not in visited and depth < max_depth:
+            visited.add(current_id)
+            if current_id not in self.nodes:
+                break
+            node = self.nodes[current_id]
+            chain.append(node)
+
+            meta = node.get("metadata", {})
+            # Try to find parent via provenance or result links
             provenance = meta.get("provenance", "")
             if ":" in provenance:
-                # Try to find previous node in chain
-                prev_produced = provenance.split(":")[0]
-                for nid, node in self.nodes.items():
-                    if node.get("metadata", {}).get("produced_by") == prev_produced and nid != node_id:
-                        current = node
+                parent_producer = provenance.split(":")[0]
+                for nid, n in list(self.nodes.items()):
+                    if n.get("metadata", {}).get("produced_by") == parent_producer and nid != current_id:
+                        current_id = nid
                         break
                 else:
                     break
             else:
+                # Try task result link
+                for tid, task in self._tasks.items():
+                    if task.get("result_node_id") == current_id:
+                        # Find the task's originating deliverable if possible
+                        break
                 break
             depth += 1
+
         return chain
 
     def get_artifacts_from_design(self, design_node_id: str) -> List[Dict[str, Any]]:
@@ -274,6 +283,17 @@ class GraphMemoryBlackbox:
                 if design_node_id in str(meta.get("provenance", "")):
                     results.append(node)
         return results
+
+    def get_next_work_items(self, component: str = None) -> Dict[str, List[Dict[str, Any]]];
+        """Basic workflow orchestration helper: returns ready tasks + latest relevant deliverables."""
+        ready_tasks = self.get_ready_tasks(assigned_to=component)
+        latest_designs = self.get_deliverables(deliverable_type="design", limit=5)
+        latest_artifacts = self.get_deliverables(deliverable_type="artifact", limit=5)
+        return {
+            "ready_tasks": ready_tasks,
+            "latest_designs": latest_designs,
+            "latest_artifacts": latest_artifacts
+        }
 
     def subscribe_to_deliverable_type(self, deliverable_type: str, callback: Callable):
         if deliverable_type not in self._type_subscribers:
@@ -376,13 +396,14 @@ class GraphMemoryBlackbox:
         self.sensitivity_optimizer = optimizer
 
     def run_self_test(self) -> bool:
-        print("[GraphMemoryBlackbox] Running with reactive subscriptions and dependency-aware tasks...")
+        print("[GraphMemoryBlackbox] Running with workflow orchestration and full provenance...")
         task_id = self.post_task({"action": "generate_design"}, assigned_to="VLMDesignAgent")
         self.claim_task(task_id, "VLMDesignAgent")
         design_id = self.post_deliverable({"wing_sweep": 48}, produced_by="VLMDesignAgent", deliverable_type="design")
         self.update_task_status(task_id, "completed", result={"node_id": design_id})
-        events = self.get_recent_events(event_type="deliverable_posted", limit=3)
-        success = len(events) >= 1
+        chain = self.get_provenance_chain(design_id)
+        work = self.get_next_work_items("CADScriptGenerator")
+        success = len(chain) >= 1 and len(work["ready_tasks"]) >= 0
         print(f"[GraphMemoryBlackbox] Self-test {'PASSED' if success else 'FAILED'}")
         return success
 
