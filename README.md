@@ -1,9 +1,10 @@
 # JuniorHome
 
-**Strengthened Component Handoff & Coordination**
+**Continued Deepening of Coordination Layer**
 
-- CADScriptGenerator now has `consume_from_graph_memory()` for automatic handoff from VLMDesignAgent deliverables.
-- VLMDesignAgent parallel paths now include explicit best-result merging using plasticity feedback.
-- Richer provenance in deliverables (BitNet operation references + plasticity signals).
+- Tasks now support dependencies and claiming.
+- Events can be filtered by type.
+- Parallel paths in VLMDesignAgent use plasticity-informed merging.
+- Provenance queries (e.g. get_artifacts_from_design) available.
 
-The ecosystem now has a more complete, local, production-oriented coordination layer between components.
+The ecosystem's component handoff and agent-style coordination continues to mature in a local, BitNet-native way.

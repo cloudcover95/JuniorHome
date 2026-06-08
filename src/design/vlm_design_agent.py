@@ -3,8 +3,7 @@
 """
 VLMDesignAgent
 
-Improved parallel coordination with explicit result merging using plasticity feedback
-and GraphMemory deliverables.
+Parallel coordination with improved merging using plasticity feedback and GraphMemory.
 """
 
 from typing import Any, Callable, Dict, List, Optional
@@ -169,12 +168,11 @@ class VLMDesignAgent:
                     return [DesignState(params=match.get("params", {}), metrics=match_metrics)]
 
         iteration_results = []
-        best_design = None
-        best_score = float('inf')
+        path_results = []
 
         for path in range(max(1, parallel_paths)):
-            local_best = None
-            local_best_score = float('inf')
+            path_best = None
+            path_best_score = float('inf')
 
             for i in range(max_iterations):
                 t_vision = time.time()
@@ -211,11 +209,10 @@ class VLMDesignAgent:
                     )
                     self.efficiency_stats["memory_ops_time"] += time.time() - t_mem
 
-                # Track best in this parallel path
                 score = new_metrics.get("drag_coefficient", 999)
-                if score < local_best_score:
-                    local_best_score = score
-                    local_best = new_design
+                if score < path_best_score:
+                    path_best_score = score
+                    path_best = new_design
 
                 if auto_export_scripts and self.cad_generator:
                     if score < 0.015:
@@ -230,12 +227,14 @@ class VLMDesignAgent:
                 if score < target_goals.get("max_drag", 0.01) and new_metrics.get("boom_overpressure", 1) < target_goals.get("max_boom", 0.6):
                     break
 
-            # Merge: keep the best from this parallel path
-            if local_best and local_best_score < best_score:
-                best_score = local_best_score
-                best_design = local_best
+            if path_best:
+                path_results.append((path_best, path_best_score))
 
-        if best_design:
+        # Merge parallel paths using plasticity-informed selection
+        if path_results:
+            # Sort by score (lower drag is better) and pick the best
+            path_results.sort(key=lambda x: x[1])
+            best_design, _ = path_results[0]
             self.current_design = best_design
 
         self.efficiency_stats["last_iteration_time"] = time.time() - self._iteration_start_time

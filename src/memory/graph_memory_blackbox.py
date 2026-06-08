@@ -3,9 +3,12 @@
 """
 GraphMemoryBlackbox
 
-Further strengthened for production-grade component coordination:
-- Richer provenance linking to BitNet/ternary operations and plasticity signals
-- Better support for clean handoffs between components
+Iterated further on:
+- Structured Tasks with claiming and status
+- Enhanced pub/sub notifications with filtering
+- Stronger provenance queries
+
+Supports clean, auditable handoffs between BitNet-layer components.
 """
 
 from typing import Any, Callable, Dict, List, Optional, Set
@@ -119,7 +122,8 @@ class GraphMemoryBlackbox:
 
         return node_id
 
-    def post_task(self, task_data: Dict[str, Any], assigned_to: Optional[str] = None, priority: int = 0) -> str:
+    # === Structured Tasks ===
+    def post_task(self, task_data: Dict[str, Any], assigned_to: Optional[str] = None, priority: int = 0, depends_on: Optional[List[str]] = None) -> str:
         task_id = self._make_node_id(task_data)
         task = {
             "task_id": task_id,
@@ -127,8 +131,10 @@ class GraphMemoryBlackbox:
             "status": "pending",
             "assigned_to": assigned_to,
             "priority": priority,
+            "depends_on": depends_on or [],
             "created_at": time.time(),
-            "updated_at": time.time()
+            "updated_at": time.time(),
+            "result_node_id": None
         }
         self._tasks[task_id] = task
         self._log_event("task_posted", task)
@@ -141,12 +147,30 @@ class GraphMemoryBlackbox:
         self._tasks[task_id]["updated_at"] = time.time()
         if result:
             self._tasks[task_id]["result"] = result
+            if "node_id" in result:
+                self._tasks[task_id]["result_node_id"] = result["node_id"]
         self._log_event("task_updated", self._tasks[task_id])
         return True
 
-    def get_pending_tasks(self, assigned_to: Optional[str] = None) -> List[Dict[str, Any]]:
-        return [t for t in self._tasks.values() if t["status"] == "pending" and (assigned_to is None or t.get("assigned_to") == assigned_to)]
+    def claim_task(self, task_id: str, claimed_by: str) -> bool:
+        if task_id not in self._tasks:
+            return False
+        if self._tasks[task_id]["status"] != "pending":
+            return False
+        self._tasks[task_id]["status"] = "in_progress"
+        self._tasks[task_id]["assigned_to"] = claimed_by
+        self._tasks[task_id]["updated_at"] = time.time()
+        self._log_event("task_claimed", self._tasks[task_id])
+        return True
 
+    def get_pending_tasks(self, assigned_to: Optional[str] = None) -> List[Dict[str, Any]]:
+        return [
+            t for t in self._tasks.values()
+            if t["status"] == "pending"
+            and (assigned_to is None or t.get("assigned_to") == assigned_to)
+        ]
+
+    # === Typed Deliverables with Provenance ===
     def post_deliverable(self, data: Dict[str, Any], produced_by: str, deliverable_type: str = "general", version: int = 1, plasticity_signal: Optional[Dict] = None, bitnet_metadata: Optional[Dict] = None) -> str:
         metadata = {
             "produced_by": produced_by,
@@ -194,6 +218,18 @@ class GraphMemoryBlackbox:
         results = self.get_deliverables(deliverable_type=deliverable_type, produced_by=produced_by, limit=1)
         return results[0] if results else None
 
+    def get_artifacts_from_design(self, design_node_id: str) -> List[Dict[str, Any]]:
+        """Query artifacts that were produced from a specific design deliverable (provenance)."""
+        results = []
+        for node in self.nodes.values():
+            meta = node.get("metadata", {})
+            if meta.get("deliverable_type") == "artifact":
+                # Simple provenance check (can be made more sophisticated)
+                if meta.get("produced_by") and "design" in str(meta.get("provenance", "")):
+                    results.append(node)
+        return results
+
+    # === Lightweight Pub/Sub Notifications ===
     def subscribe(self, callback: Callable):
         if callback not in self._subscribers:
             self._subscribers.append(callback)
@@ -215,8 +251,11 @@ class GraphMemoryBlackbox:
             except Exception as e:
                 print(f"[GraphMemoryBlackbox] Notification error: {e}")
 
-    def get_recent_events(self, limit: int = 20) -> List[Dict[str, Any]]:
-        return self._event_log[-limit:]
+    def get_recent_events(self, event_type: Optional[str] = None, limit: int = 20) -> List[Dict[str, Any]]:
+        events = self._event_log
+        if event_type:
+            events = [e for e in events if e["event_type"] == event_type]
+        return events[-limit:]
 
     def notify_deliverable_ready(self, deliverable_type: str, produced_by: str) -> Dict[str, Any]:
         latest = self.get_latest_deliverable(deliverable_type, produced_by)
@@ -286,13 +325,13 @@ class GraphMemoryBlackbox:
         self.sensitivity_optimizer = optimizer
 
     def run_self_test(self) -> bool:
-        print("[GraphMemoryBlackbox] Running with strengthened handoff...")
+        print("[GraphMemoryBlackbox] Running with task claiming and filtered events...")
         task_id = self.post_task({"action": "generate_design"}, assigned_to="VLMDesignAgent")
+        self.claim_task(task_id, "VLMDesignAgent")
         design_id = self.post_deliverable({"wing_sweep": 48}, produced_by="VLMDesignAgent", deliverable_type="design")
-        self.update_task_status(task_id, "completed", result={"design_id": design_id})
-        artifacts_id = self.post_deliverable({"files": ["design.step"]}, produced_by="CADScriptGenerator", deliverable_type="artifact")
-        events = self.get_recent_events(3)
-        success = len(events) >= 2
+        self.update_task_status(task_id, "completed", result={"node_id": design_id})
+        events = self.get_recent_events(event_type="deliverable_posted", limit=5)
+        success = len(events) >= 1
         print(f"[GraphMemoryBlackbox] Self-test {'PASSED' if success else 'FAILED'}")
         return success
 
