@@ -1,14 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "JuniorAGI"
+name = "juniorhome"
 version = "0.1.0"
-description = "PhysioManifold-AGI Sovereign OS"
-requires-python = ">=3.12"
-dependencies = [
-    "mlx==0.29.3",
-    "giotto-tda==0.6.0",
-    "numpy==2.0.2",
-    "polars==1.36.1",
-    "fastapi==0.128.8",
-    "pydantic==2.13.2",
-    "websockets==15.0.1"
+description = "JuniorCloud sovereign edge intelligence ecosystem - VLM Design Agent, Graph Memory, BitNet quantization, neuromorphic plasticity, and CAD automation"
+authors = [{name = "JuniorCloud LLC", email = "dev@juniorcloud.dev"}]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "black",
+    "ruff",
+    "mypy",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 88
+
+[tool.ruff]
+target-version = "py310"

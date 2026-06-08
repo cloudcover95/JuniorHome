@@ -1,11 +1,13 @@
 # JuniorHome
 
-**Current Ecosystem State**
+**Production-Grade Cross-Platform Support Added**
 
-**Continued progress on all fronts**
+- GitHub Actions CI now runs on **Linux, macOS, and Windows** across Python 3.10–3.12.
+- Core modules (VLMDesignAgent, GraphMemoryBlackbox, CADScriptGenerator, PlasticityEngine) are being hardened for multi-platform deployment.
+- Packaging improved with proper pyproject.toml for PyPI-ready distribution.
 
-- SpikingPlasticityModule has deeper spike-timing modulation of eligibility.
-- VLMDesignAgent has more granular phase timing in efficiency reports.
-- CADScriptGenerator now supports simulation_script generation (new JuniorPython feature).
+The ecosystem is moving toward production deployment readiness while maintaining sovereign, efficient, black-box design.
 
-The ecosystem continues to advance with tighter neuromorphic, benchmarking, quantization, and automation integration.
+**Supported Platforms**: Linux, macOS (Apple Silicon), Windows
+
+**Next Steps**: Full test coverage, conditional dependencies (MLX on Apple Silicon, fallbacks elsewhere), and deployment tooling.
