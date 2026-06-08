@@ -2,14 +2,10 @@
 
 **Current Ecosystem State**
 
-**Neuromorphic hardware accelerator investigation integrated**
+**Continued progress on all fronts**
 
-New `NeuromorphicInterface` blackbox:
-- Spike encoding from continuous data
-- Event-driven processing
-- Compatible with existing SpikingPlasticityModule, RealDataRunner, and GraphMemory
-- Designed with future mapping to real neuromorphic chips (Loihi 2, Akida, etc.) in mind
+- SpikingPlasticityModule has deeper spike-timing modulation of eligibility.
+- VLMDesignAgent has more granular phase timing in efficiency reports.
+- CADScriptGenerator now supports simulation_script generation (new JuniorPython feature).
 
-This prepares the ecosystem for true neuromorphic silicon while maintaining the modular, sovereign, and efficient design philosophy.
-
-The stack is advancing toward hardware-agnostic neuromorphic intelligence.
+The ecosystem continues to advance with tighter neuromorphic, benchmarking, quantization, and automation integration.
