@@ -1,19 +1,18 @@
 # JuniorHome
 
-**JuniorClimbs Production Development Started**
+**JuniorClimbs Production Development - Phase 1 Progress**
 
-We have begun building the production-grade core of JuniorClimbs **inside JuniorHome** so users have full business tools available immediately.
+We are building a full production-grade climbing gym management system **inside JuniorHome** so users have working business tools immediately.
 
-**Current Status (Phase 1 - Core Business Operations)**
+### Current Capabilities (Production Grade)
 
-- Core data models: `Member`, `Transaction`, `Waiver`, `CheckIn`, `WallArea`, `MaintenanceLog`
-- `Ledger`: Real transaction recording with tax amounts and balance updates
-- `MemberManager`: Member creation, waiver signing, check-in, balance management
+- **Member System**: Create members, manage status, balances, waivers
+- **POS + Ledger**: Record sales (memberships, day passes, merch, food/drink) with automatic tax and balance updates
+- **Safety & Operations**: Wall/area status management + maintenance logging
+- **Reporting**: Daily revenue, member activity, expiring memberships
 
-**Next Priorities**
-- POS flow integration with Ledger
-- Safety zone / WallArea management
-- Basic reporting
-- Simple Linux-friendly API/UI for beta testing
+### Ready for Next Steps
+- Simple CLI or minimal web UI for gym staff beta testing on Linux
+- Integration points with GraphMemoryBlackbox for provenance-rich workflows
 
-This keeps everything in one place until JuniorClimbs proves itself in a real gym environment.
+This foundation is designed to support real business operations from day one.
