@@ -1,23 +1,20 @@
 # JuniorHome
 
-**JuniorClimbs - Production Live Beta Progress**
+**JuniorClimbs Production Live Beta - Web UI Focus**
 
-We are aggressively building JuniorClimbs toward a **production live beta** that can be deployed and tested at a real climbing gym on Linux.
+We have shifted focus to a clean **point-and-click web interface** for regular gym staff (no terminal required for daily operations).
 
-**Current Beta-Ready Capabilities**
-- Full member + digital waiver flow (QR → mobile → all Yes required)
-- Seamless check-in for returning members
-- POS + tax-aware Ledger with balance updates
-- Employee scheduling (correct break rules + legend)
-- Events & sponsorships tracking
-- Improved CLI for daily gym operations
-- Docker + docker-compose for easy Linux deployment
-- Notification stub (configurable per employee)
+### Current Web UI Screens (Beta)
+- Dashboard
+- Member Check-in (simple form)
+- Point of Sale (POS)
+- Safety Zones (status updates)
+- Members list
 
-**Architecture**
-- Lightning fast by design
-- BitNet 1.58/3.0 ready for any future smart features
-- Strong provenance and history tracking
-- Minimal dependencies
+The interface is intentionally minimal, fast, and designed for real staff use on Linux.
 
-Ready for real gym testing. Next focus: more CLI polish + basic web admin UI.
+**Deployment**
+- Run with Docker: `docker compose up`
+- Access at http://localhost:8000
+
+Regular gym staff use the web UI. CLI remains available only for IT/power users.

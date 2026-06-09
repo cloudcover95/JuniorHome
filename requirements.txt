@@ -1,6 +1,7 @@
 # path: requirements.txt
 
+fastapi
+uvicorn[standard]
+jinja2
 pydantic>=2.0
-qrcode[pil]>=7.4; extra == 'qr'
-# Future BitNet
-# mlx ; platform_system == "Darwin"
+qrcode[pil]>=7.4

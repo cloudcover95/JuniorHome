@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 40px; background: #f8f9fa; }
+        .card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 500px; }
+        input, button { padding: 12px; margin: 8px 0; width: 100%; box-sizing: border-box; }
+        button { background: #0066cc; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Member Check-in</h2>
+        <form method="post" action="/checkin">
+            <input type="text" name="member_id" placeholder="Member ID or Name" required>
+            <button type="submit">Check In</button>
+        </form>
+        <p><a href="/">Back to Dashboard</a></p>
+    </div>
+</body>
+</html>
