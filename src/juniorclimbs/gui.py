@@ -3,8 +3,8 @@
 """
 JuniorClimbs Desktop GUI
 
-Local desktop software suite for gym staff operations.
-Point-and-click + keyboard focused. Member portal is separate web-based.
+Local desktop software suite for gym staff.
+Point-and-click focused. Member portal is web-based and can integrate with existing gym site.
 """
 
 import customtkinter as ctk
@@ -114,11 +114,10 @@ class JuniorClimbsApp(ctk.CTk):
             ctk.CTkLabel(self.context_content, text="Notifications", font=("Arial", 11)).pack(pady=(10, 4))
             ctk.CTkLabel(self.context_content, text="No new notifications", text_color="gray").pack()
 
-            # Notification preference
             ctk.CTkLabel(self.context_content, text="Notification Preference", font=("Arial", 11)).pack(pady=(12, 4))
             self.notif_pref = ctk.CTkComboBox(self.context_content, values=["email", "slack", "telegram"], width=160)
             self.notif_pref.pack()
-            self.notif_pref.set(staff.notification_preference if hasattr(staff, 'notification_preference') else "email")
+            self.notif_pref.set(getattr(staff, 'notification_preference', 'email'))
             ctk.CTkButton(self.context_content, text="Save Preference", width=140,
                           command=lambda: self._save_notif_pref(staff)).pack(pady=6)
 
@@ -126,8 +125,7 @@ class JuniorClimbsApp(ctk.CTk):
             ctk.CTkLabel(self.context_content, text="No active context", text_color="gray").pack(pady=30)
 
     def _save_notif_pref(self, staff):
-        pref = self.notif_pref.get()
-        staff.notification_preference = pref
+        staff.notification_preference = self.notif_pref.get()
         self.show_status("Preference saved")
 
     def _top_up_from_context(self, member_id):
@@ -162,7 +160,7 @@ class JuniorClimbsApp(ctk.CTk):
         self.show_status("Shift started")
 
     def _check_for_updates(self):
-        messagebox.showinfo("Updates", "Checking for updates...\n\nOwner-controlled updates will be available in a future version.")
+        messagebox.showinfo("Updates", "Checking for updates...\n\nThis is owner-controlled. Network/internet updates can be enabled by the gym owner in a future version.")
 
     def clear_main_area(self):
         for w in self.main_area.winfo_children():
@@ -177,7 +175,7 @@ class JuniorClimbsApp(ctk.CTk):
     # ==================== CHECK-IN + WAIVER ====================
     def show_checkin(self):
         self.clear_main_area()
-        ctk.CTkLabel(self.main_area, text="Member Check-in (Seamless)", font=("Arial", 18, "bold")).pack(pady=10)
+        ctk.CTkLabel(self.main_area, text="Member Check-in (Seamless Scan)", font=("Arial", 18, "bold")).pack(pady=10)
 
         self.checkin_entry = ctk.CTkEntry(self.main_area, placeholder_text="Scan or type Member ID/Name", width=420, height=40)
         self.checkin_entry.pack(pady=8)
@@ -196,12 +194,12 @@ class JuniorClimbsApp(ctk.CTk):
                 break
 
         if not member:
-            messagebox.showinfo("Not Found", "Member not found. New members must complete waiver.")
+            messagebox.showinfo("Not Found", "Member not found. New members must complete waiver first.")
             return
 
         has_waiver = any(w.member_id == member.id for w in self.wm.waivers.values())
         if not has_waiver:
-            messagebox.showwarning("Waiver Required", "Complete the liability waiver first.")
+            messagebox.showwarning("Waiver Required", "This member must complete the liability waiver first.")
             self.show_waiver_flow(member)
             return
 
@@ -220,7 +218,7 @@ class JuniorClimbsApp(ctk.CTk):
             "I am physically capable of participating in climbing activities.",
             "I understand the inherent risks involved in climbing and bouldering.",
             "I will follow all staff instructions and posted safety guidelines.",
-            "I accept full responsibility for my own safety and any injuries sustained."
+            "I accept full responsibility for my own safety and any injuries."
         ]
 
         self.waiver_vars = {}
@@ -254,7 +252,7 @@ class JuniorClimbsApp(ctk.CTk):
         self.show_status("Waiver completed successfully. Member activated.")
         self.show_checkin()
 
-    # ==================== POS ====================
+    # ==================== POS + PAYMENT + HARD DECLINE SIM ====================
     def show_pos(self):
         self.clear_main_area()
         ctk.CTkLabel(self.main_area, text="Point of Sale", font=("Arial", 18, "bold")).pack(pady=10)
@@ -296,6 +294,13 @@ class JuniorClimbsApp(ctk.CTk):
 
         method = self.pay_method.get()
         pm = PaymentMethod.ACCOUNT_BALANCE if method == "Account Balance" else PaymentMethod.CASH
+
+        member = self.mm.get_member(mid)
+        if member and member.current_balance < amt and method == "Account Balance":
+            # Hard decline simulation
+            messagebox.showerror("Declined", "Insufficient balance. Transaction declined.")
+            return
+
         self.pos.sell_to_member(mid, TransactionType.OTHER, amt, pm)
         self.show_status(f"Sale completed via {method}")
 
@@ -330,7 +335,7 @@ class JuniorClimbsApp(ctk.CTk):
             pass
 
     def _renew_membership(self, member_id):
-        if messagebox.askyesno("Confirm", "Renew this membership for 1 month?"):
+        if messagebox.askyesno("Confirm Renewal", "Renew this membership for 1 month?"):
             self.mm.auto_renew_membership(member_id, months=1)
             self.show_status("Membership renewed for 1 month.")
             self.show_members()
@@ -363,15 +368,15 @@ class JuniorClimbsApp(ctk.CTk):
             name = emp.full_name if emp else "You"
             ctk.CTkLabel(self.main_area, text=f"{name} | {s.start_time.strftime('%b %d %H:%M')} → {s.end_time.strftime('%H:%M')} | {s.get_break_info()}").pack(anchor="w", pady=2, padx=20)
 
-        ctk.CTkButton(self.main_area, text="Add New Shift", command=self._add_shift_dialog, width=160).pack(pady=15)
+        ctk.CTkButton(self.main_area, text="Add New Shift", command=self._add_shift_dialog, width=160).pack(pady=12)
 
     def _add_shift_dialog(self):
         if not self.current_staff_id:
-            messagebox.showwarning("Sign In", "Please sign in for your shift first.")
+            messagebox.showwarning("Sign In Required", "Please sign in for your shift first.")
             return
 
-        start_str = ctk.CTkInputDialog(text="Start Time (YYYY-MM-DD HH:MM):", title="Start Time").get_input()
-        end_str = ctk.CTkInputDialog(text="End Time (YYYY-MM-DD HH:MM):", title="End Time").get_input()
+        start_str = ctk.CTkInputDialog(text="Start Time (YYYY-MM-DD HH:MM):", title="Start").get_input()
+        end_str = ctk.CTkInputDialog(text="End Time (YYYY-MM-DD HH:MM):", title="End").get_input()
 
         try:
             start = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
@@ -382,7 +387,7 @@ class JuniorClimbsApp(ctk.CTk):
 
         stype = ShiftType.EIGHT_HOUR if (end - start).total_seconds() > 6*3600 else ShiftType.FOUR_HOUR
         self.sm.create_shift(self.current_staff_id, start, end, stype)
-        self.show_status("Shift added")
+        self.show_status("Shift added successfully")
         self.show_my_schedule()
 
     # ==================== EVENTS ====================
@@ -403,7 +408,7 @@ class JuniorClimbsApp(ctk.CTk):
         if not title: return
 
         etype = ctk.CTkInputDialog(text="Type (booth, sponsorship, meeting...):", title="Type").get_input() or "event"
-        start_str = ctk.CTkInputDialog(text="Start (YYYY-MM-DD HH:MM):", title="Start Time").get_input()
+        start_str = ctk.CTkInputDialog(text="Start Time (YYYY-MM-DD HH:MM):", title="Start").get_input()
 
         try:
             start = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
@@ -421,10 +426,10 @@ class JuniorClimbsApp(ctk.CTk):
         ctk.CTkLabel(self.main_area, text="Reports", font=("Arial", 18, "bold")).pack(pady=10)
 
         daily = self.ledger.get_daily_revenue()
-        ctk.CTkLabel(self.main_area, text=f"Today's Total Revenue: ${daily:.2f}", font=("Arial", 14)).pack(pady=8)
+        ctk.CTkLabel(self.main_area, text=f"Today's Revenue: ${daily:.2f}", font=("Arial", 14)).pack(pady=8)
 
         expiring = len(self.mm.get_members_with_expiring_membership(7))
-        ctk.CTkLabel(self.main_area, text=f"Members expiring in next 7 days: {expiring}", font=("Arial", 14)).pack(pady=4)
+        ctk.CTkLabel(self.main_area, text=f"Members expiring in 7 days: {expiring}", font=("Arial", 14)).pack(pady=4)
 
 
 if __name__ == "__main__":
