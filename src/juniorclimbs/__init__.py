@@ -1,25 +1,18 @@
 # path: src/juniorclimbs/__init__.py
 
 """
-JuniorClimbs - Production Grade Gym Management (inside JuniorHome)
+JuniorClimbs - Efficient, Lightning-Fast Gym Operations Core
 
-Includes full Member, POS, Ledger, Safety, Reporting, and now Digital Waiver system.
+Aligned with BitNet 1.58/3.0 philosophy: lean, sovereign, provenance-rich.
+Includes Member, POS, Safety, Employee Scheduling, Events/Sponsorships.
 """
 
-from .models import (
-    Member,
-    MembershipStatus,
-    Transaction,
-    TransactionType,
-    PaymentMethod,
-    Waiver,
-    CheckIn,
-    WallArea,
-    MaintenanceLog,
-)
+from .models import *
 from .ledger import Ledger
 from .member_manager import MemberManager
 from .pos import POS
 from .safety import SafetyManager
 from .reporting import Reporter
-from .waiver import WaiverManager, WaiverSession, DEFAULT_WAIVER_QUESTIONS
+from .waiver import WaiverManager, WaiverSession
+from .employee import Employee, Shift, ScheduleManager
+from .events import Event, EventManager

@@ -1,23 +1,21 @@
 # JuniorHome
 
-**JuniorClimbs - Lightning Fast Production Development**
+**JuniorClimbs Architecture - Lightning Fast + Production Grade**
 
-We are building JuniorClimbs inside JuniorHome with a strong focus on **lightning-fast** business operations.
+JuniorClimbs is being built with the same efficient, sovereign principles as the rest of the JuniorCloud ecosystem.
 
-Core philosophy: Use BitNet 1.58-bit (and 3.0 where needed) for any inference/recommendation paths to keep everything extremely efficient on edge hardware.
+**Core Philosophy**
+- Default to maximum efficiency (BitNet 1.58-bit where inference helps business logic).
+- Strong provenance and history tracking on every important action.
+- Lean modules that can run on edge hardware.
+- Real rigid business operations (members, POS, safety, employees, events).
 
-### Linux Beta Readiness (Priority A)
-- Simple CLI for quick testing on Linux
-- Docker + docker-compose skeleton ready
-- Print-friendly QR code generation for waivers (via qrcode library)
+**Current Capabilities**
+- Member + Waiver (QR mobile flow, minimal data)
+- POS + Tax-aware Ledger
+- Safety zones + Maintenance
+- Employee scheduling (8hr = 30min lunch, others = 15min break + legend)
+- Events & Sponsorships (booths, partner incentives, company meetings)
+- CLI + Docker skeleton for Linux beta
 
-### Business Operations (Priority B)
-- Auto-renewal logic implemented
-- Member history tracking (waivers, transactions, check-ins linked)
-- Seamless check-in for returning members
-
-### Safety & Operations (Priority C)
-- Robust wall/area status with staff override
-- Maintenance logs tied to specific areas
-
-The system is designed from the ground up to be fast, sovereign, and production-grade for real gym use.
+Phase 2 (Linux Beta) and employee/event features are actively in progress.
