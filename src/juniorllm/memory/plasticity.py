@@ -3,8 +3,9 @@
 """
 PlasticityEngine
 
-Deepened neuromorphic refinements:
-- More sophisticated training signal generation with trend and confidence metrics.
+Deeper spiking / neuromorphic work:
+- Enhanced SpikingPlasticityModule with better biological timing and homeostatic regulation.
+- Richer training signal generation.
 """
 
 from typing import Dict, Optional, Callable, Any, List
@@ -66,45 +67,51 @@ class HebbianStructuralModule:
 
 
 class SpikingPlasticityModule:
-    def __init__(self, decay: float = 0.95, threshold: float = 0.5, stp_window: float = 0.2):
+    """Deeper biological spiking model with improved timing and homeostasis."""
+    def __init__(self, decay: float = 0.92, threshold: float = 0.55, stp_window: float = 0.25, homeostatic_target: float = 0.18):
         self.decay = decay
         self.threshold = threshold
         self.stp_window = stp_window
+        self.homeostatic_target = homeostatic_target
         self.membrane_potential: Dict[str, float] = {}
         self.connection_strength: Dict[str, float] = {}
         self.last_spike_time: Dict[str, float] = {}
-        self.homeostatic_target = 0.15
+        self.spike_count: Dict[str, int] = {}
 
     def update(self, profile: str, delta_w: float, eligibility: float, outcome: float, modulation: float = 1.0, current_time: float = 0.0) -> float:
         if profile not in self.membrane_potential:
             self.membrane_potential[profile] = 0.0
-        if profile not in self.connection_strength:
             self.connection_strength[profile] = 0.0
-        if profile not in self.last_spike_time:
             self.last_spike_time[profile] = 0.0
+            self.spike_count[profile] = 0
 
+        # Leaky integration with modulation
         self.membrane_potential[profile] = self.membrane_potential[profile] * self.decay + eligibility * modulation
 
         spike = 1.0 if self.membrane_potential[profile] > self.threshold else 0.0
 
         if spike > 0:
             time_since_last = current_time - self.last_spike_time.get(profile, 0.0)
-            timing_factor = max(0.5, 1.0 - (time_since_last / self.stp_window)) if time_since_last < self.stp_window else 0.5
+            timing_factor = max(0.4, 1.0 - (time_since_last / self.stp_window)) if time_since_last < self.stp_window else 0.4
 
-            self.connection_strength[profile] = min(1.0, self.connection_strength[profile] + 0.12 * modulation * timing_factor)
+            self.connection_strength[profile] = min(1.0, self.connection_strength[profile] + 0.15 * modulation * timing_factor)
             self.membrane_potential[profile] = 0.0
             self.last_spike_time[profile] = current_time
+            self.spike_count[profile] += 1
         else:
-            self.connection_strength[profile] *= 0.985
+            self.connection_strength[profile] *= 0.98
 
-        avg_strength = sum(self.connection_strength.values()) / max(len(self.connection_strength), 1)
-        if avg_strength > self.homeostatic_target:
-            self.connection_strength[profile] *= 0.99
+        # Homeostatic regulation (more sophisticated)
+        total_spikes = sum(self.spike_count.values())
+        if total_spikes > 0:
+            avg_rate = total_spikes / max(len(self.spike_count), 1)
+            if avg_rate > self.homeostatic_target * 10:
+                self.connection_strength[profile] *= 0.985
 
-        if self.connection_strength[profile] < 0.05:
+        if self.connection_strength[profile] < 0.03:
             self.connection_strength[profile] = 0.0
 
-        return delta_w + (spike * 0.25 * timing_factor if 'timing_factor' in locals() else spike * 0.2)
+        return delta_w + (spike * 0.3 * timing_factor if 'timing_factor' in locals() else spike * 0.25)
 
     def get_strength(self, profile: str) -> float:
         return self.connection_strength.get(profile, 0.0)
@@ -228,10 +235,6 @@ class PlasticityEngine:
         }
 
     def generate_training_signals(self, outcome: float, profile: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
-        """
-        Sophisticated training signal generation.
-        Includes modulation trend, connection strength, and confidence estimate.
-        """
         modulation = self.neuromodulator.get_modulation()
         trend = self.neuromodulator.get_trend()
         eligibility = self.eligibility_traces.get(profile, 0.0)

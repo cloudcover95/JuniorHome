@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "juniorhome"
-version = "0.1.0"
-description = "JuniorCloud sovereign edge intelligence ecosystem"
+version = "0.2.0"
+description = "JuniorCloud sovereign edge intelligence ecosystem - BitNet, plasticity, coordination"
 authors = [{name = "JuniorCloud LLC"}]
 readme = "README.md"
 license = {text = "MIT"}
@@ -20,6 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Visualization",
 ]
 
 [project.optional-dependencies]
@@ -28,8 +29,11 @@ dev = [
     "black>=23.0",
     "ruff>=0.4",
 ]
-# Note: MLX is Apple Silicon only. Other platforms fall back to numpy.
-# Add platform-specific extras in future if needed.
+# Platform-specific notes:
+# - MLX: Apple Silicon / macOS only (M-series)
+# - For CPU-only or NVIDIA: use numpy + CUDA paths in future BitNet backends
+apple-silicon = ["mlx>=0.15"]
+cpu = ["numpy>=1.24"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

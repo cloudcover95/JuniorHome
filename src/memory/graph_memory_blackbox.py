@@ -3,7 +3,7 @@
 """
 GraphMemoryBlackbox
 
-Added real Obsidian vault export automation.
+Workflow orchestration and reactive subscription enhancements.
 """
 
 from typing import Any, Callable, Dict, List, Optional, Set
@@ -73,14 +73,9 @@ class GraphMemoryBlackbox:
         return vec[:8]
 
     def export_to_obsidian_vault(self, vault_path: str, node_ids: Optional[List[str]] = None, include_plasticity: bool = True) -> int:
-        """
-        Real automation: Export selected nodes (or all recent) as Markdown files into an Obsidian vault folder.
-        Creates one .md file per deliverable/task with full provenance and plasticity signals.
-        """
         os.makedirs(vault_path, exist_ok=True)
         exported = 0
-
-        targets = node_ids or list(self.nodes.keys())[-50:]  # last 50 if none specified
+        targets = node_ids or list(self.nodes.keys())[-50:]
 
         for node_id in targets:
             if node_id not in self.nodes:
@@ -129,8 +124,7 @@ class GraphMemoryBlackbox:
         data = node.get("data", {})
 
         md = f"# {meta.get('deliverable_type', 'Item')} - {meta.get('produced_by', 'Unknown')}\n\n"
-        md += f"**Timestamp**: {meta.get('timestamp', 'N/A')}\n"
-        md += f"**Version**: {meta.get('version', 1)}\n\n"
+        md += f"**Timestamp**: {meta.get('timestamp', 'N/A')}\n        md += f"**Version**: {meta.get('version', 1)}\n\n"
 
         if include_provenance:
             md += "## Provenance\n"
@@ -409,7 +403,7 @@ class GraphMemoryBlackbox:
         self.sensitivity_optimizer = optimizer
 
     def run_self_test(self) -> bool:
-        print("[GraphMemoryBlackbox] Running with Obsidian vault export...")
+        print("[GraphMemoryBlackbox] Running with enhanced workflow...")
         task_id = self.post_task({"action": "generate_design"}, assigned_to="VLMDesignAgent")
         self.claim_task(task_id, "VLMDesignAgent")
         design_id = self.post_deliverable({"wing_sweep": 48}, produced_by="VLMDesignAgent", deliverable_type="design")

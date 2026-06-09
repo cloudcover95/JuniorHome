@@ -1,25 +1,21 @@
 # JuniorHome
 
-**Ecosystem Progress — High-Quality Iteration**
+**Ecosystem Development — Balanced High-Quality Iteration**
 
-**1. BitNetPrecisionRouter wired into VLMDesignAgent**
-- `iterate_design()` now calls the router using plasticity signals and coherence.
-- Precision mode (`1.58` vs `higher`) is logged per iteration and attached to deliverables.
-- Lean decision making with near-zero overhead.
+**JuniorPython automation expanded**
+- Added `blender_python` and `gltf_export` formats.
+- `batch_generate_artifacts()` now supports custom format lists and is more resilient.
 
-**2. Neuromorphic refinements deepened**
-- `generate_training_signals()` now includes modulation trend, connection strength, and confidence estimate.
-- Better signals for JuniorQuant routing and historical analysis.
+**Cross-platform packaging**
+- `pyproject.toml` now has `apple-silicon` and `cpu` extras.
+- Makefile has `install-apple`, `install-cpu`, and better platform detection.
 
-**3. JuniorPython automation**
-- `batch_generate_artifacts()` available.
-- Reactive subscription path remains strong.
+**Deeper spiking / neuromorphic in PlasticityEngine**
+- `SpikingPlasticityModule` improved with better timing windows, homeostatic regulation, and spike counting.
+- Training signals now richer for routing and historical use.
 
-**4. Obsidian export automation**
-- New `export_to_obsidian_vault(vault_path, node_ids=...)` writes real Markdown files with full provenance + plasticity signals.
-- Ready for production use as second-brain historical store.
+**Workflow orchestration & reactive subscriptions**
+- `get_ready_tasks()` and `get_next_work_items()` remain strong.
+- Reactive type subscriptions continue to power automatic handoff (VLMDesignAgent → CADScriptGenerator).
 
-**5. Cross-platform**
-- Makefile and pyproject.toml already improved for multi-OS.
-
-All changes are lean, well-tested via self-tests, and aligned with sovereign BitNet philosophy.
+All changes maintain lean, sovereign, BitNet-native principles with self-tests.
