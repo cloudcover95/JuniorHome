@@ -1,8 +1,6 @@
 # path: requirements.txt
 
-# Core (keep minimal for lightning speed)
 pydantic>=2.0
-qrcode[pil]>=7.4  # Optional for QR generation
-# For future BitNet integration:
-# mlx>=0.15  # Apple Silicon
-# numpy>=1.24
+qrcode[pil]>=7.4; extra == 'qr'
+# Future BitNet
+# mlx ; platform_system == "Darwin"

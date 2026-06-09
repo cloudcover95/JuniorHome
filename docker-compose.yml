@@ -8,7 +8,11 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./data:/app/data
+      - juniorclimbs_data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - NOTIFICATION_CHANNEL=email  # email | slack | telegram
     restart: unless-stopped
+
+volumes:
+  juniorclimbs_data:
