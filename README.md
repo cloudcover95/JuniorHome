@@ -1,21 +1,19 @@
 # JuniorHome
 
-**JuniorClimbs - Local Desktop Software Suite (Production Beta Direction)**
+**JuniorClimbs - Local Desktop Software Suite**
 
-We have pivoted to a **local desktop application** model as requested.
+Production-grade local desktop application for climbing gym operations.
 
-- Regular gym staff use a clean point-and-click GUI (CustomTkinter).
-- No web browser required for daily operations.
-- Fully local software suite.
-- Optional network/internet updates controlled by the gym owner.
-- CLI remains available only for IT/power users.
+- Regular staff use the desktop GUI (point & click + keyboard)
+- Only the member-facing portal is web-based (can integrate with existing gym website)
+- Fully local by default with optional owner-controlled updates
 
-**Current GUI Features (Beta)**
-- Check-in
-- Point of Sale
-- Safety Zones
-- Member list
-- Employee Schedule view
-- Events & Sponsorships
+**Current GUI Features**
+- Check-in with member search and waiver enforcement
+- Point of Sale with quick preset buttons
+- Safety zone management
+- Member list with expiry warnings
+- Employee schedule viewing
+- Events & sponsorships
 
-The interface is designed to be fast, simple, and usable by regular staff with mouse + keyboard.
+Strong focus on clean UX, speed, and real business operations.
