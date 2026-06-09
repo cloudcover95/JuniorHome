@@ -1,21 +1,19 @@
 # JuniorHome
 
-**Ecosystem Development — Balanced High-Quality Iteration**
+**JuniorClimbs Production Development Started**
 
-**JuniorPython automation expanded**
-- Added `blender_python` and `gltf_export` formats.
-- `batch_generate_artifacts()` now supports custom format lists and is more resilient.
+We have begun building the production-grade core of JuniorClimbs **inside JuniorHome** so users have full business tools available immediately.
 
-**Cross-platform packaging**
-- `pyproject.toml` now has `apple-silicon` and `cpu` extras.
-- Makefile has `install-apple`, `install-cpu`, and better platform detection.
+**Current Status (Phase 1 - Core Business Operations)**
 
-**Deeper spiking / neuromorphic in PlasticityEngine**
-- `SpikingPlasticityModule` improved with better timing windows, homeostatic regulation, and spike counting.
-- Training signals now richer for routing and historical use.
+- Core data models: `Member`, `Transaction`, `Waiver`, `CheckIn`, `WallArea`, `MaintenanceLog`
+- `Ledger`: Real transaction recording with tax amounts and balance updates
+- `MemberManager`: Member creation, waiver signing, check-in, balance management
 
-**Workflow orchestration & reactive subscriptions**
-- `get_ready_tasks()` and `get_next_work_items()` remain strong.
-- Reactive type subscriptions continue to power automatic handoff (VLMDesignAgent → CADScriptGenerator).
+**Next Priorities**
+- POS flow integration with Ledger
+- Safety zone / WallArea management
+- Basic reporting
+- Simple Linux-friendly API/UI for beta testing
 
-All changes maintain lean, sovereign, BitNet-native principles with self-tests.
+This keeps everything in one place until JuniorClimbs proves itself in a real gym environment.
