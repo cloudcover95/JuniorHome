@@ -1,20 +1,21 @@
 # JuniorHome
 
-**JuniorClimbs Production Live Beta - Web UI Focus**
+**JuniorClimbs - Local Desktop Software Suite (Production Beta Direction)**
 
-We have shifted focus to a clean **point-and-click web interface** for regular gym staff (no terminal required for daily operations).
+We have pivoted to a **local desktop application** model as requested.
 
-### Current Web UI Screens (Beta)
-- Dashboard
-- Member Check-in (simple form)
-- Point of Sale (POS)
-- Safety Zones (status updates)
-- Members list
+- Regular gym staff use a clean point-and-click GUI (CustomTkinter).
+- No web browser required for daily operations.
+- Fully local software suite.
+- Optional network/internet updates controlled by the gym owner.
+- CLI remains available only for IT/power users.
 
-The interface is intentionally minimal, fast, and designed for real staff use on Linux.
+**Current GUI Features (Beta)**
+- Check-in
+- Point of Sale
+- Safety Zones
+- Member list
+- Employee Schedule view
+- Events & Sponsorships
 
-**Deployment**
-- Run with Docker: `docker compose up`
-- Access at http://localhost:8000
-
-Regular gym staff use the web UI. CLI remains available only for IT/power users.
+The interface is designed to be fast, simple, and usable by regular staff with mouse + keyboard.
