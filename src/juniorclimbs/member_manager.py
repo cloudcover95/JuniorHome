@@ -3,14 +3,13 @@
 """
 JuniorClimbs MemberManager
 
-Handles member lifecycle, waivers, balances, and status.
-Production-grade with provenance support.
+Enhanced with auto-renewal, expiry handling, and linked history tracking.
 """
 
 from typing import Dict, Optional, List
 from datetime import datetime, timedelta
 
-from .models import Member, Waiver, MembershipStatus, CheckIn
+from .models import Member, Waiver, MembershipStatus, CheckIn, Transaction
 
 
 class MemberManager:
@@ -18,6 +17,7 @@ class MemberManager:
         self.members: Dict[str, Member] = {}
         self.waivers: Dict[str, Waiver] = {}
         self.checkins: List[CheckIn] = []
+        self.history: Dict[str, List[Dict]] = {}  # member_id -> list of events
 
     def create_member(self, full_name: str, email: Optional[str] = None, phone: Optional[str] = None) -> Member:
         member = Member(
@@ -27,6 +27,8 @@ class MemberManager:
             status=MembershipStatus.PENDING,
         )
         self.members[member.id] = member
+        self.history[member.id] = []
+        self._log_event(member.id, "member_created", {"full_name": full_name})
         return member
 
     def get_member(self, member_id: str) -> Optional[Member]:
@@ -44,10 +46,10 @@ class MemberManager:
         )
         self.waivers[waiver.id] = waiver
 
-        # Mark member as active once they have a signed waiver
         if member.status == MembershipStatus.PENDING:
             member.status = MembershipStatus.ACTIVE
 
+        self._log_event(member_id, "waiver_signed", {"waiver_id": waiver.id})
         return waiver
 
     def update_balance(self, member_id: str, amount: float, reason: str = "") -> bool:
@@ -55,6 +57,7 @@ class MemberManager:
         if not member:
             return False
         member.current_balance += amount
+        self._log_event(member_id, "balance_updated", {"amount": amount, "reason": reason})
         return True
 
     def check_in(self, member_id: str, method: str = "manual") -> Optional[CheckIn]:
@@ -67,6 +70,7 @@ class MemberManager:
             method=method,
         )
         self.checkins.append(checkin)
+        self._log_event(member_id, "checkin", {"method": method})
         return checkin
 
     def get_active_members(self) -> List[Member]:
@@ -79,3 +83,29 @@ class MemberManager:
             m for m in self.members.values()
             if m.membership_expires and m.membership_expires <= threshold
         ]
+
+    def auto_renew_membership(self, member_id: str, months: int = 1) -> bool:
+        member = self.get_member(member_id)
+        if not member:
+            return False
+
+        if member.membership_expires:
+            member.membership_expires += timedelta(days=30 * months)
+        else:
+            member.membership_expires = datetime.utcnow() + timedelta(days=30 * months)
+
+        member.status = MembershipStatus.ACTIVE
+        self._log_event(member_id, "auto_renewed", {"months": months})
+        return True
+
+    def _log_event(self, member_id: str, event_type: str, data: Dict):
+        if member_id not in self.history:
+            self.history[member_id] = []
+        self.history[member_id].append({
+            "timestamp": datetime.utcnow().isoformat(),
+            "event": event_type,
+            "data": data
+        })
+
+    def get_member_history(self, member_id: str) -> List[Dict]:
+        return self.history.get(member_id, [])

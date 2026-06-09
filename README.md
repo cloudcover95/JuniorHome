@@ -1,23 +1,23 @@
 # JuniorHome
 
-**JuniorClimbs - Production Development Update**
+**JuniorClimbs - Lightning Fast Production Development**
 
-We are building a complete production-grade climbing gym management system inside JuniorHome.
+We are building JuniorClimbs inside JuniorHome with a strong focus on **lightning-fast** business operations.
 
-### Recently Added: Digital Liability Waiver System
+Core philosophy: Use BitNet 1.58-bit (and 3.0 where needed) for any inference/recommendation paths to keep everything extremely efficient on edge hardware.
 
-- Rigid QR code flow: Customer scans QR → opens clean mobile browser form
-- Multiple choice Yes/No questions focused on gym safety
-- **All answers must be Yes** to complete
-- Automatically creates or updates member profile with full history and provenance
-- Designed for real liability protection and business records
+### Linux Beta Readiness (Priority A)
+- Simple CLI for quick testing on Linux
+- Docker + docker-compose skeleton ready
+- Print-friendly QR code generation for waivers (via qrcode library)
 
-This is now integrated with the Member system so waivers are tied directly to client profiles.
+### Business Operations (Priority B)
+- Auto-renewal logic implemented
+- Member history tracking (waivers, transactions, check-ins linked)
+- Seamless check-in for returning members
 
-### Current Production Capabilities
-- Member accounts + balances + waivers
-- Full POS + tax-aware Ledger
-- Safety zone (WallArea) management + maintenance logs
-- Basic operational reporting
+### Safety & Operations (Priority C)
+- Robust wall/area status with staff override
+- Maintenance logs tied to specific areas
 
-Ready to continue toward Linux beta testing at a real gym.
+The system is designed from the ground up to be fast, sovereign, and production-grade for real gym use.

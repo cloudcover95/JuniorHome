@@ -1,9 +1,9 @@
 # path: src/juniorclimbs/safety.py
 
 """
-JuniorClimbs Safety & Operations
+JuniorClimbs SafetyManager
 
-Wall/area status management and maintenance logging for real gym safety compliance.
+More robust wall/area status with staff override and area-tied maintenance.
 """
 
 from typing import Dict, List, Optional
@@ -22,16 +22,18 @@ class SafetyManager:
         self.areas[area.id] = area
         return area
 
-    def update_area_status(self, area_id: str, status: str, restrictions: Optional[List[str]] = None, updated_by: Optional[str] = None) -> Optional[WallArea]:
+    def update_area_status(self, area_id: str, status: str, restrictions: Optional[List[str]] = None, updated_by: Optional[str] = None, override: bool = False) -> Optional[WallArea]:
         area = self.areas.get(area_id)
         if not area:
             return None
 
-        area.status = status
-        if restrictions is not None:
-            area.restrictions = restrictions
-        area.last_updated = datetime.utcnow()
-        area.updated_by = updated_by
+        # Staff override allowed
+        if override or status in ["open", "restricted", "closed"]:
+            area.status = status
+            if restrictions is not None:
+                area.restrictions = restrictions
+            area.last_updated = datetime.utcnow()
+            area.updated_by = updated_by
         return area
 
     def get_area(self, area_id: str) -> Optional[WallArea]:
