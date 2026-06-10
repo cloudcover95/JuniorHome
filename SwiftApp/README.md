@@ -1,17 +1,17 @@
 # Swift BitNet App (Hardforked into JuniorHome)
 
-Modular SwiftUI app for the sovereign BitNet ecosystem.
+Modular SwiftUI client for the sovereign BitNet ecosystem.
 
-## Structure
-- Sources/BitNetEcosystem/
-  - Inference/
-  - UI/
-  - MCP/
+## Packages
+- BitNetCore
+- BitNetIntel
+- BitNetUI
 
 ## Features
-- Local MLX inference on Apple Silicon
-- MCP client for remote edge nodes
-- Benchmarking
-- Hardware monitoring
-- Model selection
-- Agentic workflows (via BitNet-Intel)
+- Local MLX inference (Apple Silicon)
+- MCP client for edge delegation
+- Real-time benchmarking
+- HardwareGovernor integration
+- Model selection & precision routing
+
+This is the primary client interface for JuniorHome.
