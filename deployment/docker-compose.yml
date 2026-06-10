@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  juniorhome:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - BITNET_MODE=production
+  mcp-server:
+    image: bitnet-mcp:latest
+    ports:
+      - "9000:9000"
