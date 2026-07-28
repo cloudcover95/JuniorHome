@@ -1,26 +1,38 @@
 # JuniorCloud LLC — LLM Portal Status (2026-07-28)
 
-## Dual Portal Strategy inside JuniorLLM
+## Multi-Portal Strategy (No Home Lab Required)
 
-### JuniorLLM-Fable (Claude Fable 5 style)
-- **Type**: Behavioral / architectural adaptation (no public weights available for Fable 5)
-- **Focus**: Long-horizon agentic reliability, high consistency, transparent safety classifiers with fallback/refuse paths
-- **Location**: `JuniorLLM` repo → `adaptations/fable/`
-- **Key files**: ARCHITECTURE.md, BEHAVIOR_CARD.md, safety/classifier.py
+Three complementary portals inside JuniorLLM, all running on the shared BitNet 1.58 edge substrate.
 
-### JuniorPortal-K3 (Kimi K3 → BitNet)
-- **Type**: Full BitNet 1.58-bit MoE re-architecture of open-weight Kimi K3 ideas
-- **Focus**: Extreme size reduction (target 30–80 GB edge variant vs original ~1.45 TB), rigid routing, SmartExpertOffloader, MLX-first
-- **Location**: Development scaffolding under junior_bitnet/kimi_k3_adaptation/ + pointer in JuniorLLM `adaptations/kimi_k3/`
+### 1. JuniorPortal-K3 (Moonshot Kimi K3)
+- Open 2.8T MoE → BitNet 1.58 re-architecture + distillation
+- Target edge install 30–80 GB (vs original ~1.45 TB)
+- Sparse MoE + SmartExpertOffloader + rigid routing
+- Location: JuniorLLM adaptations/kimi_k3/ + junior_bitnet scaffolding
 
-Both portals are **additive**. No existing files or repos were removed.
+### 2. JuniorLLM-Fable (Claude Fable 5 style)
+- Behavioral / architectural adaptation (no public weights)
+- Long-horizon agentic reliability + transparent safety classifiers with fallback/refuse
+- Location: JuniorLLM adaptations/fable/
 
-They share:
-- BitNet core + SVD-Zero + TDA manifold analysis
-- Production loops and CI modernization standards
-- Vault security / risk assessment posture
-- Edge-first (M4 / van) deployment goals
+### 3. JuniorGemma-4 (Google Gemma 4)
+- Apache 2.0 open source (April 2026)
+- Sizes 2B / 4B / 26B MoE / 31B Dense — excellent immediate edge fit
+- High intelligence-per-parameter, mobile-first, Gemini 3 research lineage
+- BitNet quantization + MLX primary path
+- Location: JuniorLLM adaptations/gemma4/
 
-A future model router inside JuniorLLM / JuniorAGI can select or blend portals by task (coding vs quant vs general agentic).
+## Shared Foundation
+- BitNet 1.58 ternary core + SVD-Zero + TDA
+- Smart offloading / progressive loading
+- Production loops + CI modernization + vault security
+- Rigid routing for high-stakes (trading, security)
+- Offline-first, M4 / van compatible
 
-*Updated 2026-07-28 — dual portal live in JuniorLLM.*
+## Router
+Fable-style SafetyClassifier runs first. Then select or blend portal by task.
+
+## Policy
+All work is additive. No existing files or repositories have been deleted or overwritten.
+
+*Updated 2026-07-28 — three portals live and production-oriented toward edge beta.*
