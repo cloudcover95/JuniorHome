@@ -13,14 +13,20 @@ Three complementary portals inside JuniorLLM, all running on the shared BitNet 1
 ### 2. JuniorLLM-Fable (Claude Fable 5 style)
 - Behavioral / architectural adaptation (no public weights)
 - Long-horizon agentic reliability + transparent safety classifiers with fallback/refuse
+- **NOW WIRED** into IntentRouter (SafetyClassifier runs first on every request)
 - Location: JuniorLLM adaptations/fable/
 
 ### 3. JuniorGemma-4 (Google Gemma 4)
 - Apache 2.0 open source (April 2026)
 - Sizes 2B / 4B / 26B MoE / 31B Dense — excellent immediate edge fit
-- High intelligence-per-parameter, mobile-first, Gemini 3 research lineage
-- BitNet quantization + MLX primary path
+- **BitNet quantization + MLX loader skeleton committed** (fastest interactive path)
 - Location: JuniorLLM adaptations/gemma4/
+
+## Production Wiring (Completed)
+- IntentRouter updated with Fable SafetyClassifier + multi-portal selection
+- Unified multi_portal_production_loop.py covering all three portals
+- Agentic pipeline plan documented (AGENTIC_PIPELINES.md)
+- All commits additive; no existing files deleted
 
 ## Shared Foundation
 - BitNet 1.58 ternary core + SVD-Zero + TDA
@@ -29,10 +35,10 @@ Three complementary portals inside JuniorLLM, all running on the shared BitNet 1
 - Rigid routing for high-stakes (trading, security)
 - Offline-first, M4 / van compatible
 
-## Router
-Fable-style SafetyClassifier runs first. Then select or blend portal by task.
+## Router Flow
+1. Fable-style SafetyClassifier
+2. Portal selection (Gemma-4 default for speed, Fable for long-horizon, Kimi for long-context/MoE)
+3. Existing deterministic tools + memory + fetch preserved
+4. Fallback to manifold if needed
 
-## Policy
-All work is additive. No existing files or repositories have been deleted or overwritten.
-
-*Updated 2026-07-28 — three portals live and production-oriented toward edge beta.*
+*Updated 2026-07-28 — production wiring complete, path to live beta open.*
