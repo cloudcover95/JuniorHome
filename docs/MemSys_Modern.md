@@ -1,11 +1,6 @@
-# MemSys Suite - Modern Strengthening
+# MemSys
 
-**Location:** JuniorAGI_SDK / memsys/
-
-Modern memory system now includes:
-- Hierarchical memory (short-term, long-term, episodic)
-- Automatic consolidation
-- Strong integration with Layer 2 Contextual Brain
-- Designed as shared infrastructure across the full ecosystem
-
-This brings production-grade memory capabilities to all Junior projects.
+Suite: cloudcover95/JuniorMemSys-Suite.
+Palace pulls: JuniorLLM `junior_bitnet.palace`.
+SIS: `junior_memsys_suite.lattice.msis_commit` when on path, else `lattice_zk.msis_local`.
+Teqp observations do not reseal commits. See docs/JUNIOR_TEQP.md.

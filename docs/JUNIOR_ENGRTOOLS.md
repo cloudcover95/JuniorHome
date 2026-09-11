@@ -1,12 +1,6 @@
 # JuniorEngrTools
 
-Shop software: `software/legacy_desk` on `127.0.0.1:8766`.
-Quant: `software/quant` (absmean / sign / absmax / I2_S pack).
-Models: JuniorLLM JuniorBitNetDraft.
-Geometry: JuniorOmega cad/legacy.
-
-```
-python -m software.legacy_desk health
-python -m software.legacy_desk quant 40 20 8 6
-python -m software.legacy_desk interp profile.txt misc.txt sidecar.txt
-```
+Shop: software/legacy_desk (127.0.0.1:8766) + software/quant.
+Obsidian: obsidian_port/teqp_vault.py → vault/JuniorTeqp/property_table.md.
+Second brain: second_brain/teqp_brain.py.
+Models: JuniorLLM. Geometry: JuniorOmega.

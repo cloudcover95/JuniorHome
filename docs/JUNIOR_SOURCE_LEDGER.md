@@ -1,5 +1,5 @@
-# Front Range seeds + JuniorSourceLedger
+# Source ledger
 
-JuniorClimbs 0.9.1-edge adds Flagstaff Mountain, Golden Front Range, and Mt. Xanadu fields (public GPS pins only) plus `/source/import` for CC-BY / CC0 community route packs.
-
-Mt. Xanadu boulders are Larimer / RFL-batholith (40.86577, -105.52388), not inside City of Golden.
+Public trit observations: vault/JuniorTeqp/observations.jsonl from home_sync.
+Theory CU fund ledger stays in packs/junior_theory_cu.
+Do not mix sealed z into either file.
