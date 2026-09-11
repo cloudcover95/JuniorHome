@@ -1,0 +1,22 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>JuniorHome</title>
+<body>
+<h1>JuniorHome</h1>
+<p>Local. Anything you type terraforms.</p>
+<textarea id="t" rows="6" cols="60">buy oats and fix the porch light</textarea>
+<p><button id="g">guess</button> <button id="i">inject</button></p>
+<pre id="o"></pre>
+<script>
+const o = document.getElementById('o');
+const text = () => document.getElementById('t').value;
+document.getElementById('g').onclick = async () => {
+  const r = await fetch('/guess?q=' + encodeURIComponent(text()));
+  o.textContent = await r.text();
+};
+document.getElementById('i').onclick = async () => {
+  const r = await fetch('/inject', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text: text()})});
+  o.textContent = await r.text();
+};
+</script>
+</body>
