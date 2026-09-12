@@ -1,0 +1,7 @@
+{
+  "id": "junior.arm_iot",
+  "name": "junior_arm_iot",
+  "version": "0.2.0",
+  "kind": "home_pack",
+  "sidecar": "bitnetCloud"
+}
