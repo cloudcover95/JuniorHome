@@ -1,0 +1,28 @@
+{
+  "id": "junior.bitnetCloud",
+  "name": "BitnetCloud",
+  "version": "0.2.0",
+  "kind": "sidecar",
+  "runtime": "juniorhome.python_stdlib",
+  "entry": "packs/junior_arm_iot/cli.py",
+  "vault": "vault/bitnetCloud/index.jsonl",
+  "cloud": false,
+  "local": true,
+  "bind": "127.0.0.1",
+  "port": 8777,
+  "bitnet": {
+    "required": false,
+    "role": "cpu_policy_logits_only",
+    "mlx_module": "cloudcover95/BitNet-mlx",
+    "fallback": "stdlib_matvec"
+  },
+  "sis": {
+    "required": false,
+    "module": "junior_memsys_suite.lattice.msis_commit",
+    "fallback": "palace_local"
+  },
+  "games": {
+    "FrameForge": "python/frameforge/sidecars/bitnetCloud.py",
+    "FrameForge2D": "site/sidecars/bitnetCloud.js"
+  }
+}
