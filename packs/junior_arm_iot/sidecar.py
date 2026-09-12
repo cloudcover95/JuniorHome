@@ -1,13 +1,6 @@
-"""BitnetCloud sidecar surface.
-
-Does not rewrite FrameForge or FrameForge2D kernels.
-BitNet scores CPU intent only. Knockback stays in math_kb.py.
-Not a Nintendo product.
-"""
+"""BitnetCloud sidecar. BitNet scores CPU intent only. Not a Nintendo product."""
 from __future__ import annotations
-
 from . import host
-
 
 def intent_to_sim(machine):
     snap = machine.snapshot()
@@ -18,11 +11,11 @@ def intent_to_sim(machine):
         "label": snap["intent"]["label"],
         "format": snap.get("format"),
         "xr": snap.get("xr"),
+        "quant": snap.get("quant"),
         "scale_knockback": False,
         "sidecar": "bitnetCloud",
         "legal": "not a nintendo product",
     }
-
 
 def from_crispy(packet, profile="generic_iot"):
     m = host.Machine(profile=profile)
