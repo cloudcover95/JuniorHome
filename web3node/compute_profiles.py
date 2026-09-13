@@ -1,5 +1,5 @@
 PROFILES = {
-    "T0_home": {"name": "Apple Silicon 45W", "ok": ("mlx", "numpy", "blender-cmd", "frameforge2d"), "no": ("unreal-boot",)},
+    "T0_home": {"name": "Home clock (~45W, MLX or numpy)", "ok": ("mlx", "numpy", "blender-cmd", "frameforge2d"), "no": ("unreal-boot",)},
     "T1_spark": {"name": "RTX Spark N1X / DGX Spark", "ok": ("cuda", "ue5", "blender", "world-model-small"), "no": ("taalas-retarget",)},
     "T2_discrete": {"name": "RTX 50-class PCIe", "ok": ("ue5", "lingbot-class"), "no": ()},
     "T3_asic": {"name": "Taalas-class hard-coded inference", "ok": ("frozen-trit-ticket",), "no": ("weight-update",)},
