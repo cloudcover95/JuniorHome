@@ -1,0 +1,8 @@
+# docker compose -f deployment/compose.web3node-harness.yml up --build
+services:
+  web3node-bench:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.web3node-harness
+    working_dir: /app/web3node
+    command: ["python3", "bench_web3node.py"]

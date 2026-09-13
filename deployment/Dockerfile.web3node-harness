@@ -1,0 +1,9 @@
+# Build from JuniorHome repo root:
+#   docker build -f deployment/Dockerfile.web3node-harness -t juniorhome-web3node-bench .
+# Toward stocksnode ticks. Does not replace the juniorclimbs Dockerfile.
+FROM python:3.11-slim
+WORKDIR /app
+RUN pip install --no-cache-dir numpy
+COPY web3node /app/web3node
+WORKDIR /app/web3node
+CMD ["python3", "bench_web3node.py"]
