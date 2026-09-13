@@ -1,0 +1,9 @@
+{
+  "id": "junior.trit_stack",
+  "name": "junior_trit_stack",
+  "version": "0.1.0",
+  "kind": "home_pack",
+  "sidecar": ["junior_arm_iot", "junior_lif", "bitnetCloud"],
+  "authority": "python_sim",
+  "intent_only": true
+}
