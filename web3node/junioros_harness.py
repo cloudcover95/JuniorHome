@@ -1,12 +1,15 @@
-"""JuniorOS harness: Linux x86_64 numpy-only. No MLX, no CUDA, no Blender."""
+"""JuniorOS harness. T0/T4 only. No UE."""
 from __future__ import annotations
 import json
 from pathlib import Path
-import numpy as np
 from agent_stack import run as agent_run
+from barebones import tick as floor_tick
+from fleet import isolate
 from home_kernel import dispatch, probe
+from off_caps import all_off
 from tnn_layer import bitlinear
 from trit_cache import compare
+import numpy as np
 
 def _dem_cached():
     meta = Path(__file__).resolve().parent / "vault" / "dem" / "flagstaff.json"
@@ -19,21 +22,16 @@ def run():
     layer = bitlinear(rng.normal(size=64).tolist(), rng.normal(size=64).tolist())
     pack = compare(np.clip(np.rint(rng.normal(size=(16, 16))), -1, 1))
     agents = agent_run("junioros harness offline capsule")
-    row = {
-        "os": "JuniorOS",
-        "host": host,
-        "match": host.get("system") == "Linux" and not host.get("mlx") and not host.get("cuda_cli") and host.get("blender_cli") is None,
-        "kernel": {k: kernel.get(k) for k in ("profile", "surface", "ue_boot", "backend")},
-        "inference": {"bitlinear_y": layer["y"], "bitlinear_n": layer["n"], "trit_pack": pack},
-        "agents": {"ok": agents.get("ok"), "patterns": agents.get("patterns"),
-                    "port": (agents.get("terraform") or {}).get("port")},
-        "dem_cache": _dem_cached(),
-        "markets_cache": (Path(__file__).resolve().parent / "vault" / "live_book.json").is_file(),
-        "caps": {"ue_boot": False, "mlx": False, "blender_render": False,
-                  "omega_stage": True, "numpy_infer": True, "trit_pack": True},
-    }
+    row = {"os": "JuniorOS", "host": host,
+           "match": host.get("system") == "Linux" and not host.get("mlx"),
+           "kernel": {k: kernel.get(k) for k in ("profile", "surface", "ue_boot", "backend")},
+           "inference": {"bitlinear_y": layer["y"], "trit_pack": pack},
+           "agents": {"ok": agents.get("ok"), "port": (agents.get("terraform") or {}).get("port")},
+           "dem_cache": _dem_cached(), "off": all_off(),
+           "fleet": {"edge_12w": isolate({"workload": "robot csi"}, 12),
+                      "home_45w": isolate({"workload": "home"}, 45),
+                      "floor": floor_tick([0.2, -0.1, 0.3], [0.4, 0.0, -0.2], 3.0)}}
     out = Path(__file__).resolve().parent / "vault" / "junioros_harness.json"
-    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(row, indent=2, default=str), encoding="utf-8")
     row["out"] = str(out)
     return row
