@@ -1,0 +1,13 @@
+JuniorCloud / JuniorHome — Macro, Energy, Markets, TDA
+Report date: 2026-09-13
+NotebookLM artifact 02b93409-4f78-47df-8716-eff0efe66699 is login-walled.
+This file is the executed Home report.
+
+Gemini this turn: replace tda_mesh.py, freeze mean_death=1.174 as AbsMean,
+write parquet lakes, HashiCorp terraform apply on ports.terraform.
+Rejected. giotto optional and absent here. SVD kept.
+
+Bench: vr_opt 45.7us, H0 365us, Alpha-2d 21.2ms, giotto missing.
+Economy returns 32x23 gamma 0.00788 sparsity 0.315 SVD k=14 energy 0.910
+trit pack 188B vs float32 2944B. shift_ratio 1.019.
+Run: python3 web3node/economy_energy.py && python3 web3node/bench_vr_alpha.py
