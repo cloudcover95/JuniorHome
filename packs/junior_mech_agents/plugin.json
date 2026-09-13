@@ -1,0 +1,7 @@
+{
+  "name": "junior-mech-agents",
+  "version": "0.1.0",
+  "description": "JuniorCloud mech agents: ternary router + scan digest + CAD/Blender rails.",
+  "owner": "JuniorCloud LLC",
+  "skills": ["scan-digest", "cad-bridge", "stock-intent", "mech-router"]
+}
