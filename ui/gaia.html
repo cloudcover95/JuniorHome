@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Gaia — JuniorHome</title>
+<style>
+  :root { --gold: #e6c35c; --ink: #0b0d10; --bolt: #f4e27a; }
+  body { margin: 0; background: var(--ink); color: #f2ead8; font: 14px/1.4 ui-sans-serif, system-ui; }
+  .stage { width: 280px; margin: 24px auto; text-align: center; }
+  svg { width: 220px; height: 320px; }
+  .bolt { stroke: var(--bolt); stroke-width: 2; fill: none; opacity: .85; }
+  .core { fill: var(--gold); }
+  .name { letter-spacing: .18em; text-transform: uppercase; }
+  input, select { background: #16181c; color: inherit; border: 1px solid #3a3420; padding: 6px; width: 90%; }
+  p { opacity: .8; }
+</style>
+<div class="stage">
+  <svg viewBox="0 0 220 320" aria-label="Gaia portrait">
+    <path class="bolt" d="M110 20 L90 90 L120 90 L70 200 L130 140 L100 300"/>
+    <path class="bolt" d="M110 28 L140 100 L115 100 L160 210 L100 155"/>
+    <ellipse class="core" cx="110" cy="86" rx="28" ry="36"/>
+    <ellipse cx="110" cy="86" rx="18" ry="24" fill="#1a1408"/>
+    <circle cx="102" cy="84" r="3" fill="var(--bolt)"/>
+    <circle cx="118" cy="84" r="3" fill="var(--bolt)"/>
+  </svg>
+  <div class="name" id="who">Gaia · they</div>
+  <p>Local goldend spine. Not Halo. Not a download.</p>
+  <p><input id="n" value="Gaia" placeholder="name">
+  <select id="p"><option>they</option><option>she</option><option>he</option></select></p>
+</div>
+<script>
+const paint = () => {
+  document.getElementById('who').textContent =
+    document.getElementById('n').value + ' · ' + document.getElementById('p').value;
+};
+document.getElementById('n').oninput = paint;
+document.getElementById('p').onchange = paint;
+</script>
