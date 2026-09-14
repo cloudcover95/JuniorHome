@@ -1,0 +1,8 @@
+[os_core]
+version = "0.1.0-alpha"
+sovereignty = "local_first"
+[junior_llm]
+framework = "numpy"
+checkpoint_2b = false
+[runtime]
+t4 = "fused-list"
