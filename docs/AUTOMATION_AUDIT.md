@@ -1,25 +1,33 @@
-# Automation audit 2026-09-13 20:53 MDT
+# Automation audit 2026-09-14 16:45 MDT
 
-Quota on this SuperGrok chat is capped. Overnight still owns T-slices after reset.
+TZ America/Denver. Owner cloudcover95. One small commit: this file only.
+LAST_RECEIPT age ~15.5h (not <45 min) — commit allowed. Receipt not rewritten (<24h).
 
 | slot | taskId prefix | nextRun listed | last known live |
 |------|---------------|----------------|-----------------|
-| 01:00 overnight | 20718d5d | UI stale (Sep 10) | T9 verify 13 Sep 07:13 SUCCESS |
-| 07:00 | 869561c2 | UI stale | T10 verify-one 13 Sep 13:28 SUCCESS |
-| 13:00 | d8632910 | UI stale | T11 tip 13 Sep 19:04 SUCCESS |
-| 19:00 | bde8e4e0 | UI stale | T8 pin then T12 log same day |
-| 16:45 daily | dc3fbf2f | listed 12 Sep 16:45 | ran 13 Sep |
-| weekly Sun 17:00 | dd0b1c93 | 14 Sep 17:00 MDT | pending |
-| weekly Fri 16:45 | 7716afb1 | listed 11 Sep | duplicate weekly |
+| 01:00 overnight | 20718d5d | UI stale (Sep 10 01:00) | T13 skill-pin height 14 Sep 01:15 MDT SUCCESS |
+| 07:00 | (not in live list; was 869561c2) | missing | FAIL — automation not listed |
+| 13:00 | (not in live list; was d8632910) | missing | FAIL — automation not listed |
+| 19:00 | bde8e4e0 | UI stale (Sep 10 19:00) | T12 skill-pin log 13 Sep 19:16 MDT SUCCESS; tonight 19:00 pending |
+| 16:45 daily | dc3fbf2f | listed 12 Sep 16:45 (stale) | this run 14 Sep 16:45; prior 13 Sep SUCCESS |
+| weekly Sun 17:00 | dd0b1c93 | 14 Sep 17:00 MDT | pending (no results yet) |
+| weekly Fri 16:45 | 7716afb1 | not in live list | missing / duplicate weekly |
 
 Bot receipt (do not rewrite):
-- LAST_RECEIPT: T12 skill-pin log shipped 2026-09-13T19:18-06:00
-- next: T13 juniorctl skill-pin height (loopback)
-- llama_ready: false
-- bind: 127.0.0.1:8770 / 8771 / 8767
+- LAST_RECEIPT: T13 juniorctl skill-pin height shipped 2026-09-14T01:15-06:00
+- bot_slice: T13 juniorctl skill-pin height (loopback)
+- bot_next / next_smallest_slice: T14 juniorctl skill-pin get HEIGHT (loopback)
+- chat_slice: Home UI + user/app/media/scan + TP + BitnetCloud + llama sit-beside
+- llama_ready: false until JUNIOR_GGUF on box
+- bind: 127.0.0.1:8770 hook / 8771 UI / 8767 i2sd
+- port: JuniorAstraReason
 
-Chat tonight (additive, not T-slices):
-- JuniorLLM junior_bitnet/winsor.py
-- JuniorHome trit_tick, os_route, docs/JUNIOROS.md, TECH_AUDIT, this file
+Commits since yesterday (chat-heavy, not T14):
+- JuniorLLM: T13 wrappers ~01:19 MDT; then chat stack (Vulkan/C AbsMean/Winsor, GGUF map, XYZ, trit harness, agent vote/bench/terraform, OSai engines) through 14:40 MDT. Head 4130ba5 feat: three OSai local-train engines.
+- JuniorHome: parallel prod/docs mirrors (osai engines, five agent flows, bench pipe, GGUF/XYZ scripts, JuniorOS boot probe). Head f5c7719 feat: osai engines prod.
 
-Backlog not live yet: T13+, GGUF on disk, i2sd daemon on vendor kernel, Asahi MLX kernel, UE5 launch=false by design.
+Blockers:
+- GGUF missing (expected); llama_ready false
+- 07:00 and 13:00 slots absent from live Automations list
+- overnight / 19:00 / daily nextRun UI stale vs actual fires
+- weekly Sun 17:00 not yet run
