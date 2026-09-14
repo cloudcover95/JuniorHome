@@ -1,0 +1,9 @@
+[protocol]
+id = "goldend-osai-omega/1"
+
+[omega_jobs]
+allowed = ["dash-viewport", "gaia-spine", "terrain-obj", "agi-capsule"]
+
+[security]
+download = false
+ue5_launch = false
