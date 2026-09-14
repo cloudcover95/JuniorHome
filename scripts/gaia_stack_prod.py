@@ -9,9 +9,10 @@ for p in (Path("../JuniorLLM").resolve(), Path.home() / "JuniorCloud" / "JuniorL
     if (p / "ports" / "gaia_stack.py").is_file():
         sys.path.insert(0, str(p))
         break
+note = " ".join(sys.argv[1:]) or "gaia they terrain"
 try:
     from ports.gaia_stack import run
 
-    print(json.dumps(run(" ".join(sys.argv[1:]) or "gaia terrain"), indent=2))
+    print(json.dumps(run(note), indent=2))
 except Exception as e:
-    print(json.dumps({"ok": False, "error": type(e).__name__ + ": " + str(e)[:180], "ue5_launch": False}, indent=2))
+    print(json.dumps({"ok": False, "error": type(e).__name__ + ": " + str(e)[:180], "usgs_fetch": False, "llama_ready": False}, indent=2))
