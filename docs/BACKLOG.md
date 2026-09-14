@@ -1,5 +1,8 @@
-# Backlog 2026-09-13
+# Backlog
 
-Live: JTR1, bitnet-1.58, INT4 nibble, adapters, latch, status_api, quant_error.
-Not live: I2_S writer, STE, Mongo, Google OAuth, UE on T0.
-`python3 web3node/saas_loop.py`
+Built as modules, with honest flags:
+- GGUF writer: web3node/gguf_i2s.py (not llama.cpp BitNet-2B)
+- STE tape: web3node/ste_tape.py (toy vector)
+- Community SaaS: web3node/community_saas.py (no Google, no Atlas)
+- UE mini: staged off on T0
+`python3 web3node/missing_live.py`
