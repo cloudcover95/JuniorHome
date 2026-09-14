@@ -1,0 +1,13 @@
+[os_core]
+version = "0.1.2-alpha"
+target_hardware = "numpy_linux_or_apple"
+ticket_latency_us = 32
+bind = "127.0.0.1"
+
+[junior_llm]
+checkpoint_2b = false
+quantization_schema = "ternary_1.58_winsor"
+llama_ready = false
+
+[execution_providers]
+prefer = ["mlx", "numpy", "i2sd"]
