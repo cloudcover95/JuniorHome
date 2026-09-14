@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JuniorHome markets</title>
+<style>
+  :root { --gold:#e6c35c; --ink:#0b0d10; }
+  body { margin:0; background:var(--ink); color:#f2ead8; font:14px ui-sans-serif,system-ui; }
+  body.portrait .grid { grid-template-columns:1fr; max-width:420px; margin:0 auto; }
+  body.landscape .grid { grid-template-columns:repeat(4,1fr); }
+  header { color:var(--gold); padding:10px 16px; letter-spacing:.12em; }
+  .tape { overflow:hidden; white-space:nowrap; border-top:1px solid #3a3420; border-bottom:1px solid #3a3420; padding:6px 0; }
+  .tape span { display:inline-block; padding-left:100%; animation: tick 18s linear infinite; }
+  @keyframes tick { to { transform: translateX(-100%); } }
+  .grid { display:grid; gap:8px; padding:12px; }
+  .tile { border:1px solid var(--gold); padding:10px; }
+  a, button { color:var(--gold); background:none; border:1px solid #3a3420; }
+</style>
+<header>MARKETS · local seed · not a live feed
+  <button id="land">landscape</button>
+  <button id="port">portrait</button>
+  <a href="dash.html">dash</a>
+</header>
+<div class="tape"><span>AAPL 228.4 · MSFT 428.1 · NVDA 119.2 · GOLD 2684 · local vault only ·</span></div>
+<div class="grid">
+  <div class="tile">AAPL<br>228.4</div>
+  <div class="tile">MSFT<br>428.1</div>
+  <div class="tile">NVDA<br>119.2</div>
+  <div class="tile">GOLD<br>2684</div>
+</div>
+<script>
+let o = matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
+function set(x){ o=x; document.body.className=o; }
+document.getElementById('land').onclick=()=>set('landscape');
+document.getElementById('port').onclick=()=>set('portrait');
+set(o);
+</script>
