@@ -4,52 +4,58 @@
 <style>
   :root { --gold:#e6c35c; --ink:#0b0d10; --plate:#16130c; }
   body { margin:0; background:var(--ink); color:#f2ead8; font:14px/1.4 ui-sans-serif,system-ui; }
-  header { padding:16px 20px; letter-spacing:.14em; color:var(--gold); border-bottom:1px solid #3a3420; }
-  main { display:grid; grid-template-columns: 220px 1fr 1fr; gap:12px; padding:12px; }
-  section { background:var(--plate); border:1px solid #3a3420; padding:12px; min-height:280px; }
+  header { padding:16px 20px; letter-spacing:.14em; color:var(--gold); border-bottom:1px solid #3a3420; display:flex; justify-content:space-between; }
+  main { display:grid; grid-template-columns: 180px 1fr 1fr; gap:12px; padding:12px; }
+  section { background:var(--plate); border:1px solid #3a3420; padding:12px; min-height:260px; }
   h2 { color:var(--gold); font-size:12px; letter-spacing:.16em; }
-  .hold { display:inline-block; margin:4px; padding:4px 8px; border:1px solid var(--gold); }
-  a { color:var(--gold); }
+  button, a { color:var(--gold); background:transparent; border:1px solid #3a3420; padding:6px 8px; display:block; margin:4px 0; text-decoration:none; }
+  textarea { width:95%; background:#111; color:#f2ead8; border:1px solid #3a3420; }
   pre { white-space:pre-wrap; }
+  .chip { display:inline-block; margin:3px; padding:3px 8px; border:1px solid var(--gold); }
 </style>
-<header>JUNIORHOME · GAIA · STONEFIELD</header>
+<header><span>JUNIORHOME · GAIA</span><span>loopback · 1.58</span></header>
 <main>
   <section>
-    <h2>NODES</h2>
-    <p><button data-q="flagstaff mountain">Flagstaff Mtn</button></p>
-    <p><button data-q="xanadu">Mt. Xanadu</button></p>
-    <p><button data-q="golden clear creek">Clear Creek</button></p>
-    <p><a href="gaia.html">portrait</a> · <a href="index.html">clock</a></p>
+    <h2>MODULES</h2>
+    <button data-m="home">home / vault</button>
+    <button data-m="notes">notes</button>
+    <button data-m="cad">cad / omega</button>
+    <button data-m="stock">stock</button>
+    <button data-m="field">field (opt)</button>
+    <a href="gaia.html">portrait</a>
+    <a href="index.html">clock</a>
   </section>
   <section>
     <h2>VIEWPORT</h2>
-    <div id="holds"></div>
-    <div id="routes"></div>
+    <p id="mod">home</p>
     <p id="walk"></p>
+    <div id="chips"></div>
   </section>
   <section>
-    <h2>THREAD</h2>
-    <textarea id="t" rows="4" style="width:95%;background:#111;color:#f2ead8;border:1px solid #3a3420">beta on the picnic slab</textarea>
-    <p><button id="talk">note</button></p>
+    <h2>NOTE → TRIT</h2>
+    <textarea id="t" rows="5">buy oats and fix the porch light</textarea>
+    <p><button id="go" style="display:inline">run</button></p>
     <pre id="o"></pre>
   </section>
 </main>
 <script>
-const seed = {
-  "flagstaff mountain": {holds:["jug","crimp","edge","smear"], routes:["picnic slab V1 boulder","west face 5.6 trad"], walk:["home","Boulder CO","Flagstaff Mountain"]},
-  "xanadu": {holds:["sloper","pinch","crimp"], routes:["classic line V4 boulder"], walk:["home","Front Range","Mt. Xanadu"]},
-  "golden clear creek": {holds:["crack","edge","horn"], routes:["creek crack 5.8 trad"], walk:["home","Golden CO","Clear Creek Canyon"]}
+const copy = {
+  home: {walk:'Gaia stays on the clock', chips:['vault','hook :8770','ui :8771']},
+  notes: {walk:'Gaia opens the notebook', chips:['journal','scan','media']},
+  cad: {walk:'Gaia to Omega / OBJ', chips:['dxf','title block','terrain obj']},
+  stock: {walk:'Gaia to JuniorStock node', chips:['book','fill','ledger']},
+  field: {walk:'optional — Flagstaff / Xanadu / Creek', chips:['holds','trad+','covenant']}
 };
-function show(q){
-  const n = seed[q];
-  if(!n) return;
-  document.getElementById('holds').innerHTML = n.holds.map(h=>'<span class="hold">'+h+'</span>').join('');
-  document.getElementById('routes').innerHTML = n.routes.map(r=>'<p>'+r+'</p>').join('');
-  document.getElementById('walk').textContent = 'Gaia walk: ' + n.walk.join(' → ');
+function pane(m){
+  const c = copy[m] || copy.home;
+  document.getElementById('mod').textContent = m;
+  document.getElementById('walk').textContent = c.walk;
+  document.getElementById('chips').innerHTML = c.chips.map(x=>'<span class="chip">'+x+'</span>').join('');
 }
-document.querySelectorAll('button[data-q]').forEach(b=>b.onclick=()=>show(b.dataset.q));
-document.getElementById('talk').onclick=()=>{
-  document.getElementById('o').textContent = 'local thread (no MP): ' + document.getElementById('t').value;
+document.querySelectorAll('button[data-m]').forEach(b=>b.onclick=()=>pane(b.dataset.m));
+document.getElementById('go').onclick=()=>{
+  const t = document.getElementById('t').value;
+  document.getElementById('o').textContent = 'local 1.58 note (no scrape)\n' + t;
 };
-show('flagstaff mountain');
+pane('home');
 </script>
