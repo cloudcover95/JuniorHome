@@ -1,10 +1,13 @@
 # Optional C core
 
-Source: JuniorLLM `rails/linux/absmean.c` (same formula as Python absmean).
-Live handshake still uses winsor p95 in Python.
+`rails/linux/absmean.c` — mean(|W|)
+`rails/linux/winsor.c` — p95 clip then mean, same as Python wire
+`rails/linux/i2s_pack.c` — two bits per trit
+
+Handshake still Python winsor. Compile optional:
 
 ```bash
-cc -O2 -shared -fPIC rails/linux/absmean.c -lm -o rails/linux/libjunior_absmean.so
+cc -O2 -shared -fPIC rails/linux/winsor.c -lm -o rails/linux/libjunior_winsor.so
 ```
 
-Gemini dump: NEON header unused, centered-absmean ≠ our wire, ~/Developer path rejected.
+Not taken from Gemini: Metal C++, 32 µs SLA, FrameForge physics port, ESP-IDF, tau passed in instead of computed, unused NEON.
