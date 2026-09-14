@@ -1,14 +1,15 @@
-# Gemini ECOSYSTEM_PROTOCOL drop
+# Gemini protocol dump — audit
 
-Took: table layout, job enum reminder, issuer = local-gaia.json.
+Took: pointer table idea, job enum, usgs/download/ue5 invariants, local issuer name.
 
 Rejected:
-- handshake(who=str) + identity.verified always True
-- tomli / numpy inside proto
-- 01_Legal/, 02_Assets/, git init, cloudcover95/deployer
+- handshake(who=str) + identity.verified True
+- cloudcover95/deployer and cloudcover95/edge-architect
+- tomli + numpy as proto deps (winsor+i2s already pack)
+- import unreal spawn as if it were a Blender hook
+- 02_Assets and 01_Legal trees
+- git init under ~/Developer/JuniorCloud_LLC
 - calling ue5_blender a Live Engine
-- unreal.spawn_actor inside a file named blender
 - 32 µs SVD as a measured Home SLA
-- Open-Elevation mock as if it were wired
 
-Live proto remains JuniorLLM ports.gaia_proto.handshake(note).
+Live pack stays junior_bitnet.winsor + i2s. Live handshake stays system(note).
