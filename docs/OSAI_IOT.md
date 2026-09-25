@@ -1,20 +1,19 @@
-# OSai vs shop IoT
+# OSai × IoT
 
-OSai wire today: `goldend-osai-omega/1` notes + Flagstaff + jsonl goldens.
-Jobs: dash-viewport, gaia-spine, terrain-obj, agi-capsule.
-download false, ue5_launch false, fire false.
+Home already has: Flagstaff vote, I2_S note pack, jsonl ledger, lab spool files.
+That is not MQTT.
 
-That is **not** Matter/Zigbee/Thread/MQTT. Those are device fabrics.
+| Wire | Use in the wild | Home |
+|------|-----------------|------|
+| File drop | OctoPrint watch folder, GRBL send from disk | **on** (`lab_spool`) |
+| HTTP/JSON | Moonraker, IPP | catalog ports only |
+| MQTT | HA, sensors | off — broker is a service |
+| CoAP | constrained UDP | off |
+| Matter | consumer fabric | off |
+| Zigbee/Z-Wave | radios | off |
+| Modbus | PLCs | off |
+| OPC-UA | plants | off |
+| ROS 2 DDS | robots | named, not talking |
 
-| Fabric | Role | In Home |
-|--------|------|---------|
-| Matter / Thread | IP smart-home | operator later |
-| Zigbee | 2.4 GHz mesh | dongle later |
-| MQTT | pub/sub | not a broker here |
-| IPP/CUPS | paper | spool `.pdf` |
-| Moonraker HTTP | Klipper | spool `.gcode` |
-| GRBL serial | laser/CNC | spool `.nc` |
-| ROS 2 | robots | loopback name only |
-| OSai handshake | note + vote | live |
-
-Bridge: golden note names a device id; spool writes a file; firmware does motion.
+I2_S hex is a note key, not a bus topic. Do not publish trit on MQTT.
+Automations may queue a file; they may not fire a laser.
