@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 id = "juniorcloud_omega"
 name = "JuniorCloud Omega"
-version = "0.1.0"
+version = "0.2.0"
 tagline = "Local OBJ harness for JuniorHome. No UE5. No download."
 maintainer = "JuniorCloud LLC"
 type = "add-on"
