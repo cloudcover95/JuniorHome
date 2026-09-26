@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Write patch.obj. Blender is a separate process."""
 import json, sys
 from pathlib import Path
 
@@ -12,10 +11,8 @@ for p in (root.parent / "JuniorLLM", Path.home() / "JuniorCloud" / "JuniorLLM"):
 try:
     from ports.blender_omega import harness
 except Exception:
-    from pathlib import Path as P
-
     def harness(note="home dash terrain", out=None):
-        dest = P(out) if out else P.home() / ".juniorhome" / "omega" / "patch.obj"
+        dest = Path(out) if out else Path.home() / ".juniorhome" / "omega" / "patch.obj"
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(
             "# juniorcloud omega obj\no gaia_patch\nv 0 0 0\nv 1 0 0\nv 1 1 0\nv 0 1 0\nf 1 2 3 4\n",

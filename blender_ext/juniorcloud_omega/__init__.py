@@ -21,7 +21,6 @@ DEFAULT_OBJ = Path.home() / ".juniorhome" / "omega" / "patch.obj"
 def _import_obj(path: Path) -> str:
     if not path.is_file():
         return "missing"
-    op = getattr(bpy.ops.wm, "obj_import", None) or getattr(bpy.ops, "import_scene", None)
     try:
         if hasattr(bpy.ops.wm, "obj_import"):
             bpy.ops.wm.obj_import(filepath=str(path))
