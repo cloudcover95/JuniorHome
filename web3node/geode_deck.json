@@ -1,0 +1,8 @@
+{
+  "units": "mm",
+  "pads": {"cols": 4, "rows": 4, "pitch": 24, "dia": 18},
+  "knobs": [{"id": "gain", "x": 120, "y": 20, "d": 16}, {"id": "filter", "x": 120, "y": 50, "d": 16}, {"id": "tempo", "x": 120, "y": 80, "d": 16}, {"id": "mix", "x": 120, "y": 110, "d": 16}],
+  "keys": {"count": 8, "pitch": 19.05, "x0": 0, "y0": 120},
+  "blender": false,
+  "trit_mcu": false
+}
