@@ -1,19 +1,19 @@
-# Automation audit 2026-09-27 16:45 MDT
+# Automation audit 2026-09-28 16:45 MDT
 
-Five live tasks. Overnight + last 19:00 + prior daily + omega all SUCCESS. This run rewriting the table. APP_ONLY. America/Denver. Loopback only. No 07/13 slot machines.
+Five live tasks. Overnight T40 SUCCESS. Last 19:00 FAIL (usage_pool_exhausted). This run rewriting the table. APP_ONLY. America/Denver. Loopback only. No 07/13 slot machines.
 
 | Name | When | Last result | What it actually ships |
 |------|------|-------------|------------------------|
-| JuniorCloud overnight build | 01:00 | 2026-09-27 T39 skill-pin first-cousins-once-removed SUCCESS | JuniorLLM juniorctl T-slices, port JuniorAstraReason |
-| JuniorCloud slot 19:00 | 19:00 | 2026-09-26 19:00 T38 skill-pin 2nd-cousins SUCCESS | same T-track (today 19:00 not yet due) |
+| JuniorCloud overnight build | 01:00 | 2026-09-28 T40 skill-pin 2nd-cousins-once-removed SUCCESS | JuniorLLM juniorctl T-slices, port JuniorAstraReason |
+| JuniorCloud slot 19:00 | 19:00 | 2026-09-27 19:00 FAIL usage_pool_exhausted (prior SUCCESS T38 2nd-cousins) | same T-track (today 19:00 not yet due) |
 | JuniorCloud daily audit | 16:45 | this run rewriting table | this table |
-| JuniorCloud weekly audit | Mon 17:00 | 2026-09-21 WEEKLY_AUDIT.md SUCCESS | docs only |
+| JuniorCloud weekly audit | Mon 17:00 | 2026-09-21 WEEKLY_AUDIT.md SUCCESS | docs only (today 17:00 not yet due) |
 | omega-obj-weekly | Sat 10:00 | 2026-09-26 blender_ext + ports/blender_omega SUCCESS | OBJ writer + Blender 4.2 ext |
 
 Not in the catalog: 07:00 and 13:00 (still named in the daily prompt).
 
 ## Two tracks
-- bot_next: T40 juniorctl skill-pin second-cousins-once-removed (loopback). Autos T21–T39 shipped parent/genesis/child/children/ancestors/siblings/cousins/uncles/nephews/grandchildren/great-grandchildren/great-great-grandchildren/2nd-cousins/first-cousins-once-removed. Loopback. No GGUF pull.
+- bot_next: T41 juniorctl skill-pin third-cousins (loopback). Autos T21–T40 shipped parent/genesis/child/children/ancestors/siblings/cousins/uncles/nephews/grandchildren/great-grandchildren/great-great-grandchildren/2nd-cousins/first-cousins-once-removed/2nd-cousins-once-removed. Loopback. No GGUF pull.
 - chat_slice: Home UI + user/app/media/scan + TP + BitnetCloud + llama sit-beside.
 
 Do not merge T-slices into a parquet imager. Point Home scripts at JuniorLLM ports.
@@ -22,5 +22,6 @@ Do not merge T-slices into a parquet imager. Point Home scripts at JuniorLLM por
 - llama GGUF still file-if-present (`llama_ready: false` until JUNIOR_GGUF on box)
 - SPIFFE/liboqs operator-only
 - No 07/13 slot machines
-- LAST_RECEIPT 2026-09-27T01:06-06:00 (~15.6h; not rewritten; >24h rule not met)
-- next_smallest_slice: T40 juniorctl skill-pin second-cousins-once-removed (loopback)
+- Slot 19:00 2026-09-27 FAIL usage_pool_exhausted
+- LAST_RECEIPT 2026-09-27T01:06-06:00 (~39.6h stale; not rewritten; next slice T40 no longer open)
+- next_smallest_slice: T41 juniorctl skill-pin third-cousins (loopback)
