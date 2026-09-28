@@ -1,7 +1,9 @@
 import shutil
 from junior_gamma import quant_j
 from trit5 import pack5
-APPS = {"ardour": ("ardour", "ardour8", "Ardour"), "hydrogen": ("hydrogen",), "audacity": ("audacity",)}
+APPS = {"ardour": ("ardour", "ardour8", "Ardour"), "hydrogen": ("hydrogen",),
+        "audacity": ("audacity",), "lmms": ("lmms",), "qtractor": ("qtractor",),
+        "csound": ("csound",)}
 def probe():
     return {n: next((b for b in bins if shutil.which(b)), None) for n, bins in APPS.items()}
 def pad(hits):
