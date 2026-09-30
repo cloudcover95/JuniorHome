@@ -1,0 +1,38 @@
+# goldend-osai-omega/1 — JuniorDeck cad module
+protocol = "goldend-osai-omega/1"
+module = "cad"
+bind = "127.0.0.1"
+bind_all = false
+ml_kem = false
+ue5_launch = false
+full_svd = false
+trit_mcu = false
+live = false
+
+[mech]
+pad_pitch_mm = 24.0
+pad_dia_mm = 18.0
+key_pitch_mm = 19.05
+mount_grid_mm = 24.0
+pin_pitch_mm = 2.54
+pin_rows = 2
+pin_cols = 8
+
+[analog]
+cv_v = [-5.0, 5.0]
+audio_vpp = 2.0
+z_ohm = 10000.0
+sample_hz = 48000
+
+[trit]
+pipe = "winsor-p95 -> clip{-1,0,1} -> I2_S"
+backend = "trit-energy"
+fieldcore_n = 32
+fieldcore_cap = 64
+metric = "ms_per_note"
+rename_absmean_pack = false
+
+[gate]
+script = "scripts/osai_gate_prod.py"
+votes = 6
+vote_op = "AND"
