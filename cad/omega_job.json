@@ -1,0 +1,5 @@
+{
+  "who": {"mesh": "cad/deck_well.scad", "layout": "web3node/geode_deck.json"},
+  "omega": {"repo": "cloudcover95/JuniorOmega", "worker": "blender/headless_worker.py", "launch": false},
+  "trit_mcu": false
+}
