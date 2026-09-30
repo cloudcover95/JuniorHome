@@ -1,8 +1,5 @@
-# JuniorDeck shell
-
-Prototype plates stay: `cad/deck_well.scad`, `cad/deck_keys.scad`.
-New: `cad/deck_shell.scad` (chassis + geode rings) and `cad/deck_trit_band.scad` (gamma channel).
-
-Print shell face-down, 0.2 mm, no support. Band prints on the 6 mm face.
-Trit lives in software / a paper ticket in the band channel. `trit_mcu: false`.
-Gamma drift is the empty channel, not a new silicon SKU.
+# JuniorDeck shells
+`cad/deck_shell.scad` — rings on pads only.
+`cad/deck_shell_field.scad` — full geode field + trit-flow grooves between rings.
+Band channel is the gamma splice: `web3node/trit_wave.py` writes `~/.juniorhome/deck/trit_ticket.json`.
+Omega/AGI_SDK only get a pointer. trit_mcu false.

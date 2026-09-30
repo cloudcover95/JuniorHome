@@ -1,4 +1,6 @@
 # JuniorDeck hardware
-No ternary CPU SKU. Trit in software on RP2040/Pi/T0.
-T4 8GB ticket, MCU 264KB SRAM, T0 runs Ardour.
-Pads 4x4 pitch 24mm, 4 knobs, 8 MX keys. Blender off unless binary present.
+No ternary CPU SKU. Trit in software on Pi/T0 (`scripts/deck_pi_host.py`).
+Pads 4x4 pitch 24 mm + geode rings. Keys 8x8 MX. Four knobs. 10.1 in panel.
+Shells: `cad/deck_shell.scad` (rings) and `cad/deck_shell_field.scad` (rings + flow).
+Band: `cad/deck_trit_band.scad` holds the gamma-drift ticket from `web3node/trit_wave.py`.
+Blender off unless binary present. live=False until Ardour/Hydrogen on PATH.
