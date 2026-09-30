@@ -5,6 +5,7 @@ import json, time
 from pathlib import Path
 
 from trit_wave import pack_wave
+from deck_usb import digitizer_ok, probe
 
 MESH = Path.home() / ".juniorhome" / "gaia_mesh" / "deck.jsonl"
 
@@ -22,12 +23,17 @@ def log_note(note: str, cv: float = 0.0, z_ohm: float = 10_000.0) -> dict:
     wave = pack_wave()
     ok = analog_ok(cv, z_ohm)
     votes = [ok] * 6
+    staff = gate(votes)
+    usb = probe()
+    digi = digitizer_ok(ok, staff, usb)
     row = {
         "protocol": "goldend-osai-omega/1",
         "module": "cad",
         "note": note[:80],
         "analog_ok": ok,
-        "flagstaff": gate(votes),
+        "flagstaff": staff,
+        "usb": usb,
+        "digitizer": digi,
         "wave_sha3": wave["sha3"],
         "ms": round((time.perf_counter() - t0) * 1000.0, 4),
         "bind": "127.0.0.1",

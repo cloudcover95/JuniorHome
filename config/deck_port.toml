@@ -24,6 +24,15 @@ audio_vpp = 2.0
 z_ohm = 10000.0
 sample_hz = 48000
 
+[usb]
+connector = "USB-C"
+super_speed = true
+class_audio = true
+class_hid = true
+gadget = false
+digitizer = "class-compliant"
+# digitizer_ok requires analog_ok AND flagstaff AND /dev present
+
 [trit]
 pipe = "winsor-p95 -> clip{-1,0,1} -> I2_S"
 backend = "trit-energy"
