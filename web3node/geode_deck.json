@@ -1,8 +1,19 @@
 {
   "units": "mm",
-  "pads": {"cols": 4, "rows": 4, "pitch": 24, "dia": 18},
+  "pads": {"cols": 4, "rows": 4, "pitch": 24, "dia": 18, "geode_ring": 6},
   "keys": {"rows": 8, "cols": 8, "pitch": 19.05, "switch": "MX-hotswap"},
   "display": {"inch": 10.1, "flat": true, "touch": true, "mm": [218, 137], "px": [1280, 800], "x": 0, "y": 160},
-  "knobs": [{"id": "gain", "x": 220, "y": 20, "d": 16}, {"id": "filter", "x": 220, "y": 50, "d": 16}, {"id": "tempo", "x": 220, "y": 80, "d": 16}, {"id": "mix", "x": 220, "y": 110, "d": 16}],
+  "knobs": [
+    {"id": "gain", "x": 220, "y": 20, "d": 16},
+    {"id": "filter", "x": 220, "y": 50, "d": 16},
+    {"id": "tempo", "x": 220, "y": 80, "d": 16},
+    {"id": "mix", "x": 220, "y": 110, "d": 16}
+  ],
+  "shell": {
+    "file": "cad/deck_shell.scad",
+    "band": "cad/deck_trit_band.scad",
+    "gamma_drift": "channel",
+    "trit_pack": "ticket-in-band"
+  },
   "trit_mcu": false
 }

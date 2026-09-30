@@ -1,5 +1,16 @@
 {
-  "who": {"mesh": "cad/deck_well.scad", "layout": "web3node/geode_deck.json"},
-  "omega": {"repo": "cloudcover95/JuniorOmega", "worker": "blender/headless_worker.py", "launch": false},
-  "trit_mcu": false
+  "who": {
+    "mesh": "cad/deck_shell.scad",
+    "well": "cad/deck_well.scad",
+    "keys": "cad/deck_keys.scad",
+    "band": "cad/deck_trit_band.scad",
+    "layout": "web3node/geode_deck.json"
+  },
+  "omega": {
+    "repo": "cloudcover95/JuniorOmega",
+    "worker": "blender/headless_worker.py",
+    "launch": false
+  },
+  "trit_mcu": false,
+  "print": {"layer": 0.2, "nozzle": 0.4, "support": false, "shell_flat": true}
 }
