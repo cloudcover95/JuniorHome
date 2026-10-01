@@ -1,2 +1,2 @@
-# USB audio class only. Not a DJI pair rule. Install by hand.
-SUBSYSTEM=="sound", ATTRS{idVendor}=="*", TAG+="uaccess", ENV{JUNIORDECK}="audio"
+# USB audio class. Install by hand.
+SUBSYSTEM=="sound", TAG+="uaccess", ENV{JUNIORDECK}="audio"

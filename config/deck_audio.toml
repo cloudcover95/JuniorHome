@@ -1,4 +1,4 @@
-# JuniorDeck audio drop. Watched folder, not a mic API.
+# JuniorDeck audio drop. USB sound class + watched folder.
 protocol = "goldend-osai-omega/1"
 inbox = "~/.juniorhome/deck/inbox"
 ticket = "~/.juniorhome/deck/audio_digest.json"
@@ -6,10 +6,6 @@ mesh = "~/.juniorhome/gaia_mesh/deck_audio.jsonl"
 bind = "127.0.0.1"
 bind_all = false
 model_pull = false
-dji_api = false
-auto_pair = false
-openvpn = false
-slate = false
 cap_sec = 3600
 sample_hz = 48000
 kinds = ["wav", "mp3", "flac", "ogg", "ardour", "lof", "mid", "txt"]

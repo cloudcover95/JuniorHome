@@ -1,4 +1,4 @@
-"""JuniorDeck audio ingest. stdlib only. No DJI API. No model pull."""
+"""JuniorDeck audio ingest. stdlib only. No model pull."""
 from __future__ import annotations
 
 import hashlib
@@ -140,8 +140,6 @@ def digest_one(path: Path) -> dict:
         "sha3": sha3_file(path),
         "bytes": path.stat().st_size,
         "kind": ext,
-        "dji": False,
-        "pair": False,
         "live": False,
         "bind": "127.0.0.1",
     }
@@ -180,10 +178,6 @@ def scan(inbox: Path | None = None) -> dict:
         "rows": rows,
         "llm": "ticket_only",
         "model_pull": False,
-        "openvpn": False,
-        "slate": False,
-        "glinet": False,
-        "dji_api": False,
     }
     TICKET.parent.mkdir(parents=True, exist_ok=True)
     TICKET.write_text(json.dumps(ticket, indent=2) + "\n", encoding="utf-8")
