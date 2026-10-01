@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Junior surface</title>
+<pre id="out"></pre>
+<script>
+fetch("ticket.json").then(r => r.json()).then(row => {
+  const ok = row.bind === "127.0.0.1" && row.model_pull === false;
+  document.getElementById("out").textContent = JSON.stringify({ ok, kind: row.kind, sha3: row.sha3 }, null, 2);
+}).catch(e => {
+  document.getElementById("out").textContent = "no ticket yet";
+});
+</script>

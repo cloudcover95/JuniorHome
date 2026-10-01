@@ -1,0 +1,7 @@
+{
+  "name": "junior-surface",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Reads ~/.juniorhome/surfaces/react-native/ticket.json. Metro is not launched by Home.",
+  "main": "App.tsx"
+}
