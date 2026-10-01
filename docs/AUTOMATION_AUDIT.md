@@ -1,4 +1,4 @@
-# Automation audit 2026-09-30 22:22 MDT
+# Automation audit 2026-10-01 16:45 MDT
 
 | Name | When | Job |
 |------|------|-----|
@@ -9,4 +9,10 @@
 | omega-obj-weekly | Sat 10:00 | OBJ, ue5_launch false |
 | junioros-core-weekly | Sat 11:00 | ecosystem.py + os_tick |
 
-07:00 and 13:00 are not scheduled. App-only. America/Denver.
+07:00 and 13:00 are not scheduled. App-only. America/Denver. Loopback only.
+
+| Check | Result |
+|------|--------|
+| ports/ecosystem.py | present, 34 suite cores, blob f4623b99 |
+| scripts/suite_tick_prod.py | JuniorHome present, blob 2a7a26ac; JuniorLLM path absent |
+| overlap | LAST_RECEIPT 2026-10-01T01:02-06:00, older than 45 min |
