@@ -1,4 +1,5 @@
-NVIDIA PAIR = request router, not a mesh GPU.
-T4 Pi stays off PAIR (trit ticket).
-T0/M5 + Linux RTX + Spark join PAIR when the binary exists.
-Never split 120B across Apple + Blackwell.
+# Pair
+
+Home pair is Flagstaff 6-vote AND, not a vendor request router.
+T4 stays on the trit ticket.
+Do not split one model across two ISA families.

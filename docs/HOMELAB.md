@@ -1,9 +1,6 @@
-# Homelab buy
+# Homelab class
 
-M6 Mac mini 24/512: Amazon B0HGMK9TK3 = Apple list $1299, AC+3yr $1414, ships 2026-09-22.
-https://www.amazon.com/dp/B0HGMK9TK3
-
-Do not pay $1414 unless you want Care. $1299 is list not a deal.
-Tether a used M4 24GB (~$1k) as second T0. Spark is T1 only (≥60 W, UE allowed).
-M5 Pro MBP is travel/compile, not the always-on Home.
-T4 limbs stay Pi 5 / Orin. No 70B board.
+T0: arm64 or x86_64 host, local disk, no required vendor SKU.
+T4: SBC ≤12 W, trit ticket.
+Second host is optional. No 70B board required.
+Travel compile box is not the always-on Home.
