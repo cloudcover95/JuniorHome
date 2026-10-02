@@ -1,25 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <meta charset="utf-8">
-<title>JuniorHome</title>
-<style>
-body { margin: 0; background: #12141a; color: #d7dde8; font: 14px/1.4 ui-sans-serif, sans-serif; }
-header { padding: 12px 16px; border-bottom: 1px solid #2a3140; }
-main { display: grid; grid-template-columns: 220px 1fr 240px; gap: 12px; padding: 12px; }
-section { border: 1px solid #2a3140; padding: 12px; }
-li { list-style: none; margin: 4px 0; }
-.opt { color: #8b95a8; }
-</style>
-<header>JuniorHome <span id="bind"></span> boot false</header>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="home.css">
+<title>Home</title>
+<header>Home</header>
 <main>
-<section><h3>Base</h3><ul id="base"></ul></section>
-<section><h3>Session</h3><pre id="session"></pre></section>
-<section><h3>Optional</h3><ul id="opt" class="opt"></ul></section>
+<nav><a href="index.html">Modules</a><a href="dash.html">Dash</a></nav>
+<p>bind 127.0.0.1 · boot false</p>
 </main>
-<script>
-fetch("../.juniorhome/os/dash.json").catch(() => null);
-const demo = { bind: "127.0.0.1", base: ["home","os","osai","llm"], optional: ["omega","deck","web3"], measured: false };
-document.getElementById("bind").textContent = demo.bind;
-document.getElementById("base").innerHTML = demo.base.map(x => `<li>${x}</li>`).join("");
-document.getElementById("opt").innerHTML = demo.optional.map(x => `<li>${x}</li>`).join("");
-document.getElementById("session").textContent = "run scripts/dash_prod.py then open the written dash.json";
-</script>
