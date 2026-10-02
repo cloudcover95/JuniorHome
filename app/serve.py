@@ -2,22 +2,19 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
+import sys
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "web3node"))
+from stack_tick import tick
 ALLOW = ("app", "ui")
-STATUS = {"bind": "127.0.0.1", "admit": False, "launch": False,
-          "ports": ["JuniorLLM", "AGI_SDK", "JuniorOSai", "JuniorOS", "web3node", "obsidian"],
-          "modules": ["gaia", "deck"], "opened": False, "model_pull": False}
 class H(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path in ("/", "/app", "/app/"):
             return self._file(ROOT / "app" / "index.html", "text/html")
         if self.path == "/status":
-            body = json.dumps(STATUS).encode()
-            self.send_response(200)
-            self.send_header("content-type", "application/json")
-            self.end_headers()
-            self.wfile.write(body)
-            return
+            return self._json({"bind": "127.0.0.1", "admit": False, "launch": False, "stack": "/stack"})
+        if self.path == "/stack":
+            return self._json(tick())
         parts = [p for p in self.path.split("/") if p]
         if not parts or parts[0] not in ALLOW or ".." in parts:
             self.send_error(404)
@@ -27,6 +24,12 @@ class H(BaseHTTPRequestHandler):
             self.send_error(404)
             return
         self._file(path, "text/html" if path.suffix == ".html" else "text/plain")
+    def _json(self, body):
+        raw = json.dumps(body).encode()
+        self.send_response(200)
+        self.send_header("content-type", "application/json")
+        self.end_headers()
+        self.wfile.write(raw)
     def _file(self, path, kind):
         data = path.read_bytes()
         self.send_response(200)
