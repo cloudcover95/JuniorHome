@@ -3,20 +3,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>JuniorHome</title>
 <style>
-body { margin: 0; background: #12141a; color: #d7dde8; font: 16px/1.4 ui-sans-serif, sans-serif; }
+body { margin: 0; background: #121214; color: #ecece8; font: 16px/1.4 ui-sans-serif, sans-serif; }
 header, main { padding: 16px; }
-button { background: #1c2433; color: inherit; border: 1px solid #2a3140; padding: 8px 12px; }
+button { background: #121214; color: #ecece8; border: 1px solid #8a8a86; padding: 8px 12px; margin-right: 8px; }
+table { border-collapse: collapse; margin-top: 16px; }
+td { border-top: 1px solid #8a8a86; padding: 6px 12px 6px 0; }
 </style>
-<header>JuniorHome</header>
+<header>JuniorHome <span id="bind">127.0.0.1</span></header>
 <main>
-<p id="status">local</p>
-<button id="code">code</button>
-<button id="python">python</button>
+<p id="status">ram engine false. disk false.</p>
+<button id="deck">deck</button>
+<button id="osai">osai</button>
 <button id="llm">llm</button>
+<table>
+<tr><td>T4</td><td>GPU</td><td id="t4">admit false</td></tr>
+<tr><td>T0</td><td>MLX</td><td id="t0">admit false</td></tr>
+<tr><td>Geode</td><td>RP2040 mux</td><td>flashed false</td></tr>
+<tr><td>live</td><td>Ardour</td><td>false</td></tr>
+</table>
 </main>
 <script>
 const status = document.getElementById("status");
 document.querySelectorAll("button").forEach(btn => {
-  btn.onclick = () => { status.textContent = btn.id + " selected. launch false."; };
+  btn.onclick = () => { status.textContent = btn.id + " selected. launch false. ram engine false."; };
 });
 </script>

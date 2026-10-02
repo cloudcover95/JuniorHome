@@ -1,17 +1,4 @@
-# Swift BitNet App (Hardforked into JuniorHome)
+# Swift BitNet App
 
-Modular SwiftUI client for the sovereign BitNet ecosystem.
-
-## Packages
-- BitNetCore
-- BitNetIntel
-- BitNetUI
-
-## Features
-- Local MLX inference (Apple Silicon)
-- MCP client for edge delegation
-- Real-time benchmarking
-- HardwareGovernor integration
-- Model selection & precision routing
-
-This is the primary client interface for JuniorHome.
+T0 wants MLX. Admit only if MLX is present. This Linux host: admit false.
+Host RAM is not the engine. No model pull. live false.
