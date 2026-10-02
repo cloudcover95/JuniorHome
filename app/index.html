@@ -2,22 +2,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>JuniorHome</title>
-<style>
-body { margin: 0; background: #121214; color: #ecece8; font: 15px/1.4 ui-sans-serif, sans-serif; }
-header { padding: 12px 16px; border-bottom: 1px solid #8a8a86; }
-a { color: #e07a4a; margin-right: 12px; }
-main { padding: 16px; }
-</style>
+<style>body{margin:0;background:#121214;color:#ecece8;font:15px/1.4 ui-sans-serif}header{padding:12px 16px;border-bottom:1px solid #8a8a86}a{color:#e07a4a;margin-right:12px}main{padding:16px}</style>
 <header>JuniorHome <span>127.0.0.1:8766</span></header>
 <main>
 <p id="status">loading</p>
-<p><a href="/ui/gaia.html">Gaia</a><a href="/ui/deck.html">Deck</a></p>
+<p><a href="/ui/gaia.html">Gaia</a><a href="/ui/deck.html">Deck</a><a href="/ui/field.html">StoneField</a><a href="/ui/koirig.html">Koirig</a><a href="/ui/frames.html">Frames</a></p>
 </main>
 <script>
-fetch("/status").then(r => r.json()).then(j => {
-  document.getElementById("status").textContent =
-    "admit " + j.admit + " · launch " + j.launch;
-}).catch(() => {
-  document.getElementById("status").textContent = "status unavailable";
-});
+fetch("/status").then(r=>r.json()).then(j=>{document.getElementById("status").textContent="admit "+j.admit+" · launch "+j.launch;}).catch(()=>{document.getElementById("status").textContent="status unavailable";});
 </script>
