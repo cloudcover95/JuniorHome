@@ -1,10 +1,13 @@
-# CLI
+# Junior CLI
 
-```bash
-python3 scripts/junior python
-python3 scripts/junior blender
-python3 scripts/junior asahi
-```
+Entry: `python3 scripts/junior <verb>`
 
-One verb writes one file. Other surfaces and kernels are not touched.
-launch false. fetch_driver false. Works wherever Python 3 and a home directory exist.
+| Verb | Write |
+|------|--------|
+| status | none |
+| pick code\|python\|blender\|llm | active.json only |
+| code, python, blender, llm | that surface file only |
+| cpu, mlx, cuda, vulkan, asahi | that kernel file only |
+
+launch false. fetch_driver false. bpy false. boot false.
+Other suite scripts remain. This is the one to call.
