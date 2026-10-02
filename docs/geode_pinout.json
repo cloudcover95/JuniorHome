@@ -1,0 +1,15 @@
+{
+  "keys": {"rows": [0,1,2,3,4,5,6,7], "cols": [8,9,10,11,12,13,14,15], "switch": "MX-hotswap", "osai": "note"},
+  "pads": {"rows": [16,17,18,19], "cols": [20,21,22,23], "osai": "step"},
+  "knobs": {
+    "gain": {"adc": 26, "osai": "gamma"},
+    "filter": {"adc": 27, "osai": "filter"},
+    "tempo": {"adc": 28, "osai": "clock"},
+    "mix": {"adc": 29, "osai": "mix"}
+  },
+  "display": {"inch": 10.1, "bus": "dsi", "osai": "surface", "gpio": false},
+  "mcu": "rp2040-soft",
+  "trit_mcu": false,
+  "opened": false,
+  "live": false
+}
