@@ -1,12 +1,10 @@
-# Live 2026-09-13
+# Live tips
 
-Canonical: https://github.com/cloudcover95/JuniorHome/tree/main/web3node
+This box is not a clone. These commits are already on main.
 
-After pull:
-```
-python3 web3node/trit_ir.py
-python3 web3node/junioros_prod.py
-python3 web3node/fuse_kernel.py
-# optional T0: pip install onnx onnxruntime && python3 web3node/bitlinear_onnx.py
-```
-T4 ticket = fused-list + trit5. TRT/CUDA/4096² not live.
+| Repo | SHA | Note |
+|------|-----|------|
+| JuniorHome | 9ccb4d29 | osai gate, prior sha3, exit 1 |
+| JuniorLLM | c36df502 | flagstaff coolstore deny |
+
+No open branch. No model pull. ue5_launch false.
