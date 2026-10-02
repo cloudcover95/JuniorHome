@@ -7,5 +7,4 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "web3node"))
 from os_shell import run
 
 if __name__ == "__main__":
-    cmd = sys.argv[1] if len(sys.argv) > 1 else "help"
-    print(json.dumps(run(cmd), indent=2))
+    print(json.dumps(run(sys.argv[1] if len(sys.argv) > 1 else "up"), indent=2))

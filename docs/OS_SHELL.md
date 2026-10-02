@@ -1,11 +1,8 @@
 # Home session
 
-User-space. Not a kernel and not an ISO.
-
 ```bash
-python3 scripts/os_shell_prod.py digest
-python3 scripts/os_shell_prod.py mesh
-python3 scripts/os_shell_prod.py ps
+python3 scripts/os_shell_prod.py up
 ```
 
-Process table: ~/.juniorhome/os/ps.jsonl. boot false.
+init writes ~/.juniorhome/os/session.json. up runs digest then mesh.
+boot false. Not a kernel.
