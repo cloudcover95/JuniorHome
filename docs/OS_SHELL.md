@@ -1,8 +1,9 @@
-# Home session
+# Session CLI
 
 ```bash
-python3 scripts/os_shell_prod.py up
+python3 scripts/os_shell_prod.py blender
+python3 scripts/os_shell_prod.py llm
+python3 scripts/os_shell_prod.py code
 ```
 
-init writes ~/.juniorhome/os/session.json. up runs digest then mesh.
-boot false. Not a kernel.
+Each writes only its own terraform file. up does not run them.

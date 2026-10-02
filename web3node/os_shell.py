@@ -21,6 +21,22 @@ def _log(cmd: str, ok: bool) -> None:
         fh.write(json.dumps(row) + "\n")
 
 
+def _surface(name: str) -> dict:
+    OS.mkdir(parents=True, exist_ok=True)
+    body = {
+        "surface": name,
+        "launch": False,
+        "bpy": False,
+        "model_pull": False,
+        "writes": 1,
+        "others": False,
+        "bind": "127.0.0.1",
+    }
+    (OS / f"terraform_{name}.json").write_text(json.dumps(body) + "\n", encoding="utf-8")
+    _log(name, True)
+    return body
+
+
 def init() -> dict:
     OS.mkdir(parents=True, exist_ok=True)
     body = {"booted": False, "bind": "127.0.0.1", "ts": int(time.time()), "user": "local"}
@@ -30,9 +46,11 @@ def init() -> dict:
 
 
 def run(cmd: str) -> dict:
-    verb = (cmd or "up").split()[0]
+    verb = (cmd or "help").split()[0]
     if verb == "init":
         return init()
+    if verb in ("code", "blender", "llm"):
+        return _surface(verb)
     if verb == "digest":
         out = digest("JuniorHome")
         _log(verb, True)
@@ -49,8 +67,8 @@ def run(cmd: str) -> dict:
         init()
         out = engine_run("JuniorOS")
         _log("up", True)
-        return {"cmd": "up", "digest": out["digest"], "energy": out["trit_energy"], "harvest": out["harvest"], "boot": False}
+        return {"cmd": "up", "digest": out["digest"], "energy": out["trit_energy"], "boot": False}
     if verb == "ps":
         n = len(TABLE.read_text(encoding="utf-8").strip().splitlines()) if TABLE.exists() else 0
         return {"cmd": verb, "n": n, "session": SESSION.exists(), "boot": False}
-    return {"cmd": "help", "verbs": ["init", "up", "engine", "digest", "mesh", "ps"], "boot": False}
+    return {"cmd": "help", "verbs": ["init", "up", "code", "blender", "llm", "engine", "digest", "mesh", "ps"], "boot": False}
