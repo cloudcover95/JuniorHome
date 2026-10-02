@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JuniorHome</title>
+<style>
+body { margin: 0; background: #12141a; color: #d7dde8; font: 16px/1.4 ui-sans-serif, sans-serif; }
+header, main { padding: 16px; }
+button { background: #1c2433; color: inherit; border: 1px solid #2a3140; padding: 8px 12px; }
+</style>
+<header>JuniorHome</header>
+<main>
+<p id="status">local</p>
+<button id="code">code</button>
+<button id="python">python</button>
+<button id="llm">llm</button>
+</main>
+<script>
+const status = document.getElementById("status");
+document.querySelectorAll("button").forEach(btn => {
+  btn.onclick = () => { status.textContent = btn.id + " selected. launch false."; };
+});
+</script>
