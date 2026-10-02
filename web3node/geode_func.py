@@ -1,17 +1,20 @@
-"""FUNCSEL and AINSEL for deck controls. Not programmed on this host."""
-FUNCSEL = {"null": 31, "sio": 5, "pio0": 6, "pio1": 7}
-AINSEL = {"gain": 0, "filter": 1, "tempo": 2, "mix": 3}
-CONTROLS = {
-    "note": {"mux": "funcsel", "value": "sio", "pins": "0-15"},
-    "step": {"mux": "funcsel", "value": "sio", "pins": "16-23"},
-    "gamma": {"mux": "ainsel", "value": 0, "pins": "26"},
-    "filter": {"mux": "ainsel", "value": 1, "pins": "27"},
-    "clock": {"mux": "ainsel", "value": 2, "pins": "28"},
-    "mix": {"mux": "ainsel", "value": 3, "pins": "29"},
-}
+"""FUNCSEL and AINSEL. One pin, one mux. Not programmed here."""
+MATRIX = set(range(24))
+ADC = {26: 0, 27: 1, 28: 2, 29: 3}
+CONTROLS = {"note": ("funcsel", list(range(16))), "step": ("funcsel", list(range(16, 24))),
+            "gamma": ("ainsel", [26]), "filter": ("ainsel", [27]),
+            "clock": ("ainsel", [28]), "mix": ("ainsel", [29])}
 def select(name):
     row = CONTROLS.get(name)
     if row is None:
         return {"ok": False, "why": "unknown", "programmed": False}
-    return {"ok": True, "control": name, "mux": row["mux"], "value": row["value"],
-            "pins": row["pins"], "programmed": False, "model_pull": False}
+    kind, pins = row
+    if kind == "ainsel":
+        if any(p in MATRIX for p in pins):
+            return {"ok": False, "why": "matrix_pin", "programmed": False}
+        return {"ok": True, "control": name, "funcsel": "null", "ainsel": ADC[pins[0]],
+                "input_enabled": False, "pins": pins, "programmed": False}
+    if any(p in ADC for p in pins):
+        return {"ok": False, "why": "adc_pin", "programmed": False}
+    return {"ok": True, "control": name, "funcsel": "sio", "ainsel": None,
+            "input_enabled": True, "pins": pins, "programmed": False}
