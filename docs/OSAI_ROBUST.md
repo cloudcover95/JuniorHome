@@ -1,5 +1,8 @@
-# OSai robust gate
+# Fail-closed gate
 
-Six AND: protocol, 127.0.0.1, no model pull, energy band not fail, n>0, sha3.
 python3 scripts/osai_robust_prod.py
-Hourly automation does not push a kernel unless ok is true.
+Exit 1 denies the push. Exit 0 allows it.
+
+sha3 must match the last os_mesh.jsonl row. Missing file denies.
+energy band must be pass. dense does not pass.
+Flagstaff assemble is unchanged and still fail-open on a swallowed import.
