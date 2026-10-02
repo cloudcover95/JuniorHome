@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 from digest import digest
+from engine import run as engine_run
 from web3_mesh import join
 
 OS = Path.home() / ".juniorhome" / "os"
@@ -29,7 +30,7 @@ def init() -> dict:
 
 
 def run(cmd: str) -> dict:
-    verb = (cmd or "help").split()[0]
+    verb = (cmd or "up").split()[0]
     if verb == "init":
         return init()
     if verb == "digest":
@@ -40,14 +41,16 @@ def run(cmd: str) -> dict:
         out = join()
         _log(verb, True)
         return {"cmd": verb, "ledger_n": out["ledger_n"]}
+    if verb == "engine":
+        out = engine_run("JuniorOS")
+        _log(verb, True)
+        return {"cmd": verb, "energy": out["trit_energy"], "harvest": out["harvest"], "boot": False}
     if verb == "up":
         init()
-        d = digest("JuniorHome")
-        m = join()
+        out = engine_run("JuniorOS")
         _log("up", True)
-        return {"cmd": "up", "digest": d["n"], "ledger_n": m["ledger_n"], "boot": False}
+        return {"cmd": "up", "digest": out["digest"], "energy": out["trit_energy"], "harvest": out["harvest"], "boot": False}
     if verb == "ps":
         n = len(TABLE.read_text(encoding="utf-8").strip().splitlines()) if TABLE.exists() else 0
         return {"cmd": verb, "n": n, "session": SESSION.exists(), "boot": False}
-    _log("help", True)
-    return {"cmd": "help", "verbs": ["init", "up", "digest", "mesh", "ps"], "boot": False}
+    return {"cmd": "help", "verbs": ["init", "up", "engine", "digest", "mesh", "ps"], "boot": False}
