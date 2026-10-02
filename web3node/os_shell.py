@@ -12,6 +12,7 @@ from web3_mesh import join
 OS = Path.home() / ".juniorhome" / "os"
 TABLE = OS / "ps.jsonl"
 SESSION = OS / "session.json"
+SURFACES = ("code", "python", "blender", "llm")
 
 
 def _log(cmd: str, ok: bool) -> None:
@@ -49,7 +50,7 @@ def run(cmd: str) -> dict:
     verb = (cmd or "help").split()[0]
     if verb == "init":
         return init()
-    if verb in ("code", "blender", "llm"):
+    if verb in SURFACES:
         return _surface(verb)
     if verb == "digest":
         out = digest("JuniorHome")
@@ -71,4 +72,4 @@ def run(cmd: str) -> dict:
     if verb == "ps":
         n = len(TABLE.read_text(encoding="utf-8").strip().splitlines()) if TABLE.exists() else 0
         return {"cmd": verb, "n": n, "session": SESSION.exists(), "boot": False}
-    return {"cmd": "help", "verbs": ["init", "up", "code", "blender", "llm", "engine", "digest", "mesh", "ps"], "boot": False}
+    return {"cmd": "help", "verbs": ["init", "up", *SURFACES, "engine", "digest", "mesh", "ps"], "boot": False}
