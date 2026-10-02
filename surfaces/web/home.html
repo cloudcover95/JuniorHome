@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>JuniorHome</title>
+<style>
+  body { margin: 0; background: #0e141b; color: #d7e0ea; font: 14px/1.4 ui-sans-serif, sans-serif; }
+  header, main { padding: 16px 20px; }
+  header { border-bottom: 1px solid #243140; letter-spacing: 0.04em; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  section { background: #151d27; border: 1px solid #243140; padding: 12px; }
+  h2 { margin: 0 0 8px; font-size: 12px; color: #8aa0b8; }
+  .ok { color: #7dcea0; }
+</style>
+<header>JuniorHome // session // 127.0.0.1:8765 // not connected</header>
+<main class="grid">
+  <section><h2>SESSION</h2><pre id="session">no dash.json</pre></section>
+  <section><h2>DIGEST</h2><pre id="digest"></pre></section>
+  <section><h2>ENVELOPE</h2><pre id="env"></pre></section>
+</main>
+<script>
+fetch("dash.json").then(r => r.json()).then(row => {
+  document.getElementById("session").textContent = JSON.stringify({ session: row.session, ps: row.ps, boot: row.boot }, null, 2);
+  document.getElementById("digest").textContent = JSON.stringify({ digest_n: row.digest_n }, null, 2);
+  document.getElementById("env").textContent = JSON.stringify({ envelope: row.envelope, watts: row.watts, measured: row.measured, svd: row.svd }, null, 2);
+}).catch(() => {});
+</script>
