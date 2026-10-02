@@ -1,36 +1,33 @@
 <!doctype html>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gaia — JuniorHome</title>
 <style>
-  :root { --gold: #e6c35c; --ink: #0b0d10; --bolt: #f4e27a; }
-  body { margin: 0; background: var(--ink); color: #f2ead8; font: 14px/1.4 ui-sans-serif, system-ui; }
-  .stage { width: 280px; margin: 24px auto; text-align: center; }
-  svg { width: 220px; height: 320px; }
-  .bolt { stroke: var(--bolt); stroke-width: 2; fill: none; opacity: .85; }
-  .core { fill: var(--gold); }
-  .name { letter-spacing: .18em; text-transform: uppercase; }
-  input, select { background: #16181c; color: inherit; border: 1px solid #3a3420; padding: 6px; width: 90%; }
-  p { opacity: .8; }
+:root { --gold: #e6c35c; --ink: #0b0d10; --bolt: #f4e27a; }
+body { margin: 0; background: var(--ink); color: #f2ead8; font: 14px/1.4 ui-sans-serif, system-ui; }
+.stage { width: 300px; margin: 16px auto; text-align: center; }
+svg { width: 180px; height: 240px; }
+.bolt { stroke: var(--bolt); stroke-width: 2; fill: none; }
+.core { fill: var(--gold); }
+.name { letter-spacing: .18em; text-transform: uppercase; }
+td { padding: 3px 8px; color: #f2ead8; text-align: left; }
+table { width: 100%; border-top: 1px solid #3a3420; }
 </style>
 <div class="stage">
-  <svg viewBox="0 0 220 320" aria-label="Gaia portrait">
-    <path class="bolt" d="M110 20 L90 90 L120 90 L70 200 L130 140 L100 300"/>
-    <path class="bolt" d="M110 28 L140 100 L115 100 L160 210 L100 155"/>
-    <ellipse class="core" cx="110" cy="86" rx="28" ry="36"/>
-    <ellipse cx="110" cy="86" rx="18" ry="24" fill="#1a1408"/>
-    <circle cx="102" cy="84" r="3" fill="var(--bolt)"/>
-    <circle cx="118" cy="84" r="3" fill="var(--bolt)"/>
-  </svg>
-  <div class="name" id="who">Gaia · they</div>
-  <p>Local goldend spine. Not Halo. Not a download.</p>
-  <p><input id="n" value="Gaia" placeholder="name">
-  <select id="p"><option>they</option><option>she</option><option>he</option></select></p>
+<svg viewBox="0 0 220 320" aria-label="Gaia portrait">
+<path class="bolt" d="M110 20 L90 90 L120 90 L70 200 L130 140 L100 300"/>
+<ellipse class="core" cx="110" cy="86" rx="28" ry="36"/>
+<ellipse cx="110" cy="86" rx="18" ry="24" fill="#1a1408"/>
+<circle cx="102" cy="84" r="3" fill="var(--bolt)"/>
+<circle cx="118" cy="84" r="3" fill="var(--bolt)"/>
+</svg>
+<div class="name">Gaia</div>
+<p>OSai label for the Geode cluster and JuniorDeck. Local. No download.</p>
+<table>
+<tr><td>MX 0-15</td><td>note</td></tr>
+<tr><td>pads 16-23</td><td>step</td></tr>
+<tr><td>ADC 26-29</td><td>gamma filter clock mix</td></tr>
+<tr><td>10.1 in DSI</td><td>surface</td></tr>
+</table>
+<p>flashed false · live false</p>
 </div>
-<script>
-const paint = () => {
-  document.getElementById('who').textContent =
-    document.getElementById('n').value + ' · ' + document.getElementById('p').value;
-};
-document.getElementById('n').oninput = paint;
-document.getElementById('p').onchange = paint;
-</script>
