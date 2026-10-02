@@ -3,6 +3,7 @@ from __future__ import annotations
 import json, sys
 from pathlib import Path
 from pick import pick
+from deck_cli import dispatch as deck_dispatch
 OS = Path.home() / ".juniorhome" / "os"
 SURFACES = ("code", "python", "blender", "llm")
 KERNELS = ("cpu", "mlx", "cuda", "vulkan", "asahi")
@@ -26,6 +27,8 @@ def registry(env="t4"):
     return body
 def dispatch(argv):
     verb = argv[0] if argv else "help"
+    if verb == "deck":
+        return deck_dispatch(argv[1:])
     if verb == "status":
         return status()
     if verb == "pick" and len(argv) > 1:
@@ -39,4 +42,4 @@ def dispatch(argv):
                 "bpy": False, "model_pull": False, "writes": 1, "bind": "127.0.0.1"}
         (OS / f"{kind}_{verb}.json").write_text(json.dumps(body) + "\n", encoding="utf-8")
         return body
-    return {"cmd": "help", "verbs": ["status", "pick", "registry", *SURFACES, *KERNELS], "boot": False}
+    return {"cmd": "help", "verbs": ["status", "pick", "registry", "deck", *SURFACES, *KERNELS], "boot": False}
