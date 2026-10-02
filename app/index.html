@@ -5,57 +5,19 @@
 <style>
 body { margin: 0; background: #121214; color: #ecece8; font: 15px/1.4 ui-sans-serif, sans-serif; }
 header { padding: 12px 16px; border-bottom: 1px solid #8a8a86; }
-main { display: grid; grid-template-columns: 220px 1fr; min-height: 80vh; }
-nav button { display: block; width: 100%; text-align: left; background: #121214; color: #ecece8; border: 0; border-bottom: 1px solid #2a2a2e; padding: 8px 12px; }
-nav button.on { border-left: 3px solid #e07a4a; }
-section { padding: 16px; }
-td { padding: 4px 12px 4px 0; color: #c5c8ce; }
+a { color: #e07a4a; margin-right: 12px; }
+main { padding: 16px; }
 </style>
-<header>JuniorHome <span id="bind">127.0.0.1</span> launch false</header>
+<header>JuniorHome <span>127.0.0.1:8766</span></header>
 <main>
-<nav id="menu"></nav>
-<section>
-<h2 id="title">Status</h2>
-<p id="detail"></p>
-<table id="rows"></table>
-</section>
+<p id="status">loading</p>
+<p><a href="/ui/gaia.html">Gaia</a><a href="/ui/deck.html">Deck</a></p>
 </main>
 <script>
-const items = [
-  ["status", "Read only. Writes 0."],
-  ["bind", "127.0.0.1. No public socket."],
-  ["envelope", "t4 GPU or t0 MLX. Open does not write."],
-  ["gpu", "T4 want. Admit false on this host."],
-  ["mlx", "T0 want. Admit false on this host."],
-  ["deck", "Host class only. Ardour not launched."],
-  ["osai", "Six-AND gate. Exit 1 denies a push."],
-  ["energy", "Pass 0.40 to 0.85. Not joules."],
-  ["write-gate", "Open envelope stays off disk."],
-  ["geode", "RP2040 mux. Flashed false."],
-  ["hardware", "Class node only. Device not opened."],
-  ["ardour", "GPL session drop. Vendored false."],
-  ["registry", "8 cores. Download 0."],
-  ["surfaces", "code, python, llm. Launch false."],
-  ["theme", "Dark forged. No white field."],
-  ["receipt", "Last gate sha3. Missing denies."],
-  ["push", "allow_push only if ok."],
-  ["pio", "Silicon false on this host."],
-  ["display", "10.1 in flat. DSI, not GPIO."],
-  ["about", "Model pull false. UE boot false."]
-];
-const menu = document.getElementById("menu");
-const title = document.getElementById("title");
-const detail = document.getElementById("detail");
-items.forEach(([name, text], i) => {
-  const b = document.createElement("button");
-  b.textContent = name;
-  b.onclick = () => {
-    document.querySelectorAll("nav button").forEach(x => x.classList.remove("on"));
-    b.classList.add("on");
-    title.textContent = name;
-    detail.textContent = text + " launch false.";
-  };
-  menu.appendChild(b);
-  if (i === 0) b.click();
+fetch("/status").then(r => r.json()).then(j => {
+  document.getElementById("status").textContent =
+    "admit " + j.admit + " · launch " + j.launch;
+}).catch(() => {
+  document.getElementById("status").textContent = "status unavailable";
 });
 </script>

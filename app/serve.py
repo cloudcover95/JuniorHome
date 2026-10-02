@@ -1,14 +1,40 @@
-"""Serve app/ on 127.0.0.1. Standalone. No store."""
-from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+"""Serve Home on 127.0.0.1. app and ui only."""
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import json
 from pathlib import Path
-import os
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
+ALLOW = ("app", "ui")
 
-class H(SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=str(ROOT), **kwargs)
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path in ("/", "/app", "/app/"):
+            return self._file(ROOT / "app" / "index.html", "text/html")
+        if self.path == "/status":
+            body = json.dumps({"bind": "127.0.0.1", "admit": False, "launch": False, "modules": ["gaia", "deck"]}).encode()
+            self.send_response(200)
+            self.send_header("content-type", "application/json")
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        parts = [p for p in self.path.split("/") if p]
+        if not parts or parts[0] not in ALLOW:
+            self.send_error(404)
+            return
+        path = ROOT.joinpath(*parts)
+        if not path.is_file():
+            self.send_error(404)
+            return
+        kind = "text/html" if path.suffix == ".html" else "text/plain"
+        self._file(path, kind)
+    def _file(self, path, kind):
+        data = path.read_bytes()
+        self.send_response(200)
+        self.send_header("content-type", kind)
+        self.end_headers()
+        self.wfile.write(data)
+    def log_message(self, fmt, *args):
+        return
 
 if __name__ == "__main__":
-    os.chdir(ROOT)
     ThreadingHTTPServer(("127.0.0.1", 8766), H).serve_forever()
