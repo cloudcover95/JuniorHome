@@ -1,4 +1,4 @@
-"""Home CLI. One verb, one file. Cross-platform stdlib."""
+"""Home CLI. One verb, one file. Status does not write."""
 from __future__ import annotations
 
 import json
@@ -10,8 +10,21 @@ SURFACES = ("code", "python", "blender", "llm")
 KERNELS = ("cpu", "mlx", "cuda", "vulkan", "asahi")
 
 
+def status() -> dict:
+    return {
+        "cmd": "status",
+        "surfaces": {name: (OS / f"surface_{name}.json").exists() for name in SURFACES},
+        "kernels": {name: (OS / f"kernel_{name}.json").exists() for name in KERNELS},
+        "app": (OS / "mobile.json").exists(),
+        "boot": False,
+        "writes": 0,
+    }
+
+
 def dispatch(argv: list[str]) -> dict:
     verb = argv[0] if argv else "help"
+    if verb == "status":
+        return status()
     if verb in SURFACES or verb in KERNELS:
         OS.mkdir(parents=True, exist_ok=True)
         kind = "surface" if verb in SURFACES else "kernel"
@@ -27,12 +40,7 @@ def dispatch(argv: list[str]) -> dict:
         }
         (OS / f"{kind}_{verb}.json").write_text(json.dumps(body) + "\n", encoding="utf-8")
         return body
-    return {
-        "cmd": "help",
-        "surfaces": list(SURFACES),
-        "kernels": list(KERNELS),
-        "boot": False,
-    }
+    return {"cmd": "help", "verbs": ["status", *SURFACES, *KERNELS], "boot": False}
 
 
 if __name__ == "__main__":
