@@ -1,8 +1,9 @@
-"""OSai gate. Fail closed. Missing or mismatched prior denies. Dense does not pass."""
+"""OSai gate. Open envelope does not touch disk."""
 from __future__ import annotations
 import hashlib, json
 from pathlib import Path
 from trit_energy import rate
+from write_gate import commit
 MESH = Path.home() / ".juniorhome" / "gaia_mesh" / "os_mesh.jsonl"
 OUT = Path.home() / ".juniorhome" / "gaia_mesh" / "osai_robust.jsonl"
 def _prior():
@@ -12,23 +13,20 @@ def _prior():
     if not lines:
         return ""
     return str(json.loads(lines[-1]).get("sha3") or "")
-def gate(note="JuniorOSai"):
-    row = rate(note)
+def gate(note="JuniorOSai", env="open"):
+    row = rate(note, env)
     sha = hashlib.sha3_256(note.encode()).hexdigest()[:16]
     prior = _prior()
-    votes = {
-        "protocol": row["protocol"] == "goldend-osai-omega/1",
-        "bind": row["bind"] == "127.0.0.1",
-        "no_pull": row["model_pull"] is False,
-        "energy": row["band"] == "pass",
-        "n": row["n"] > 0,
-        "sha3": bool(prior) and prior == sha,
-    }
+    votes = {"protocol": row["protocol"] == "goldend-osai-omega/1",
+             "bind": row["bind"] == "127.0.0.1",
+             "no_pull": row["model_pull"] is False,
+             "energy": row["band"] == "pass",
+             "n": row["n"] > 0,
+             "sha3": bool(prior) and prior == sha}
     ok = all(votes.values())
-    body = {"ok": ok, "allow_push": ok, "votes": votes, "energy": row["energy"],
-            "band": row["band"], "sha3": sha, "prior": prior,
+    line = json.dumps({"ok": ok, "band": row["band"], "sha3": sha}) + "\n"
+    written = commit(env, OUT, line)
+    return {"ok": ok, "allow_push": ok, "votes": votes, "energy": row["energy"],
+            "band": row["band"], "sha3": sha, "prior": prior, "env": env,
+            "disk": written["disk"], "why": written["why"],
             "bind": "127.0.0.1", "model_pull": False}
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    with OUT.open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps({"ok": ok, "band": body["band"], "sha3": sha, "prior": prior}) + "\n")
-    return body
