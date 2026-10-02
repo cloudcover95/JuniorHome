@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="520" viewBox="0 0 920 520">
+  <rect width="920" height="520" fill="#121214"/>
+  <text x="24" y="36" fill="#ecece8" font-family="ui-monospace,monospace" font-size="18">JuniorDeck Geode - RP2040 mux, not flashed</text>
+  <rect x="340" y="80" width="200" height="300" rx="8" fill="#09090b" stroke="#c5c8ce"/>
+  <text x="390" y="110" fill="#ecece8" font-family="ui-monospace,monospace" font-size="14">RP2040</text>
+  <text x="368" y="140" fill="#8a8a86" font-family="ui-monospace,monospace" font-size="12">GPIO 0-29</text>
+  <text x="368" y="164" fill="#8a8a86" font-family="ui-monospace,monospace" font-size="12">ADC 26-29</text>
+  <text x="368" y="188" fill="#e07a4a" font-family="ui-monospace,monospace" font-size="12">trit_mcu false</text>
+  <g font-family="ui-monospace,monospace" font-size="13" fill="#ecece8">
+    <text x="40" y="120">8x8 MX rows 0-7</text>
+    <text x="40" y="148">8x8 MX cols 8-15</text>
+    <text x="40" y="176">4x4 pad rows 16-19</text>
+    <text x="40" y="204">4x4 pad cols 20-23</text>
+    <text x="40" y="250">gain ADC 26</text>
+    <text x="40" y="278">filter ADC 27</text>
+    <text x="40" y="306">tempo ADC 28</text>
+    <text x="40" y="334">mix ADC 29</text>
+    <text x="600" y="160">10.1 in DSI</text>
+    <text x="600" y="188">not GPIO</text>
+    <text x="600" y="240">OSai note / step</text>
+    <text x="600" y="268">gamma filter clock mix</text>
+    <text x="600" y="320">live false</text>
+  </g>
+  <path d="M230 114 H340" stroke="#c5c8ce"/>
+  <path d="M230 142 H340" stroke="#c5c8ce"/>
+  <path d="M230 170 H340" stroke="#c5c8ce"/>
+  <path d="M230 198 H340" stroke="#c5c8ce"/>
+  <path d="M230 244 H340" stroke="#e07a4a"/>
+  <path d="M540 154 H590" stroke="#c5c8ce"/>
+</svg>
