@@ -1,6 +1,7 @@
-"""Compute the suite scores. One write."""
+"""Compute the suite scores. Write only if the note changed."""
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -19,13 +20,22 @@ def _energy(note: str) -> float:
 
 
 def run(note: str = "JuniorOS") -> dict:
+    sha = hashlib.sha3_256(note.encode()).hexdigest()[:16]
+    if OUT.exists():
+        prev = json.loads(OUT.read_text(encoding="utf-8"))
+        if prev.get("sha3") == sha:
+            prev["writes"] = 0
+            prev["skipped"] = True
+            return prev
     body = {
         "protocol": "goldend-osai-omega/1",
         "tool": "lean",
         "note": note[:160],
+        "sha3": sha,
         "trit_energy": _energy(note),
         "harvest": "solar",
         "writes": 1,
+        "skipped": False,
         "boot": False,
         "train": False,
         "measured": False,
