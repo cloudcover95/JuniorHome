@@ -1,3 +1,138 @@
+# Weekly audit 2026-10-05 17:04 MDT
+
+TZ America/Denver. Owner cloudcover95. Loopback only. No product work. No deletes.
+Window: 2026-09-28 → 2026-10-05.
+Daily receipt `docs/AUTOMATION_AUDIT.md` (`a152a92`, 16:45 MDT) is ~19 min old — still write this file only.
+
+Goals held: local software + BitNet overlay toward JuniorOS; owner public repo search total_count=27 point at Home/JuniorLLM compute; do not clone AbsMean 25 times.
+
+## Automations (live list)
+
+Six active, APP_ONLY. No 07:00 or 13:00 task in the live catalog.
+
+| name | taskId prefix | schedule | nextRun listed (often stale) | enabled |
+|------|---------------|----------|------------------------------|---------|
+| junioros-core-weekly | 4d37ff8e | Sat 11:00 Denver | 2026-10-03T17:00Z (fired) | yes |
+| omega-obj-weekly | 1700c44c | Sat 10:00 Denver | listed 2026-09-26T16:00Z (stale; fired 2026-10-03) | yes |
+| JuniorCloud weekly audit | dd0b1c93 | Mon 17:00 Denver | 2026-09-14T23:00Z (this run; UI lag) | yes |
+| JuniorCloud daily audit | dc3fbf2f | daily 16:45 Denver | listed 2026-10-01T22:45Z (stale; fires daily) | yes |
+| JuniorCloud slot 19:00 | bde8e4e0 | daily 19:00 Denver | listed 2026-09-10T01:00Z (stale) | yes |
+| JuniorCloud overnight build | 20718d5d | daily 01:00 Denver | listed 2026-09-10T07:00Z (stale) | yes |
+
+Not in live list (called out by daily audit): slot 07:00 (was 869561c2), slot 13:00 (was d8632910), Friday weekly 16:45 (was 7716afb1).
+
+## Last 7 days — overnight 01:00 (`20718d5d`)
+
+Times below are America/Denver. Sep 28 01:02 was the prior weekly close; new nights are Sep 29–Oct 5.
+
+| local fire | result title | status |
+|------------|--------------|--------|
+| 2026-10-05 01:03 | T52 eighth-cousins-once-removed shipped | SUCCESS |
+| 2026-10-04 01:02 | T50 seventh-cousins-once-removed shipped | SUCCESS |
+| 2026-10-03 01:03 | T48 sixth-cousins-once-removed shipped | SUCCESS |
+| 2026-10-02 01:02 | T46 fifth-cousins skill-pin shipped | SUCCESS |
+| 2026-10-01 01:02 | T44 skill-pin shipped | SUCCESS |
+| 2026-09-30 01:02 | T42 skill-pin shipped | SUCCESS |
+| 2026-09-29 01:02 | T40 CLI wired for 2nd-cousins | SUCCESS |
+| 2026-09-28 01:02 | T40 2nd-cousins-once-removed shipped | SUCCESS (prior weekly) |
+
+Overnight shipped every new night in-window (7/7). UI `nextRun` lag does not match fires.
+
+## Last 7 days — 07 / 13 / 19 slots
+
+| slot | last 7 days |
+|------|-------------|
+| 07:00 | FAIL — automation not listed. Zero results. |
+| 13:00 | FAIL — automation not listed. Zero results. |
+| 19:00 2026-10-04 19:15 | T51 eighth-cousins shipped SUCCESS |
+| 19:00 2026-10-03 19:12 | T49 seventh-cousins shipped SUCCESS |
+| 19:00 2026-10-02 19:12 | T47 sixth-cousins shipped SUCCESS |
+| 19:00 2026-10-01 19:13 | T45 fifth-cousins shipped SUCCESS |
+| 19:00 2026-09-30 19:10 | T43 skill-pin fourth-cousins shipped SUCCESS |
+| 19:00 2026-09-29 19:10 | T41 third-cousins shipped SUCCESS |
+| 19:00 2026-09-28 19:11 | TASK_RESULT_ERROR `USAGE_POOL_EXHAUSTED` (was pending at prior weekly) |
+| 19:00 2026-10-05 19:00 | pending (this weekly is 17:04) |
+
+19:00 coverage is the only evening slot that still exists. One quota miss this window (Sep 28, the evening the prior weekly left pending). Capacity doc still budgets four slices/day; live catalog delivers two (01:00 + 19:00) plus audits + Saturday checks.
+
+Daily audit `dc3fbf2f` SUCCESS every 16:45 Sep 28–Oct 5 (today title: Daily audit T53 committed — receipt stamp only, T53 not shipped). Prior weekly SUCCESS 2026-09-28 17:04 MDT. omega-obj-weekly SUCCESS 2026-10-03 10:14 MDT (files identical). junioros-core-weekly SUCCESS 2026-10-03 11:07 MDT (files confirmed).
+
+## GitHub last 7 days
+
+`github___list_commits since=2026-09-28` returned a truncated page on both repos. Commit search totals on default branch for author-date 2026-09-28..2026-10-06: JuniorLLM 115, JuniorHome 148. Heads at audit time:
+
+- JuniorLLM `40e5e1e` docs: fill T52 receipt sha (2026-10-05 01:08 MDT); feature tip `d8e1aa5` T52 juniorctl skill-pin eighth-cousins-once-removed
+- JuniorHome `a152a92` docs: automation audit 2026-10-05 16:45 MDT; chat/prod cluster this window is 2026-10-02 (shared shell UI, frames, koirig, deck trit, suite/rack status, local load deny)
+
+Public repo search total_count: 27 (was 26 last weekly). Compute stays pointed at Home + JuniorLLM. Do not vendor AbsMean per-repo.
+
+### T-slices (bot / overnight+19:00)
+
+T4 ledger and T5 skill pin remain **done** (prior weeks). This week the bot walked T41→T52 on the skill-pin kinship stack:
+
+| slice | where |
+|-------|--------|
+| T4 JuniorFileLedger create/read | backlog: done (prior) |
+| T5 skill load + hash pin | backlog: done (2026-09-12) |
+| T41 skill-pin third-cousins | 19:00 2026-09-29 SUCCESS |
+| T42 skill-pin | overnight 2026-09-30 SUCCESS |
+| T43 skill-pin fourth-cousins | 19:00 2026-09-30 SUCCESS |
+| T44 skill-pin | overnight 2026-10-01 SUCCESS |
+| T45 fifth-cousins | 19:00 2026-10-01 SUCCESS |
+| T46 fifth-cousins-once-removed | overnight 2026-10-02 SUCCESS |
+| T47 sixth-cousins | 19:00 2026-10-02 SUCCESS |
+| T48 sixth-cousins-once-removed | overnight 2026-10-03 SUCCESS |
+| T49 seventh-cousins | 19:00 2026-10-03 SUCCESS |
+| T50 seventh-cousins-once-removed | overnight 2026-10-04 SUCCESS |
+| T51 eighth-cousins | 19:00 2026-10-04 SUCCESS |
+| T52 eighth-cousins-once-removed | overnight 2026-10-05 SUCCESS |
+| T53 skill-pin ninth-cousins | **next_smallest_slice** (open) |
+
+Port on receipts: JuniorAstraReason. LAST_RECEIPT file reads T52 @ 2026-10-05T01:05-06:00 — not rewritten here.
+
+### Chat slices (Home UI, user/app/media/scan, TP)
+
+STATE.md chat_slice class remains Home UI + user/app/media/scan + TP + BitnetCloud + llama sit-beside (not rewritten this run).
+
+Chat/prod on JuniorHome this week (not T53), mostly 2026-10-02 ~00:03–00:58 MDT: shared shell UI and module nav; frames (Gaia / StoneField / Home / JuniorOS / Koirig); koirig land/sea trit flip; deck trit T4 GPU or T0 MLX admit false; FUNCSEL vs AINSEL; adc26 codes not a reading; serve `/stack` and app/ui on 127.0.0.1; suite status 11 planned slots none ran; rack 4 Pi / 5 GPU / 1 Spark / 1 M5 Pro none attached; train steps 0; local file only, no pull; deck CLI and second-brain six-port ticket. Daily `AUTOMATION_AUDIT.md` rewrite each 16:45. JuniorLLM same night (not skill-pin): Koirig land/sea deny, deck sheet, terraform T4 GPU / T0 MLX envelope admit-only-if-present, OSai verbs empty until device present, Gaia and Deck separate identities.
+
+## Shipped
+
+- T41–T52 skill-pin kinship chain on JuniorLLM rails/linux juniorctl (loopback, no body/fetch/exec).
+- Overnight 01:00 SUCCESS 7/7 new nights; 19:00 SUCCESS 6/7 completed fires (Sep 28 quota miss).
+- Daily AUTOMATION_AUDIT table current through 16:45 MDT today (`a152a92`).
+- omega-obj-weekly and junioros-core-weekly both SUCCESS Sat 2026-10-03 (confirm-only, no product push this audit).
+- Home chat/prod pointers listed above (2026-10-02 cluster).
+- This WEEKLY_AUDIT.md week-4 header (prior 2026-09-28, 2026-09-21, and 2026-09-14 sections kept below).
+
+## Skipped
+
+- Recreate 07:00 / 13:00 automations (audit does not create tasks).
+- T53 skill-pin ninth-cousins (left for overnight/19:00).
+- Rewrite LAST_RECEIPT / STATE.md / AUTOMATION_AUDIT.md (daily receipt <45 min; this file only).
+- Any GGUF download, AbsMean clone farm, docker.sock, 0.0.0.0 bind, MP/KAYA, force-push, delete.
+- Tonight 19:00 (not due yet).
+
+## Gaps
+
+1. **llama GGUF** — still not on box. LAST_RECEIPT this run does not flip llama_ready. Prior stamps remain `llama_ready: false until JUNIOR_GGUF on box`. Map notes exist; no weight pull this week. Expected.
+2. **19:00 coverage** — slot exists and shipped 6/7 evenings; Sep 28 `USAGE_POOL_EXHAUSTED`; UI nextRun stale; 07/13 still missing so the 4-slot capacity plan is 50% live. Tonight 19:00 not yet fired.
+3. **CI emails vs local test_prod** — notification is APP_ONLY (no CI email trail). Code search `test_prod` on JuniorLLM + JuniorHome returned 0 items (`incomplete_results: true`). Local proof stays on-box tests named in receipts (`test_t52_juniorctl_skill_pin_eighth_cousins_once_removed.py`, 5/5 pass on the T52 receipt), not a mailed CI gate.
+4. Stale `nextRun` on overnight / 19:00 / daily / weekly / omega vs actual SUCCESS fires.
+5. Owner public repo search now 27 vs stated 25-repo target — still do not vendor AbsMean per-repo.
+6. Daily audit title says T53 committed; LAST_RECEIPT next_smallest_slice is T53 and status is still open. Do not treat the 16:45 title as a T53 ship.
+
+## Receipt stamps (do not rewrite)
+
+- LAST_RECEIPT file: T52 juniorctl skill-pin eighth-cousins-once-removed shipped 2026-10-05T01:05-06:00
+- bot_next: T53 juniorctl skill-pin ninth-cousins (loopback)
+- llama_ready: false (unchanged; not re-proven this run)
+- bind: 127.0.0.1 loopback only (prior stamps 8770 hook / 8771 UI / 8767 i2sd; T52 receipt bind is loopback, no wildcard)
+- port: JuniorAstraReason
+- daily receipt age: ~19 min (`a152a92` / task result 5fc71c28) — WEEKLY_AUDIT.md only
+
+---
+
 # Weekly audit 2026-09-28 17:04 MDT
 
 TZ America/Denver. Owner cloudcover95. Loopback only. No product work. No deletes.
