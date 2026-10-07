@@ -1,0 +1,33 @@
+[board]
+name = "JuniorDeck"
+live = false
+vendor_os = false
+
+[kept]
+audio_drop = true
+trit_pack = true
+geode_grid = "8x8"
+gamma = true
+bind = "127.0.0.1"
+
+[class]
+pads = 16
+pad_banks = 8
+keys = 37
+aftertouch = true
+wheels = ["pitch", "mod"]
+knobs = 4
+encoder = 1
+pedals = ["sustain", "foot", "expression"]
+line_in = 2
+line_out = 2
+headphone = 1
+cv_gate = 8
+midi_din = true
+usb_audio_class = true
+usb_midi_class = true
+display_inch = 7
+
+[excluded]
+reason = "vendor software and pending pad patent"
+names = ["vendor-os", "q-link", "live-control", "project-import", "quadrant-pad"]
