@@ -1,30 +1,31 @@
-"""JuniorDeck engine. Math, bus, session. No device open."""
+"""JuniorDeck engine. Feed, then bus, then session."""
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
 from deck_bus import mix
-from deck_math import map_channels
+from deck_feed import feed
 from deck_session import session
 
 OUT = Path.home() / ".juniorhome" / "os" / "deck_engine.json"
 
 
 def run(tracks: int = 8) -> dict:
-    math = map_channels()
+    rows = feed()
     bus = mix()
     sess = session(tracks)
     body = {
         "protocol": "goldend-osai-omega/1",
         "engine": "JuniorDeck",
-        "rule": math["rule"],
-        "energy": math["energy"],
+        "feed": rows["feed"],
+        "n": rows["n"],
+        "energy": rows["energy"],
         "bus": bus["bus"],
         "tracks": sess["tracks"],
-        "rate_hz": sess["rate_hz"],
-        "bits": sess["bits"],
-        "switch": "mx-hotswap",
+        "rate_hz": 48000,
+        "bits": 24,
+        "adc": False,
         "plugin_host": False,
         "live": False,
         "bind": "127.0.0.1",
