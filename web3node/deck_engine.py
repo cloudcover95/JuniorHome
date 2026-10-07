@@ -1,21 +1,34 @@
-"""JuniorDeck engine. Step ticket stays in RAM until the envelope closes."""
-import time
+"""JuniorDeck engine. Math, bus, session. No device open."""
+from __future__ import annotations
+
+import json
 from pathlib import Path
-from write_gate import commit
-OUT = Path.home() / ".juniorhome" / "deck" / "engine.txt"
-def steps(n=16):
-    return [1.0 if i % 4 == 0 else (0.4 if i % 2 == 0 else 0.0) for i in range(n)]
-def pack(xs):
-    gamma = sum(abs(x) for x in xs) / len(xs) or 1.0
-    trits = []
-    for x in xs:
-        q = round(x / gamma)
-        trits.append(1 if q > 1 else (-1 if q < -1 else int(q)))
-    return f"n={len(trits)} z={trits.count(0)} g={gamma:.3f}"
-def run(env="open"):
-    t0 = time.perf_counter()
-    text = pack(steps())
-    row = commit(env, OUT, text)
-    return {"env": env, "ticket": text, "us": round((time.perf_counter() - t0) * 1e6, 1),
-            "ram": not row["disk"], "disk": row["disk"], "why": row["why"],
-            "ardour": False, "live": False, "model_pull": False}
+
+from deck_bus import mix
+from deck_math import map_channels
+from deck_session import session
+
+OUT = Path.home() / ".juniorhome" / "os" / "deck_engine.json"
+
+
+def run(tracks: int = 8) -> dict:
+    math = map_channels()
+    bus = mix()
+    sess = session(tracks)
+    body = {
+        "protocol": "goldend-osai-omega/1",
+        "engine": "JuniorDeck",
+        "rule": math["rule"],
+        "energy": math["energy"],
+        "bus": bus["bus"],
+        "tracks": sess["tracks"],
+        "rate_hz": sess["rate_hz"],
+        "bits": sess["bits"],
+        "switch": "mx-hotswap",
+        "plugin_host": False,
+        "live": False,
+        "bind": "127.0.0.1",
+    }
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    OUT.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+    return body
