@@ -1,8 +1,10 @@
 # Deck math
 
-Per channel: frame of 8, gamma = mean(abs(x)), trit = clip(round(x/gamma), -1, 1), dot = sum(trit * W).
-W is (1, 0, -1, 1, 0, -1, 1, 0). No float multiply on the hot path after the pack.
-Frame is the channel name until a PCM buffer is present. live false.
+Per channel: 8-vector, Winsor p95, AbsMean gamma, trit clip {-1,0,1}, pack5.
+
+\[ \gamma = \mathrm{mean}(|x|), \quad q = \mathrm{clip}(\mathrm{round}(x/\gamma), -1, 1) \]
+
+Not a first-letter hash. live false. MX hotswap.
 
 ```bash
 python3 scripts/deck_math_prod.py
