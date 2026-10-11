@@ -1,8 +1,8 @@
-"""An update is a completed action. No PoW. No protocol change."""
-import hashlib
-from cloud_share import share
-def update(user):
-    cut = share({"actor": 1, "home": 1})
-    return {"ok": True, "kind": "update", "user": user,
-            "receipt": hashlib.sha256(f"update|{user}".encode()).hexdigest()[:16],
-            "cloud": cut["cloud"], "pow": False, "protocol_changed": False, "network": False}
+"""An update is a finished session. Not one action."""
+from finish import finish
+def update(user, hits):
+    row = finish(hits)
+    if not row["ok"] or row["hits"] < 1:
+        return {"ok": False, "why": "no_session", "protocol_changed": False}
+    return {"ok": True, "user": user, "hits": row["hits"], "hash": row["hash"],
+            "packed_once": True, "pow": False, "protocol_changed": False, "network": False}
