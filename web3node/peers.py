@@ -1,15 +1,17 @@
-"""Peers are a list. Agreement is a fold over that list."""
-def peers(rows):
-    seen = []
-    for row in rows:
-        name = row.get("name")
-        if name and name not in seen:
-            seen.append(name)
-    return {"peers": seen, "n": len(seen)}
-def agree(rows):
-    book = peers(rows)
-    if not book["n"]:
-        return {"ok": False, "why": "empty", "peers": [], "consensus": False}
-    votes = [bool(r.get("vote")) for r in rows]
-    return {"ok": all(votes), "peers": book["peers"], "yes": sum(votes), "n": book["n"],
-            "consensus": all(votes), "connected": False}
+"""Peer set, vote, majority. No socket."""
+def peers(names):
+    uniq = []
+    for n in names:
+        if n and n not in uniq:
+            uniq.append(n)
+    return {"peers": uniq, "n": len(uniq), "socket": False}
+def vote(who, yes, room):
+    if who not in room:
+        return {"ok": False, "why": "not_peer"}
+    return {"ok": True, "who": who, "yes": yes}
+def majority(votes, room):
+    if len(room) < 1:
+        return {"ok": False, "why": "no_peers", "agreed": False}
+    yes = sum(1 for v in votes if v.get("yes") and v.get("who") in room)
+    need = len(room) // 2 + 1
+    return {"ok": yes >= need, "yes": yes, "need": need, "agreed": yes >= need, "socket": False}
