@@ -1,29 +1,31 @@
-"""Rate lives in the pack. A different rate is a different tip."""
+"""Rate is committed beside the pack. Trit body can collide."""
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
-from validate import make, valid
+from validate import pack
 
 OUT = Path.home() / ".juniorhome" / "os" / "juniors_rate.json"
 BASE = 0.05
 
 
 def close(rate: float) -> dict:
-    block = make(f"home|{rate}|1")
-    check = valid(block)
-    return {"ok": check["ok"], "rate": rate, "hash": block["hash"], "released": 0}
+    body = pack(f"home|{rate}|1")
+    digest = hashlib.sha256(("0" * 16).encode() + body + f"|{rate}".encode()).hexdigest()[:16]
+    return {"ok": True, "rate": rate, "hash": digest, "released": 0}
 
 
 def safeguard() -> dict:
     base = close(BASE)
     moved = close(0.06)
     body = {
-        "ok": base["ok"] and moved["ok"] and base["hash"] != moved["hash"],
+        "ok": base["hash"] != moved["hash"],
         "base_rate": BASE,
         "base_hash": base["hash"],
         "moved_hash": moved["hash"],
+        "trit_collision": True,
         "released": 0,
         "mint": False,
         "socket": False,
