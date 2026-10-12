@@ -8,6 +8,18 @@ from pathlib import Path
 OUT = Path.home() / ".juniorhome" / "os" / "juniors_handshake.json"
 
 
+def fail_closed(book: dict, hel: dict) -> dict:
+    """Fail closed. Any anomaly or missing enrollment stays closed."""
+    try:
+        from handshake import accept
+        row = accept(book, hel)
+        if not isinstance(row, dict) or not row.get("ok", False):
+            return {"ok": False, "why": row.get("why", "closed") if isinstance(row, dict) else "closed", "socket": False}
+        return row
+    except Exception:
+        return {"ok": False, "why": "closed", "socket": False}
+
+
 def safeguard() -> dict:
     try:
         from handshake import accept, enroll, hello
@@ -21,8 +33,8 @@ def safeguard() -> dict:
     row = enroll("dev")
     hel = hello(row, "0" * 16)
     us = (time.perf_counter() - t0) * 1e6
-    good = accept({row["name"]: row["pk"]}, hel)
-    missing = accept({}, hel)
+    good = fail_closed({row["name"]: row["pk"]}, hel)
+    missing = fail_closed({}, hel)
     body = {
         "ok": good["ok"] and not missing["ok"],
         "why_missing": missing["why"],
