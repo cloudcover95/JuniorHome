@@ -1,8 +1,7 @@
 # Juniors ledger
 
-Appends gated closes to ~/.juniorhome/os/juniors_ledger.jsonl.
-Walk checks mint false, socket false, peers 0.
-layer_one stays false. No gossip, no consensus.
+Each row stores prev, pack hex, and hash. walk recomputes sha256(prev || pack).
+90 closes are benched in memory. layer_one false. peers 0.
 
 ```bash
 python3 scripts/juniors_ledger_prod.py
