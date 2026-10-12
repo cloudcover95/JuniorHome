@@ -1,11 +1,11 @@
-"""Local ledger. Each row keeps prev, pack, and hash."""
+"""Local ledger. Walk uses prev || pack || text."""
 from __future__ import annotations
 
 import json
 import time
 from pathlib import Path
 
-from validate import make, valid
+from juniors_rule import make, valid
 
 OUT = Path.home() / ".juniorhome" / "os" / "juniors_ledger.jsonl"
 
@@ -18,7 +18,8 @@ def append(text: str, prev: str = "0" * 16) -> dict:
     row = {
         "prev": block["prev"],
         "hash": block["hash"],
-        "body": block["body"].hex(),
+        "body": block["body"],
+        "text": text,
         "mint": False,
         "socket": False,
         "peers": 0,
@@ -35,8 +36,10 @@ def walk() -> dict:
     lines = [json.loads(x) for x in OUT.read_text().splitlines() if x]
     ok = True
     for row in lines:
-        body = bytes.fromhex(row["body"])
-        check = valid({"prev": row["prev"], "hash": row["hash"], "body": body})
+        if "text" not in row:
+            ok = False
+            break
+        check = valid(row)
         if not check["ok"] or row["mint"] or row["socket"] or row["peers"]:
             ok = False
             break
@@ -47,21 +50,21 @@ def bench(n: int = 90) -> dict:
     t0 = time.perf_counter()
     prev = "0" * 16
     for i in range(n):
-        row = make(f"close-{i}|0.05|1", prev)
+        row = make(f"home|{i}|1", prev)
         if not valid(row)["ok"]:
             return {"ok": False, "n": i}
         prev = row["hash"]
     us = (time.perf_counter() - t0) * 1e6
-    return {"ok": True, "n": n, "us": round(us, 1), "bytes": n * 16, "tip": prev}
+    return {"ok": True, "n": n, "us": round(us, 1), "tip": prev, "rule": "side-commit"}
 
 
 def safeguard() -> dict:
-    first = append("gaia|0.05|1")
-    second = append("home|0.05|1", first["hash"])
+    first = append("home|0.05|1")
+    second = append("home|0.06|1", first["hash"])
     walked = walk()
     measured = bench()
     return {
-        "ok": first["ok"] and second["ok"] and walked["ok"] and measured["ok"],
+        "ok": first["ok"] and second["ok"] and first["hash"] != second["hash"] and walked["ok"] and measured["ok"],
         "tip": walked["tip"],
         "blocks": walked["n"],
         "bench": measured,
