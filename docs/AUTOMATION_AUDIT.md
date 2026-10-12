@@ -1,47 +1,20 @@
-# Automation audit — 2026-10-11
+# Automation audit 2026-10-11
 
-JuniorHome tip `19b92d00`. Checks are Grok-side. No repo CI.
+Grok automations, not GitHub Actions.
 
-## What the automations were
-
-| Name | Did | Problem |
+| Slot | Task | State |
 |---|---|---|
-| commit-strip-check | compared UI pages to parent, restored stripped lines | fail check only |
-| juniorhome-hourly-slice | ran osai_robust_prod.py, reported flags | fail check only |
+| 01:00 | JuniorCloud overnight build | active, prompt now Juniors-first |
+| 19:00 | slot 19:00 | active |
+| 16:45 | daily audit | active, prompt now checks Actions stay off |
+| Mon 17:00 | weekly audit | active |
+| Sat 10:00 | omega-obj-weekly | active |
+| Sat 11:00 | junioros-core-weekly | active |
 
-Neither added a module. Both were Grok schedules, not GitHub Actions.
+07:00 and 13:00 are not scheduled.
 
-## What they are now
+GitHub Actions on JuniorLLM, JuniorStock, BitNet-mlx are already manual-only.
+JuniorHome has no workflow file. Dependabot graph is a GitHub dynamic workflow, not ours.
+No Copilot config found in org search.
 
-| Name | Does |
-|---|---|
-| juniorhome-build-slice | adds one web3node trit-pack module, runs it, pushes if exit 0 |
-| commit-build-check | strip check, then adds a bench or guard if nothing new landed |
-
-Exit 1 still means no push. No model pull. No UE boot. Cap 4 files.
-Rate stays 0.05. Pool stays held. mint false. socket false.
-
-## Repo-side
-
-Deleted `.github/workflows/ci.yml`. It was empty.
-No Copilot config. No Dependabot.
-Vendored Adafruit workflows under crispy-mouse/.pio/libdeps were left. They are library files.
-
-## Scripting stack already on main
-
-Path: opt-in → AntiCon → trit pack → hash failsafe → reward → fund held.
-
-| Module | Job |
-|---|---|
-| web3node/path.py | the one path |
-| web3node/chain_run.py | multi-close link |
-| web3node/chain_record.py | multi-close with cut in the pack |
-| web3node/record_block.py | rate and juniors in the body |
-| web3node/stack_status.py | one ticket: path, chain, prove, record |
-| web3node/handshake.py | name bound to ML-DSA-65 |
-| web3node/failsafe.py | hash recompute, lattice off |
-| docs/JUNIORS_TECH.md | quant context sheet |
-
-## Not committed as a network
-
-peers 0. socket false. mint false. No listener.
+Build path is the Grok connector and these slots. Do not add CI yaml.
