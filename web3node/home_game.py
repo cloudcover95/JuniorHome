@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from frameforge_osai import note
 from frameforge_port import status as forge
 from gaming_core import status as core
 
@@ -13,12 +14,15 @@ OUT = Path.home() / ".juniorhome" / "os" / "home_game.json"
 def tick() -> dict:
     port = forge()
     surfaces = core()
+    packed = note()
     body = {
-        "ok": port["ok"] and surfaces["ok"],
+        "ok": port["ok"] and surfaces["ok"] and packed["ok"],
         "active": port["active"],
         "web": port["web"],
         "unreal": port["unreal"],
         "surfaces": surfaces["surfaces"],
+        "roster_n": packed["n"],
+        "roster_hash": packed["hash"],
         "omega": "obj",
         "osai": "note-pack",
         "ue5_launch": False,
