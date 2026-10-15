@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Tuner</title></head>
+<body>
+<section id="tuner" data-module="tuner" data-optional="true">
+  <h1>Tuner</h1>
+  <div id="rpm"></div>
+  <div id="power"></div>
+  <div id="afr"></div>
+</section>
+<script>
+fetch('/.juniorhome/os/tuner_dash.json').then(r => r.json()).then(d => {
+  document.getElementById('rpm').textContent = d.rpm || '-';
+  document.getElementById('power').textContent = d.power_hp || '-';
+  document.getElementById('afr').textContent = d.afr || '-';
+}).catch(() => {});
+</script>
+</body>
+</html>
