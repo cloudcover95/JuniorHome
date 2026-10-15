@@ -66,3 +66,24 @@ Build path is the Grok connector and these slots. Do not add CI yaml.
 | Copilot | not used |
 | commits since 2026-10-12 00:00 MDT | JuniorHome 28, tip 37141016; JuniorLLM 3, tip a94e6521 |
 | overlap | prior receipt 2026-10-12 16:45 MDT and LAST_RECEIPT 2026-10-12T19:14-06:00, both older than 45 min |
+
+# Automation audit 2026-10-15 ~16:45 MDT (tip f88784e5)
+
+| Name | Owner | Schedule (MDT) | Window | Notes |
+|---|---|---|---|---|
+| JuniorCloud overnight build | Automations (report only) | daily 01:00 | none (Automations slot) | pre-window guard; before LLC 02:00 |
+| Chief of Staff | LLC | daily 02:00 | LLC 02:00-04:45 | reads only; inside window |
+| home-slice (JuniorHome Builder) | LLC | daily 02:15 (`15 2 * * *`) | LLC 02:00-04:45 | last run succeeded 2026-10-15 on JuniorHome at e90f97d; next JuniorDrive; one file per run |
+| JuniorOS Builder | LLC | daily 02:45 | LLC 02:00-04:45 | inside window |
+| Engine Math | LLC | daily 03:15 | LLC 02:00-04:45 | inside window |
+| Suite Scripts | LLC | daily 03:45 | LLC 02:00-04:45 | inside window |
+| Spatial Suite | LLC | daily 04:15 | LLC 02:00-04:45 | inside window |
+| Inference Core | LLC | daily 04:45 | LLC 02:00-04:45 | inside window (window edge) |
+| hardware-to-software job | Personal | daily 06:00 | Personal 05:05-07:05 | writes to JuniorHome; inside window |
+| JuniorCloud daily audit | Automations (report only) | daily 16:45 | none (Automations slot) | this run; active |
+| JuniorCloud slot 19:00 | Automations (report only) | daily 19:00 | none (Automations slot) | evening guard; active |
+| JuniorCloud weekly audit | Automations (report only) | Mon 17:00 | none (Automations slot) | active |
+| omega-obj-weekly | Automations (report only) | Sat 10:00 | none (Automations slot) | active |
+| junioros-core-weekly | Automations (report only) | Sat 11:00 | none (Automations slot) | active |
+
+07:00 and 13:00 are not scheduled. App-only. America/Denver. Loopback only (127.0.0.1). LLC/personal rows carried from docs/AUTOMATION_AUDIT_2026-10-14.md.
