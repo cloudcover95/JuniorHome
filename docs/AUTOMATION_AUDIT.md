@@ -87,3 +87,16 @@ Build path is the Grok connector and these slots. Do not add CI yaml.
 | junioros-core-weekly | Automations (report only) | Sat 11:00 | none (Automations slot) | active |
 
 07:00 and 13:00 are not scheduled. App-only. America/Denver. Loopback only (127.0.0.1). LLC/personal rows carried from docs/AUTOMATION_AUDIT_2026-10-14.md.
+
+# Automation audit 2026-10-15 16:46 MDT (tip 436f139c)
+
+| Name | Schedule (MDT) | Notes |
+|---|---|---|
+| JuniorCloud overnight build | daily 01:00 | pre-window guard |
+| JuniorCloud daily audit | daily 16:45 | this run |
+| JuniorCloud slot 19:00 | daily 19:00 | evening guard |
+| JuniorCloud weekly audit | Mon 17:00 | active |
+| omega-obj-weekly | Sat 10:00 | active |
+| junioros-core-weekly | Sat 11:00 | active |
+
+07:00 and 13:00 not scheduled. App-only. America/Denver. One commit max.
