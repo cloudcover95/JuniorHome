@@ -29,14 +29,12 @@ dev = [
     "black>=23.0",
     "ruff>=0.4",
 ]
-# Platform-specific notes:
-# - MLX: Apple Silicon / macOS only (M-series)
-# - For CPU-only or NVIDIA: use numpy + CUDA paths in future BitNet backends
 apple-silicon = ["mlx>=0.15"]
 cpu = ["numpy>=1.24"]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
+include = ["web3node*", "ports*"]
 
 [tool.black]
 line-length = 88
