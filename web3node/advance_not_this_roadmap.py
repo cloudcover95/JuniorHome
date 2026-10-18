@@ -1,7 +1,10 @@
 """Advance the Not this roadmap named item from docs/ROADMAP.md.
+
+Not this roadmap: 0.0.0.0 SaaS, 4B pulls, MP/KAYA, second GitHub bot user.
+
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-Confirms 0.0.0.0 SaaS, 4B pulls, MP/KAYA, second GitHub bot user are not this roadmap.
+No UE boot. Stdlib only. Bind 127.0.0.1.
 """
 from __future__ import annotations
 
@@ -20,8 +23,8 @@ MODEL_PULL = False
 RATE_POLL = False
 BIND = "127.0.0.1"
 ITEM = (
-    "ROADMAP: Not this roadmap — 0.0.0.0 SaaS, 4B pulls, MP/KAYA, "
-    "second GitHub bot user."
+    "ROADMAP: Not this roadmap. "
+    "0.0.0.0 SaaS, 4B pulls, MP/KAYA, second GitHub bot user."
 )
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -89,7 +92,7 @@ def advance_not_this_roadmap() -> dict:
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "not this roadmap; no SaaS, no 4B pulls, no MP/KAYA, no second bot user",
+        "note": "not this roadmap; exclude 0.0.0.0 SaaS, 4B pulls, MP/KAYA, second GitHub bot user",
     }
 
 
