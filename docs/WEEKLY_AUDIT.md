@@ -124,3 +124,51 @@ Chat/prod on JuniorHome this window: web3node trit-pack chain (opt-in, AntiCon, 
 - daily receipt age: ~21 min (`2e66979` / task result ae76f8c6) — WEEKLY_AUDIT.md only
 
 Prior weekly sections are preserved in git history (see commits before e774d46).
+
+# Weekly audit 2026-10-19 17:04 MDT
+
+TZ America/Denver. Owner cloudcover95. Loopback only. No product work. No deletes.
+Window: 2026-10-12 → 2026-10-19.
+Dual autonomy: LLC bots own 02:00-04:45. Personal quant team owns 05:05-07:05.
+
+## Automations (live list)
+
+Six active, APP_ONLY. Overnight is a pre-window guard (01:00), 19:00 is an evening guard.
+
+| name | taskId | schedule | note |
+|------|--------|----------|------|
+| junioros-core-weekly | 4d37ff8e-6e12-4c23-a525-f1a5e7f69baa | Sat 11:00 Denver | weekly core check |
+| omega-obj-weekly | 1700c44c-b4ee-4a34-a998-37042ba51ad1 | Sat 10:00 Denver | weekly Omega |
+| JuniorCloud weekly audit | dd0b1c93-e923-44b9-9d55-3e11c2735772 | Mon 17:00 Denver | this run |
+| JuniorCloud daily audit | dc3fbf2f-4cc6-4808-8c18-e70cdc02d752 | daily 16:45 Denver | daily table |
+| JuniorCloud slot 19:00 | bde8e4e0-d4ca-4ccd-9b6b-9d79af135e70 | daily 19:00 Denver | evening guard |
+| JuniorCloud overnight build | 20718d5d-4a95-4be0-af73-3402a24efd5e | daily 01:00 Denver | pre-window guard |
+
+No 07:00 or 13:00 in catalog.
+
+## GitHub last 7 days
+
+JuniorLLM: many additive ports, OSai findings, handshake, security, overlay, I2_S / JTR1 / bitnetd 127.0.0.1:8765 + i2sd 127.0.0.1:8767 commits (Oct 16-19). Tips around e9e2772, 829a789 etc. Loopback only, rate 0.05, no model pull.
+
+JuniorHome: numerous advance_*.py scripts for ROADMAP items (overlay, i2sd, GGUF operator, no-deletes, daily audit, bitnetd loopback, UE5 watts, no-kernel-blob, Asahi MLX probe, etc.), ledger quant wave entries, automation audit docs. Tip ae284c3 (Oct 19 23:03 UTC) advance_junioros_overlay.py. All additive, opt-in AntiCon, mint false, socket false, no UE boot, no model pull.
+
+## Shipped
+
+- Daily AUTOMATION_AUDIT.md updates (e.g. 327e25b on Oct 19).
+- Multiple advance_ scripts advancing BETA_TO_OS / ROADMAP items on JuniorHome (overlay, userspace i2sd, GGUF, no large pull, probes).
+- JuniorLLM ports/handshakes for live beta steps, security, overlay manifests, OSai findings on ternary/I2_S packs.
+- Guards held: loopback only, no .github, no deletes, no remote script exec.
+
+## Skipped
+
+- New product features beyond named ROADMAP advances.
+- Recreating missing 07:00/13:00 slots (audit does not create).
+- Any model pulls, GGUF downloads by bots, UE5 launches, docker.sock, public binds.
+- Mid-turn fetches beyond one tip read.
+
+## Gaps
+
+1. llama GGUF still operator-set only; bots do not download.
+2. 07:00 and 13:00 slots absent from catalog; capacity plan incomplete.
+3. Stale nextRun times in automation UI vs actual fires.
+4. Continued focus on additive probes/handshakes rather than full end-to-end product integration.
