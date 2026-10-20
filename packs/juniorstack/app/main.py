@@ -10,6 +10,7 @@ from models.models import Product, Order, OrderItem
 from models.payments import write_invoice, crypto_receipt, venmo_adapter
 from models.comms import advance, message
 from models.agent_fulfill import check_addresses, agent_fulfill
+from models.sale_stack import on_sale
 from scripts.brain_quant import digest
 
 DB = Path.home() / ".juniorhome" / "juniorstack.db"
@@ -93,4 +94,5 @@ def place_order(product_id: int = Form(...), qty: int = Form(1), session: Sessio
     product.stock -= qty
     session.add(item)
     session.commit()
+    on_sale(order.id, product.sku, product.name, qty)
     return RedirectResponse("/", status_code=303)
