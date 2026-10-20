@@ -1,4 +1,4 @@
-"""Home summary that includes goldend web3. Local only."""
+"""Home summary that includes goldend web3 and retry. Local only."""
 from __future__ import annotations
 import json
 from pathlib import Path
@@ -15,7 +15,7 @@ def summary() -> dict:
     base = Path.home() / ".juniorhome" / "os"
     body = {
         "goldend_web3": latest(base / "goldend_web3.json"),
-        "test": latest(base / "goldend_web3_test.json"),
+        "retry": latest(base / "cycle_retry.json"),
         "web3": latest(base / "cycle_web3.json"),
         "local": True,
     }
