@@ -3,16 +3,12 @@
 Open-source Home suite module. Local catalog, inventory, orders, agent fulfillment.
 Ternary pack on short status lines. MIT. JuniorCloud LLC.
 
+## Sale stack
+- models/sale_stack.py runs on each order: print job, eco sticker metadata, RFID tag, local Juniors mint receipt
+- No printer driver, no RFID writer, no chain broadcast
+- Outputs under ~/.juniorhome/juniorstack/prints, tags, and ~/.juniorhome/os/juniors_mint.jsonl
+
 ## Integration
 - Database at ~/.juniorhome/juniorstack.db
-- Status at ~/.juniorhome/os/juniorstack.json
-- Brain digest at ~/.juniorhome/os/juniorstack_brain.json
 - Agent endpoints on loopback for OSai / LLM
-
-## Slices
-1. Seed products
-2. Order status workflow
-3. Local invoice and receipt
-4. Agent fulfillment
-5. Optional payment adapter
-6. Parquet ledger export
+- Local receipts only
