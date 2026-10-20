@@ -1,0 +1,7 @@
+body { font-family: system-ui, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; background: #111; color: #eee; }
+header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #333; margin-bottom: 2rem; }
+nav a { color: #9cf; }
+.lane { margin-bottom: 2rem; }
+article { border: 1px solid #333; padding: 1rem; margin: 0.5rem 0; border-radius: 6px; }
+button { background: #2a6; color: #fff; border: 0; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; }
+input, select { padding: 0.4rem; margin: 0.2rem; background: #222; color: #eee; border: 1px solid #444; }

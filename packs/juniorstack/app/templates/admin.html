@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>JuniorStack Admin</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>JuniorStack Admin</h1>
+    <nav><a href="/">Shop</a> · <a href="/admin">Admin</a></nav>
+  </header>
+  <main>
+    <h2>Add product</h2>
+    <form action="/admin/product" method="post">
+      <input name="sku" placeholder="SKU" required>
+      <input name="name" placeholder="Name" required>
+      <input name="lane" placeholder="lane" value="general">
+      <input name="price_cents" type="number" placeholder="Price (cents)" required>
+      <input name="stock" type="number" placeholder="Stock" value="0">
+      <button>Add</button>
+    </form>
+    <h2>Products</h2>
+    <ul>
+      {% for p in products %}
+        <li>{{ p.sku }} · {{ p.name }} · {{ p.lane }} · ${{ '%.2f'|format(p.price_cents/100) }} · stock {{ p.stock }}</li>
+      {% endfor %}
+    </ul>
+    <h2>Orders</h2>
+    <ul>
+      {% for o in orders %}
+        <li>#{{ o.id }} · {{ o.status }} · ${{ '%.2f'|format(o.total_cents/100) }} · {{ o.created_at }}</li>
+      {% endfor %}
+    </ul>
+  </main>
+</body>
+</html>

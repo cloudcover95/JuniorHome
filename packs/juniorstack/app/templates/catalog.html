@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>JuniorStack</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>JuniorStack</h1>
+    <nav><a href="/">Shop</a> · <a href="/admin">Admin</a></nav>
+  </header>
+  <main>
+    {% for p in products %}
+      <article>
+        <h3>{{ p.name }}</h3>
+        <p>{{ p.sku }} · ${{ '%.2f'|format(p.price_cents/100) }} · stock {{ p.stock }}</p>
+        <form action="/order" method="post">
+          <input type="hidden" name="product_id" value="{{ p.id }}">
+          <button>Order</button>
+        </form>
+      </article>
+    {% endfor %}
+  </main>
+</body>
+</html>
