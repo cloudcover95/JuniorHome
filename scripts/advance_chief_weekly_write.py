@@ -1,11 +1,12 @@
 """Advance the JuniorCloud chief weekly named item from docs/ROADMAP.md.
 
-Named item: ROADMAP automations ON: JuniorCloud chief weekly Sun/Mon 17:00 MDT
-(dd0b1c93) — only weekly. Writes docs/WEEKLY_AUDIT.md.
+Named item: JuniorCloud chief weekly Sun/Mon 17:00 MDT (dd0b1c93) — only weekly.
+Writes docs/WEEKLY_AUDIT.md.
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-No UE boot. Stdlib only. Bind 127.0.0.1. Only weekly. No second weekly.
+No UE boot. Stdlib only. Bind 127.0.0.1. Only weekly. Chief writes the audit.
+Do not wrap path.py, chain_record.py, or record_block.py.
 """
 from __future__ import annotations
 
@@ -23,7 +24,7 @@ UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
 ONLY_WEEKLY = True
-WRITES_WEEKLY_AUDIT = True
+WRITES_AUDIT = True
 BIND = "127.0.0.1"
 ITEM = (
     "ROADMAP automations ON: JuniorCloud chief weekly Sun/Mon 17:00 MDT "
@@ -74,8 +75,8 @@ def anticon() -> dict:
         bad.append("rate_poll")
     if not ONLY_WEEKLY:
         bad.append("only_weekly")
-    if not WRITES_WEEKLY_AUDIT:
-        bad.append("writes_weekly_audit")
+    if not WRITES_AUDIT:
+        bad.append("writes_audit")
     if BIND != "127.0.0.1":
         bad.append("bind")
     return {"ok": not bad, "reject": bad}
@@ -98,12 +99,12 @@ def advance_chief_weekly_write() -> dict:
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
         "only_weekly": ONLY_WEEKLY,
-        "writes_weekly_audit": WRITES_WEEKLY_AUDIT,
+        "writes_audit": WRITES_AUDIT,
         "bind": BIND,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "chief weekly only; writes docs/WEEKLY_AUDIT.md; no second weekly; no model pull",
+        "note": "chief weekly only; writes docs/WEEKLY_AUDIT.md; no model pull; no UE boot",
     }
 
 
