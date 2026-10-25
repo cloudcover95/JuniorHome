@@ -1,8 +1,7 @@
-"""Advance the Do not recreate paused slots named item from docs/ROADMAP.md.
+"""Advance the ROADMAP Automations PAUSED named item.
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-Confirms paused slots (07:00, 13:00, Friday weekly 7716afb1) stay paused.
-Bots do not recreate paused slots.
+Do not recreate paused slots: 07:00, 13:00, Friday weekly 7716afb1 (merged into chief).
 """
 from __future__ import annotations
 
@@ -21,8 +20,8 @@ MODEL_PULL = False
 RATE_POLL = False
 BIND = "127.0.0.1"
 ITEM = (
-    "ROADMAP automations: Do not recreate paused slots. "
-    "PAUSED: 07:00, 13:00. Friday weekly 7716afb1 (merged into chief)."
+    "ROADMAP Automations PAUSED: 07:00, 13:00; Friday weekly 7716afb1 "
+    "(merged into chief). Do not recreate paused slots."
 )
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -90,7 +89,7 @@ def advance_paused_slots() -> dict:
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "paused slots stay paused; bots do not recreate 07:00, 13:00 or Friday weekly",
+        "note": "paused slots stay paused; do not recreate 07:00 13:00 or Friday weekly",
     }
 
 
