@@ -172,3 +172,55 @@ JuniorHome: numerous advance_*.py scripts for ROADMAP items (overlay, i2sd, GGUF
 2. 07:00 and 13:00 slots absent from catalog; capacity plan incomplete.
 3. Stale nextRun times in automation UI vs actual fires.
 4. Continued focus on additive probes/handshakes rather than full end-to-end product integration.
+
+# Weekly audit 2026-10-26 17:04 MDT
+
+TZ America/Denver. Owner cloudcover95. Loopback only. No product work. No deletes. No .github.
+Window: 2026-10-19 → 2026-10-26.
+Dual autonomy: LLC bots own 02:00-04:45. Personal quant team owns 05:05-07:05.
+
+## Automations (live list)
+
+Six active, APP_ONLY. Overnight is a pre-window guard (01:00), 19:00 is an evening guard.
+
+| name | schedule | note |
+|------|----------|------|
+| junioros-core-weekly | Sat 11:00 Denver | weekly core check |
+| omega-obj-weekly | Sat 10:00 Denver | weekly Omega |
+| JuniorCloud weekly audit | Mon 17:00 Denver | this run; writes docs/WEEKLY_AUDIT.md |
+| JuniorCloud daily audit | daily 16:45 Denver | daily table; AUTOMATION_AUDIT.md |
+| JuniorCloud slot 19:00 | daily 19:00 Denver | evening guard |
+| JuniorCloud overnight build | daily 01:00 Denver | pre-window guard |
+
+No 07:00 or 13:00 in catalog. Do not recreate paused slots.
+
+## GitHub last 7 days
+
+JuniorHome tip ~10c202f (2026-10-26 23:04 UTC) advance_junioros_overlay_named_confirm.py. Numerous advance_*.py for ROADMAP items (T13+ juniorctl skill-pin, GGUF operator, i2sd 127.0.0.1:8767, Asahi MLX probe, UE5 watts, chief weekly, paused slots, not-this-roadmap second GitHub bot / 4B pulls, bitnetd loopback, etc.), ledger quant wave entries (idle waves), automation audit docs. All additive, opt-in AntiCon, mint false, socket false, no UE boot, no model pull, stdlib only.
+
+JuniorLLM tip ~2e2d41e (2026-10-26 21:03 UTC) osai vault: juniorctl ask base-3 10-trit LUT vs 2-bit. Many osai vault daily audit findings on ternary index / I2_S packs / LUT scans / MAD / binomial tails / gamma (viable and not-viable increments), rails additions (trit rate gate, schedule autonomy window, surface matrix, ports loopback registry, additive diff guard). Loopback only, rate 0.05, no model pull.
+
+Public repos: 26. Compute stays pointed at Home + JuniorLLM.
+
+## Shipped
+
+- Daily AUTOMATION_AUDIT.md updates through 2026-10-26 16:45 MDT (tip 06d4b0da).
+- Multiple advance_ scripts on JuniorHome advancing ROADMAP order items (T13+, GGUF, i2sd userspace, Asahi MLX, UE5, overlays, guards).
+- JuniorLLM OSai findings and rails for live beta / overlay (I2_S, bitnetd 127.0.0.1:8765, trit gates, window ownership).
+- Guards held: loopback only, no .github, no deletes, no remote script exec, dual autonomy windows.
+- This WEEKLY_AUDIT.md additive section.
+
+## Skipped
+
+- New product features beyond named ROADMAP advances.
+- Recreating missing 07:00/13:00 slots (audit does not create).
+- Any model pulls, GGUF downloads by bots, UE5 launches, docker.sock, public binds, force-push, deletes.
+- Starting product work outside the audit.
+
+## Gaps
+
+1. llama GGUF still operator-set only (JUNIOR_GGUF); bots do not download. Expected.
+2. 07:00 and 13:00 slots absent from catalog; paused per ROADMAP. Capacity plan incomplete vs original four-slot intent.
+3. Stale nextRun times in automation UI vs actual fires (common across slots).
+4. Additive probes / handshakes / advance_ scripts continue; full end-to-end JuniorOS overlay integration remains open.
+5. Dual autonomy windows enforced in rails; personal quant waves logged as idle in ledger.
