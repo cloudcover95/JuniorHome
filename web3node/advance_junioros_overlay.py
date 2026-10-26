@@ -1,9 +1,8 @@
 """Advance the JuniorOS overlay named item from docs/BETA_TO_OS.md.
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-Debian/Alpine + os-release.junior + hardened bitnetd.service + juniorctl
-on PATH. I2_S 2B4T only if GGUF already on disk. No OSWorld score.
-No kernel blob. No UE boot. Stdlib only. Bind 127.0.0.1.
+Debian/Alpine + os-release.junior + hardened bitnetd.service + juniorctl on PATH.
+I2_S 2B4T only if GGUF already on disk. No OSWorld score. No kernel blob.
 """
 from __future__ import annotations
 
@@ -20,13 +19,11 @@ SOCKET = False
 UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
-OSWORLD = False
-KERNEL_BLOB = False
 BIND = "127.0.0.1"
 ITEM = (
     "BETA_TO_OS JuniorOS overlay — Debian/Alpine + os-release.junior + "
-    "hardened bitnetd.service + juniorctl on PATH. I2_S 2B4T only if GGUF "
-    "already on disk. No OSWorld score. No kernel blob."
+    "hardened bitnetd.service + juniorctl on PATH. "
+    "I2_S 2B4T only if GGUF already on disk. No OSWorld score. No kernel blob."
 )
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -71,10 +68,6 @@ def anticon() -> dict:
         bad.append("model_pull")
     if RATE_POLL:
         bad.append("rate_poll")
-    if OSWORLD:
-        bad.append("osworld")
-    if KERNEL_BLOB:
-        bad.append("kernel_blob")
     return {"ok": not bad, "reject": bad}
 
 
@@ -94,13 +87,11 @@ def advance_junioros_overlay() -> dict:
         "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
-        "osworld": OSWORLD,
-        "kernel_blob": KERNEL_BLOB,
         "bind": BIND,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "JuniorOS overlay; no kernel blob; I2_S only if GGUF on disk; loopback",
+        "note": "JuniorOS overlay: Debian/Alpine + os-release.junior + hardened bitnetd.service + juniorctl on PATH; I2_S only if GGUF on disk; no OSWorld; no kernel blob",
     }
 
 
