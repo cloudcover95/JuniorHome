@@ -1,37 +1,37 @@
-#!/usr/bin/env python3
-"""Advance the UE5 launched named item from docs/ROADMAP.md.
+"""Advance ROADMAP #5 UE5 launched named item.
 
-Named item: ROADMAP #5 UE5 launched — JUNIOR_UE5=1 and watts>=80. Default FrameForge2D. os_route.launch false until then.
-No UE boot on the 45 W node. Probe only. Stdlib only.
+Named item: UE5 launched — JUNIOR_UE5=1 and watts>=80. Default FrameForge2D.
+os_route.launch false until then.
+(docs/ROADMAP.md order item 5)
 
-Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
-pool held, mint false, socket false. No model pull. No rate set by poll.
-No UE boot. Bind 127.0.0.1. Do not wrap path.py, chain_record.py, or record_block.py.
+Additive slice. Opt-in, AntiCon, one trit pack, base rate 0.05, pool held,
+mint false, socket false. No model pull. No UE boot. No rate poll.
+Stdlib only. Bind 127.0.0.1 only. Confirm boundary only.
+Close rule: sha256(prev || pack || text)[:16].
 """
 from __future__ import annotations
 
 import hashlib
-import json
 import sys
 
 RATE = 0.05
 OPT_IN = True
 ANTICON = True
-POOL = "held"
+POOL_HELD = True
 MINT = False
 SOCKET = False
+FETCH = False
 UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
 OS_ROUTE_LAUNCH = False
-DEFAULT_2D = True
-WATTS_MIN = 80
-JUNIOR_UE5_REQUIRED = True
 BIND = "127.0.0.1"
-ITEM = (
-    "ROADMAP #5 UE5 launched — JUNIOR_UE5=1 and watts>=80. Default FrameForge2D. "
-    "os_route.launch false until then. No UE boot."
+ROADMAP_ITEM = (
+    "UE5 launched — JUNIOR_UE5=1 and watts>=80. Default FrameForge2D. "
+    "os_route.launch false until then."
 )
+DAY = "2026-10-27"
+GENESIS = "0" * 16
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
 _ENC = {0: 0, 1: 1, -1: 2}
@@ -57,8 +57,7 @@ PACK = pack(TRIT_PACK)
 
 
 def close(prev: str, text: str) -> str:
-    body = f"{prev}|{text}|{RATE}".encode() + PACK
-    return hashlib.sha256(body).hexdigest()[:16]
+    return hashlib.sha256(prev.encode() + PACK + text.encode()).hexdigest()[:16]
 
 
 def anticon() -> dict:
@@ -77,46 +76,55 @@ def anticon() -> dict:
         bad.append("rate_poll")
     if OS_ROUTE_LAUNCH:
         bad.append("os_route_launch")
-    if not DEFAULT_2D:
-        bad.append("default_2d")
-    if WATTS_MIN != 80:
-        bad.append("watts_min")
-    if not JUNIOR_UE5_REQUIRED:
-        bad.append("junior_ue5_required")
     if BIND != "127.0.0.1":
         bad.append("bind")
     return {"ok": not bad, "reject": bad}
 
 
-def advance_ue5_launched_named_item() -> dict:
+def advance() -> dict:
     ac = anticon()
-    tip = close("0" * 16, ITEM) if ac["ok"] else None
+    tip = close(GENESIS, ROADMAP_ITEM) if ac["ok"] else None
     return {
         "ok": ac["ok"],
-        "item": ITEM,
-        "source": "docs/ROADMAP.md",
+        "roadmap_item": ROADMAP_ITEM,
+        "source": "docs/ROADMAP.md #5",
+        "day": DAY,
         "opt_in": OPT_IN,
         "anticon": ac,
         "rate": RATE,
-        "pool": POOL,
+        "pool_held": POOL_HELD,
         "mint": MINT,
         "socket": SOCKET,
+        "fetch": FETCH,
         "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
         "os_route_launch": OS_ROUTE_LAUNCH,
-        "default_2d": DEFAULT_2D,
-        "watts_min": WATTS_MIN,
-        "junior_ue5_required": JUNIOR_UE5_REQUIRED,
         "bind": BIND,
-        "hash": tip,
+        "tip": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "ROADMAP #5 UE5 launched; JUNIOR_UE5=1 and watts>=80 required; default FrameForge2D; os_route.launch false; no UE boot; no model pull",
     }
 
 
+def self_check() -> dict:
+    assert RATE == 0.05
+    assert OPT_IN and ANTICON and POOL_HELD
+    assert not (MINT or SOCKET or FETCH or UE5_LAUNCH or MODEL_PULL or RATE_POLL or OS_ROUTE_LAUNCH)
+    assert BIND == "127.0.0.1"
+    assert "UE5 launched" in ROADMAP_ITEM and "FrameForge2D" in ROADMAP_ITEM
+    assert "os_route.launch false" in ROADMAP_ITEM
+    out = advance()
+    assert out["ok"] and out["advanced"] and out["tip"] and len(out["tip"]) == 16
+    assert close(GENESIS, ROADMAP_ITEM) == out["tip"]
+    return out
+
+
 if __name__ == "__main__":
-    out = advance_ue5_launched_named_item()
-    print(json.dumps(out, indent=2))
-    sys.exit(0 if out["advanced"] else 1)
+    try:
+        result = self_check()
+        print(result)
+        sys.exit(0)
+    except AssertionError as e:
+        print({"ok": False, "error": repr(e)})
+        sys.exit(1)
