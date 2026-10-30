@@ -1,17 +1,18 @@
-"""Advance named item: JuniorOS overlay (juniorctl / bitnetd 127.0.0.1:8765).
+#!/usr/bin/env python3
+"""Advance ROADMAP / BETA_TO_OS named item: JuniorOS overlay.
 
-Named item: JuniorOS overlay — juniorctl skill-pin and bitnetd loopback handshake.
-From ROADMAP #1 T13+ and JuniorOS overlay surface.
+Named item: JuniorOS overlay (source of truth in JuniorLLM docs/BETA_TO_OS.md;
+pairs with bitnetd 127.0.0.1:8765 and i2sd 127.0.0.1:8767 handshakes).
 
 Additive only. Does not wrap path.py, chain_record.py, or record_block.py.
-No unnamed bench/guard/close.
 
 Base rate 0.05. Pool held. mint false. socket false. No model pull. No UE boot.
-Stdlib only. Bind 127.0.0.1. Close: sha256(prev || pack || text)[:16].
+Stdlib only. Bind 127.0.0.1. Opt-in, AntiCon, one trit pack.
 """
 from __future__ import annotations
 
 import hashlib
+import json
 import sys
 
 RATE = 0.05
@@ -23,10 +24,9 @@ SOCKET = False
 FETCH = False
 UE5_LAUNCH = False
 MODEL_PULL = False
+RATE_POLL = False
 BIND = "127.0.0.1"
-PORT = 8765
-ROADMAP_ITEM = "JuniorOS overlay (juniorctl / bitnetd 127.0.0.1:8765)"
-DAY = "2026-10-25"
+ROADMAP_ITEM = "JuniorOS overlay (BETA_TO_OS / JuniorLLM source of truth; bitnetd 127.0.0.1:8765 + i2sd 127.0.0.1:8767)"
 GENESIS = "0" * 16
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -68,6 +68,8 @@ def anticon() -> dict:
         bad.append("ue5_launch")
     if MODEL_PULL:
         bad.append("model_pull")
+    if RATE_POLL:
+        bad.append("rate_poll")
     if BIND != "127.0.0.1":
         bad.append("bind")
     return {"ok": not bad, "reject": bad}
@@ -79,8 +81,7 @@ def advance() -> dict:
     return {
         "ok": ac["ok"],
         "roadmap_item": ROADMAP_ITEM,
-        "source": "docs/ROADMAP.md #1 T13+ / JuniorOS overlay",
-        "day": DAY,
+        "source": "docs/ROADMAP.md / JuniorOS overlay (BETA_TO_OS)",
         "opt_in": OPT_IN,
         "anticon": ac,
         "rate": RATE,
@@ -90,40 +91,33 @@ def advance() -> dict:
         "fetch": FETCH,
         "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
+        "rate_poll": RATE_POLL,
         "bind": BIND,
-        "port": PORT,
         "tip": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "probe only; no socket open; no model pull; no UE boot",
+        "note": "probe only; JuniorOS overlay named; no socket open; no model pull; no UE boot; no wrap of path/chain_record/record_block",
     }
 
 
 def self_check() -> dict:
     assert RATE == 0.05
-    assert MINT is False
-    assert SOCKET is False
-    assert MODEL_PULL is False
-    assert UE5_LAUNCH is False
+    assert OPT_IN and ANTICON and POOL_HELD
+    assert not (MINT or SOCKET or FETCH or UE5_LAUNCH or MODEL_PULL or RATE_POLL)
     assert BIND == "127.0.0.1"
-    ac = anticon()
-    assert ac["ok"]
-    result = advance()
-    assert result["ok"]
-    assert result["roadmap_item"] == ROADMAP_ITEM
-    assert result["tip"] is not None
-    assert len(result["tip"]) == 16
-    return {"self_check": "pass", "tip": result["tip"], "item": ROADMAP_ITEM}
+    assert "JuniorOS overlay" in ROADMAP_ITEM
+    assert "127.0.0.1:8765" in ROADMAP_ITEM
+    out = advance()
+    assert out["ok"] and out["advanced"] and out["tip"] and len(out["tip"]) == 16
+    assert close(GENESIS, ROADMAP_ITEM) == out["tip"]
+    return out
 
 
 if __name__ == "__main__":
-    if "--selftest" in sys.argv or len(sys.argv) == 1:
-        try:
-            out = self_check()
-            print(out)
-            sys.exit(0)
-        except AssertionError as e:
-            print({"self_check": "fail", "error": str(e)})
-            sys.exit(1)
-    else:
-        print(advance())
+    try:
+        result = self_check()
+        print(json.dumps(result, indent=2))
+        sys.exit(0)
+    except AssertionError as e:
+        print(json.dumps({"ok": False, "error": repr(e)}))
+        sys.exit(1)
