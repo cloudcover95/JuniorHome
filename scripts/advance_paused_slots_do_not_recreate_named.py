@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Advance the PAUSED slots named item from docs/ROADMAP.md.
+"""Advance the paused slots do-not-recreate named item from docs/ROADMAP.md.
 
-Named item: ROADMAP Automations PAUSED — 07:00, 13:00, Friday weekly 7716afb1
-(merged into chief). Do not recreate paused slots.
+Named item: ROADMAP Automations PAUSED: 07:00, 13:00. Friday weekly 7716afb1 (merged into chief). Do not recreate paused slots.
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-No UE boot. Stdlib only. Bind 127.0.0.1. Do not recreate. Do not wrap
-path.py, chain_record.py, or record_block.py.
+No UE boot. Stdlib only. Bind 127.0.0.1. Do not wrap path.py, chain_record.py,
+or record_block.py. Do not recreate paused slots.
 """
 from __future__ import annotations
 
@@ -26,10 +25,10 @@ MODEL_PULL = False
 RATE_POLL = False
 PAUSED_RECREATE = False
 BIND = "127.0.0.1"
-PAUSED_SLOTS = ("07:00", "13:00", "Friday weekly 7716afb1")
 ITEM = (
-    "ROADMAP Automations PAUSED: 07:00, 13:00, Friday weekly 7716afb1 "
-    "(merged into chief). Do not recreate paused slots."
+    "ROADMAP Automations PAUSED: 07:00, 13:00. "
+    "Friday weekly 7716afb1 (merged into chief). "
+    "Do not recreate paused slots."
 )
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -78,12 +77,10 @@ def anticon() -> dict:
         bad.append("paused_recreate")
     if BIND != "127.0.0.1":
         bad.append("bind")
-    if "07:00" not in PAUSED_SLOTS or "13:00" not in PAUSED_SLOTS:
-        bad.append("paused_slots")
     return {"ok": not bad, "reject": bad}
 
 
-def advance_paused_slots_do_not_recreate() -> dict:
+def advance_paused_slots_do_not_recreate_named() -> dict:
     ac = anticon()
     tip = close("0" * 16, ITEM) if ac["ok"] else None
     return {
@@ -100,16 +97,15 @@ def advance_paused_slots_do_not_recreate() -> dict:
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
         "paused_recreate": PAUSED_RECREATE,
-        "paused_slots": list(PAUSED_SLOTS),
         "bind": BIND,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "PAUSED 07:00 13:00 Friday weekly 7716afb1 merged into chief; do not recreate; no model pull; no UE boot; no rate poll",
+        "note": "PAUSED slots 07:00 13:00 Friday weekly merged; do not recreate; opt-in AntiCon held; no model pull no UE boot no rate poll",
     }
 
 
 if __name__ == "__main__":
-    out = advance_paused_slots_do_not_recreate()
+    out = advance_paused_slots_do_not_recreate_named()
     print(json.dumps(out, indent=2))
     sys.exit(0 if out["advanced"] else 1)
