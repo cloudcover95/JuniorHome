@@ -1,11 +1,12 @@
+#!/usr/bin/env python3
 """Advance the Not this roadmap 4B pulls named item from docs/ROADMAP.md.
 
-Named item: Not this roadmap — 4B pulls.
+Named item: ROADMAP ## Not this roadmap — 4B pulls.
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
 No UE boot. Stdlib only. Do not wrap path.py, chain_record.py, or record_block.py.
-4B pulls are not this roadmap.
+No 4B pull.
 """
 from __future__ import annotations
 
@@ -22,10 +23,10 @@ SOCKET = False
 UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
-FOUR_B_PULLS = False
+FOUR_B_PULL = False
 BIND = "127.0.0.1"
 ITEM = (
-    "ROADMAP Not this roadmap: 4B pulls. Not this roadmap."
+    "ROADMAP ## Not this roadmap — 4B pulls."
 )
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -70,8 +71,8 @@ def anticon() -> dict:
         bad.append("model_pull")
     if RATE_POLL:
         bad.append("rate_poll")
-    if FOUR_B_PULLS:
-        bad.append("four_b_pulls")
+    if FOUR_B_PULL:
+        bad.append("four_b_pull")
     if BIND != "127.0.0.1":
         bad.append("bind")
     return {"ok": not bad, "reject": bad}
@@ -93,12 +94,12 @@ def advance_not_this_roadmap_4b_pulls_named() -> dict:
         "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
-        "four_b_pulls": FOUR_B_PULLS,
+        "four_b_pull": FOUR_B_PULL,
         "bind": BIND,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "Not this roadmap: 4B pulls excluded; no model pull; no rate poll; no UE boot",
+        "note": "ROADMAP Not this roadmap 4B pulls; opt-in AntiCon held; no model pull no UE boot no 4B pull",
     }
 
 
