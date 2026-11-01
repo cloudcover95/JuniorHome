@@ -1,7 +1,7 @@
-"""Advance the ROADMAP Automations PAUSED named item.
+"""Advance the paused slots named item from docs/ROADMAP.md.
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-Do not recreate paused slots: 07:00, 13:00, Friday weekly 7716afb1 (merged into chief).
+Do not recreate paused slots. Bots do not recreate 07:00, 13:00, or Friday weekly.
 """
 from __future__ import annotations
 
@@ -17,11 +17,11 @@ MINT = False
 SOCKET = False
 UE5_LAUNCH = False
 MODEL_PULL = False
-RATE_POLL = False
+RECREATE_PAUSED = False
 BIND = "127.0.0.1"
 ITEM = (
-    "ROADMAP Automations PAUSED: 07:00, 13:00; Friday weekly 7716afb1 "
-    "(merged into chief). Do not recreate paused slots."
+    "ROADMAP Automations — Do not recreate paused slots. "
+    "PAUSED: 07:00, 13:00, Friday weekly 7716afb1 (merged into chief)."
 )
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -64,8 +64,8 @@ def anticon() -> dict:
         bad.append("ue5_launch")
     if MODEL_PULL:
         bad.append("model_pull")
-    if RATE_POLL:
-        bad.append("rate_poll")
+    if RECREATE_PAUSED:
+        bad.append("recreate_paused")
     return {"ok": not bad, "reject": bad}
 
 
@@ -84,12 +84,12 @@ def advance_paused_slots() -> dict:
         "socket": SOCKET,
         "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
-        "rate_poll": RATE_POLL,
+        "recreate_paused": RECREATE_PAUSED,
         "bind": BIND,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "paused slots stay paused; do not recreate 07:00 13:00 or Friday weekly",
+        "note": "do not recreate paused slots; bots leave 07:00, 13:00, Friday weekly alone",
     }
 
 
