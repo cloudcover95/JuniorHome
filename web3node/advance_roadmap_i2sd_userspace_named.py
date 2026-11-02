@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Advance the i2sd userspace named item from docs/ROADMAP.md.
 
-Named item: Order #3 i2sd userspace — 127.0.0.1:8767. No docker.sock.
+Named item: Order (do not skip) 3. **i2sd userspace** — 127.0.0.1:8767. No docker.sock.
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-No UE boot. Stdlib only. Bind 127.0.0.1. Do not wrap path.py, chain_record.py, or record_block.py.
+No UE boot. Stdlib only. Bind is loopback only; no docker.sock.
+Do not wrap path.py, chain_record.py, or record_block.py.
 """
 from __future__ import annotations
 
@@ -22,11 +23,10 @@ SOCKET = False
 UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
-DOCKER_SOCK = False
-BIND = "127.0.0.1"
-PORT = 8767
+I2SD_BIND = "127.0.0.1:8767"
+NO_DOCKER_SOCK = True
 ITEM = (
-    "ROADMAP #3 i2sd userspace — 127.0.0.1:8767. No docker.sock."
+    "ROADMAP Order (do not skip) #3 i2sd userspace — 127.0.0.1:8767. No docker.sock."
 )
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -71,12 +71,10 @@ def anticon() -> dict:
         bad.append("model_pull")
     if RATE_POLL:
         bad.append("rate_poll")
-    if DOCKER_SOCK:
-        bad.append("docker_sock")
-    if BIND != "127.0.0.1":
-        bad.append("bind")
-    if PORT != 8767:
-        bad.append("port")
+    if I2SD_BIND != "127.0.0.1:8767":
+        bad.append("i2sd_bind")
+    if not NO_DOCKER_SOCK:
+        bad.append("no_docker_sock")
     return {"ok": not bad, "reject": bad}
 
 
@@ -96,13 +94,12 @@ def advance_roadmap_i2sd_userspace_named() -> dict:
         "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
-        "docker_sock": DOCKER_SOCK,
-        "bind": BIND,
-        "port": PORT,
+        "i2sd_bind": I2SD_BIND,
+        "no_docker_sock": NO_DOCKER_SOCK,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "i2sd userspace 127.0.0.1:8767 no docker.sock; opt-in AntiCon held; no model pull no rate poll no UE boot",
+        "note": "i2sd userspace 127.0.0.1:8767 no docker.sock; opt-in AntiCon held at rate 0.05; no model pull no rate poll no UE boot",
     }
 
 
