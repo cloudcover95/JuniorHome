@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Advance the JuniorOS overlay bitnetd 127.0.0.1:8765 named item from docs/ROADMAP.md / BETA_TO_OS.
+"""Advance the JuniorOS overlay / bitnetd 127.0.0.1:8765 named item.
 
-Named item: ROADMAP / BETA_TO_OS JuniorOS overlay — bitnetd 127.0.0.1:8765.
-Loopback only. Hardened bitnetd.service. No docker.sock. No model pull.
+Named item: JuniorOS overlay — bitnetd 127.0.0.1:8765 (from ROADMAP / BETA_TO_OS overlay path).
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-No UE boot. Stdlib only. Do not wrap path.py, chain_record.py, or record_block.py.
+No UE boot. Stdlib only. Bind 127.0.0.1:8765. No docker.sock.
+Do not wrap path.py, chain_record.py, or record_block.py.
+Additive only. Cap respected.
 """
 from __future__ import annotations
 
@@ -27,8 +28,9 @@ DOCKER_SOCK = False
 BIND = "127.0.0.1"
 PORT = 8765
 ITEM = (
-    "ROADMAP / BETA_TO_OS JuniorOS overlay — bitnetd 127.0.0.1:8765. "
-    "Loopback only. Hardened bitnetd.service. No docker.sock."
+    "JuniorOS overlay — bitnetd 127.0.0.1:8765. "
+    "Named item from ROADMAP / BETA_TO_OS overlay. "
+    "No model pull. No UE boot."
 )
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -88,7 +90,7 @@ def advance_junioros_overlay_bitnetd_8765_named() -> dict:
     return {
         "ok": ac["ok"],
         "item": ITEM,
-        "source": "docs/ROADMAP.md / BETA_TO_OS",
+        "source": "docs/ROADMAP.md / JuniorOS overlay",
         "opt_in": OPT_IN,
         "anticon": ac,
         "rate": RATE,
@@ -104,7 +106,7 @@ def advance_junioros_overlay_bitnetd_8765_named() -> dict:
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "JuniorOS overlay bitnetd 127.0.0.1:8765 loopback; opt-in AntiCon held; no model pull no UE boot no docker.sock",
+        "note": "JuniorOS overlay bitnetd 127.0.0.1:8765; opt-in AntiCon held; no model pull no UE boot no rate poll",
     }
 
 
