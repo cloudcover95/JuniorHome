@@ -1,10 +1,12 @@
+#!/usr/bin/env python3
 """Advance the UE5 launched named item from docs/ROADMAP.md.
 
 Named item: ROADMAP #5 UE5 launched — JUNIOR_UE5=1 and watts>=80. Default FrameForge2D. os_route.launch false until then.
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-No UE boot. Stdlib only. Bind 127.0.0.1. Do not wrap path.py, chain_record.py, or record_block.py.
+No UE boot. Stdlib only. Default FrameForge2D. os_route.launch false.
+Do not wrap path.py, chain_record.py, or record_block.py.
 """
 from __future__ import annotations
 
@@ -21,11 +23,10 @@ SOCKET = False
 UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
-OS_ROUTE_LAUNCH = False
-DEFAULT_2D = True
 JUNIOR_UE5 = False
-WATTS_GE_80 = False
-BIND = "127.0.0.1"
+WATTS_OK = False
+DEFAULT_FRAMEFORGE2D = True
+OS_ROUTE_LAUNCH = False
 ITEM = (
     "ROADMAP #5 UE5 launched — JUNIOR_UE5=1 and watts>=80. "
     "Default FrameForge2D. os_route.launch false until then."
@@ -73,20 +74,18 @@ def anticon() -> dict:
         bad.append("model_pull")
     if RATE_POLL:
         bad.append("rate_poll")
-    if OS_ROUTE_LAUNCH:
-        bad.append("os_route_launch")
-    if not DEFAULT_2D:
-        bad.append("default_2d")
     if JUNIOR_UE5:
         bad.append("junior_ue5")
-    if WATTS_GE_80:
-        bad.append("watts_ge_80")
-    if BIND != "127.0.0.1":
-        bad.append("bind")
+    if WATTS_OK:
+        bad.append("watts_ok")
+    if not DEFAULT_FRAMEFORGE2D:
+        bad.append("default_frameforge2d")
+    if OS_ROUTE_LAUNCH:
+        bad.append("os_route_launch")
     return {"ok": not bad, "reject": bad}
 
 
-def advance_ue5_launched() -> dict:
+def advance_ue5_launched_named() -> dict:
     ac = anticon()
     tip = close("0" * 16, ITEM) if ac["ok"] else None
     return {
@@ -102,19 +101,18 @@ def advance_ue5_launched() -> dict:
         "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
-        "os_route_launch": OS_ROUTE_LAUNCH,
-        "default_2d": DEFAULT_2D,
         "junior_ue5": JUNIOR_UE5,
-        "watts_ge_80": WATTS_GE_80,
-        "bind": BIND,
+        "watts_ok": WATTS_OK,
+        "default_frameforge2d": DEFAULT_FRAMEFORGE2D,
+        "os_route_launch": OS_ROUTE_LAUNCH,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "ROADMAP #5 UE5 launched held false; default FrameForge2D; os_route.launch false; no UE boot; no model pull",
+        "note": "UE5 launched held false; default FrameForge2D; os_route.launch false; no model pull no UE boot no rate poll",
     }
 
 
 if __name__ == "__main__":
-    out = advance_ue5_launched()
+    out = advance_ue5_launched_named()
     print(json.dumps(out, indent=2))
     sys.exit(0 if out["advanced"] else 1)
