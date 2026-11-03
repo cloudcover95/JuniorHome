@@ -5,8 +5,8 @@ Named item: Order (do not skip) 1. **T13+** — juniorctl skill-pin height. Over
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-No UE boot. Stdlib only. Bind 127.0.0.1. Overnight owns. Do not wrap path.py,
-chain_record.py, or record_block.py.
+No UE boot. Stdlib only. Bind 127.0.0.1. Do not wrap path.py, chain_record.py,
+or record_block.py. Overnight owns T13+.
 """
 from __future__ import annotations
 
@@ -23,11 +23,11 @@ SOCKET = False
 UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
-OVERNIGHT_OWNS = True
-SKILL_PIN_HEIGHT = True
+OVERNIGHT_OWNED = True
 BIND = "127.0.0.1"
 ITEM = (
-    "ROADMAP Order (do not skip) #1 T13+ — juniorctl skill-pin height. Overnight owns this."
+    "ROADMAP Order (do not skip) #1 T13+ — juniorctl skill-pin height. "
+    "Overnight owns this."
 )
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -72,10 +72,8 @@ def anticon() -> dict:
         bad.append("model_pull")
     if RATE_POLL:
         bad.append("rate_poll")
-    if not OVERNIGHT_OWNS:
-        bad.append("overnight_owns")
-    if not SKILL_PIN_HEIGHT:
-        bad.append("skill_pin_height")
+    if not OVERNIGHT_OWNED:
+        bad.append("overnight_owned")
     if BIND != "127.0.0.1":
         bad.append("bind")
     return {"ok": not bad, "reject": bad}
@@ -97,13 +95,12 @@ def advance_t13_plus_juniorctl_skill_pin_height_overnight_owns_named() -> dict:
         "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
-        "overnight_owns": OVERNIGHT_OWNS,
-        "skill_pin_height": SKILL_PIN_HEIGHT,
+        "overnight_owned": OVERNIGHT_OWNED,
         "bind": BIND,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "T13+ juniorctl skill-pin height overnight owns; path held at rate 0.05; no model pull no rate poll no UE boot",
+        "note": "T13+ juniorctl skill-pin height; overnight owns; no model pull; no UE boot; no rate poll; path held",
     }
 
 
