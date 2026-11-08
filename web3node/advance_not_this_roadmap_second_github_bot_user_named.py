@@ -1,7 +1,7 @@
 """Advance the second GitHub bot user named item from docs/ROADMAP.md.
 
 Named item: Not this roadmap — second GitHub bot user.
-Exclude second GitHub bot user. Single bot user only.
+Exclude second GitHub bot user. Not this roadmap.
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
@@ -22,11 +22,11 @@ SOCKET = False
 UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
-SECOND_BOT = False
+SECOND_GITHUB_BOT_USER = False
 BIND = "127.0.0.1"
 ITEM = (
     "ROADMAP Not this roadmap: second GitHub bot user. "
-    "Exclude. Single bot user only. Do not add second GitHub bot user."
+    "Exclude. Not this roadmap."
 )
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -71,8 +71,8 @@ def anticon() -> dict:
         bad.append("model_pull")
     if RATE_POLL:
         bad.append("rate_poll")
-    if SECOND_BOT:
-        bad.append("second_bot")
+    if SECOND_GITHUB_BOT_USER:
+        bad.append("second_github_bot_user")
     if BIND != "127.0.0.1":
         bad.append("bind")
     return {"ok": not bad, "reject": bad}
@@ -94,12 +94,12 @@ def advance_not_this_roadmap_second_github_bot_user_named() -> dict:
         "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
-        "second_bot": SECOND_BOT,
+        "second_github_bot_user": SECOND_GITHUB_BOT_USER,
         "bind": BIND,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "Not this roadmap second GitHub bot user excluded; single bot user only; opt-in AntiCon held; no model pull no rate poll no UE boot",
+        "note": "Not this roadmap second GitHub bot user excluded; opt-in AntiCon held rate 0.05; no model pull no rate poll no UE boot",
     }
 
 
