@@ -6,7 +6,7 @@ Named item: Order (do not skip) #3. **i2sd userspace** — 127.0.0.1:8767. No do
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
 No UE boot. Stdlib only. Does not wrap path.py, chain_record.py, or record_block.py.
-Additive only. Cap 1 file. i2sd userspace loopback only.
+Additive only. Cap 1 file. Bind 127.0.0.1. No docker.sock.
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ MODEL_PULL = False
 RATE_POLL = False
 UE5_LAUNCH = False
 I2SD_USERSPACE = True
-LOOPBACK = "127.0.0.1:8767"
+BIND = "127.0.0.1:8767"
 NO_DOCKER_SOCK = True
 ITEM = (
     "ROADMAP Order (do not skip) #3 i2sd userspace — 127.0.0.1:8767. No docker.sock."
@@ -74,6 +74,8 @@ def anticon() -> dict:
         bad.append("ue5_launch")
     if not I2SD_USERSPACE:
         bad.append("i2sd_userspace")
+    if BIND != "127.0.0.1:8767":
+        bad.append("bind")
     if not NO_DOCKER_SOCK:
         bad.append("no_docker_sock")
     return {"ok": not bad, "reject": bad}
@@ -96,13 +98,13 @@ def advance() -> dict:
         "rate_poll": RATE_POLL,
         "ue5_launch": UE5_LAUNCH,
         "i2sd_userspace": I2SD_USERSPACE,
-        "loopback": LOOPBACK,
+        "bind": BIND,
         "no_docker_sock": NO_DOCKER_SOCK,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
         "note": (
-            "i2sd userspace 127.0.0.1:8767; no docker.sock; path held at rate 0.05; "
+            "i2sd userspace 127.0.0.1:8767 no docker.sock; path held at rate 0.05; "
             "opt-in AntiCon one trit pack; no model pull; no rate poll; "
             "pool held; mint false; socket false; no UE boot"
         ),
