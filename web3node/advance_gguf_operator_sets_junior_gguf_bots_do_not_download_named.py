@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-"""Advance the GGUF operator-sets-JUNIOR_GGUF bots-do-not-download named item from docs/ROADMAP.md.
+"""Advance the GGUF named item from docs/ROADMAP.md.
 
-Named item: Order #2 GGUF — operator sets JUNIOR_GGUF. Bots do not download. web3node/probe_future.py.
+Named item: Order (do not skip) 2. **GGUF** — operator sets JUNIOR_GGUF. Bots do not download. `web3node/probe_future.py`.
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-No UE boot. Stdlib only. Bind 127.0.0.1. Do not wrap path.py, chain_record.py, or record_block.py.
+No UE boot. Stdlib only. Operator sets path; bots do not download.
+Do not wrap path.py, chain_record.py, or record_block.py.
 """
 from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
 
 RATE = 0.05
@@ -22,11 +24,11 @@ SOCKET = False
 UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
-OPERATOR_SETS_JUNIOR_GGUF = True
-BOTS_DO_NOT_DOWNLOAD = True
+BOTS_DOWNLOAD = False
+OPERATOR_SETS = True
 BIND = "127.0.0.1"
 ITEM = (
-    "ROADMAP Order #2 GGUF — operator sets JUNIOR_GGUF. Bots do not download. web3node/probe_future.py."
+    "ROADMAP Order (do not skip) #2 GGUF — operator sets JUNIOR_GGUF. Bots do not download. web3node/probe_future.py."
 )
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -71,10 +73,10 @@ def anticon() -> dict:
         bad.append("model_pull")
     if RATE_POLL:
         bad.append("rate_poll")
-    if not OPERATOR_SETS_JUNIOR_GGUF:
-        bad.append("operator_sets_junior_gguf")
-    if not BOTS_DO_NOT_DOWNLOAD:
-        bad.append("bots_do_not_download")
+    if BOTS_DOWNLOAD:
+        bad.append("bots_download")
+    if not OPERATOR_SETS:
+        bad.append("operator_sets")
     if BIND != "127.0.0.1":
         bad.append("bind")
     return {"ok": not bad, "reject": bad}
@@ -83,6 +85,7 @@ def anticon() -> dict:
 def advance_gguf_operator_sets_junior_gguf_bots_do_not_download_named() -> dict:
     ac = anticon()
     tip = close("0" * 16, ITEM) if ac["ok"] else None
+    gguf = os.environ.get("JUNIOR_GGUF", "")
     return {
         "ok": ac["ok"],
         "item": ITEM,
@@ -96,13 +99,14 @@ def advance_gguf_operator_sets_junior_gguf_bots_do_not_download_named() -> dict:
         "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
-        "operator_sets_junior_gguf": OPERATOR_SETS_JUNIOR_GGUF,
-        "bots_do_not_download": BOTS_DO_NOT_DOWNLOAD,
+        "bots_download": BOTS_DOWNLOAD,
+        "operator_sets": OPERATOR_SETS,
+        "gguf_env": bool(gguf),
         "bind": BIND,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "GGUF operator sets JUNIOR_GGUF bots do not download; opt-in AntiCon held; no model pull no UE boot no rate poll",
+        "note": "GGUF operator sets JUNIOR_GGUF; bots do not download; path held at rate 0.05; opt-in AntiCon; no model pull no UE boot no rate poll",
     }
 
 
