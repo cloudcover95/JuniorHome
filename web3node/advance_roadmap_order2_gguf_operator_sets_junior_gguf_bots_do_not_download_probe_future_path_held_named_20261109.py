@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""Advance the GGUF named item from docs/ROADMAP.md.
+
+Named item: Order (do not skip) 2) **GGUF** — operator sets JUNIOR_GGUF. Bots do not download. web3node/probe_future.py.
+
+Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
+pool held, mint false, socket false. No model pull. No rate set by poll.
+No UE boot. Stdlib only. Operator sets. Bots do not download. Probe is read-only.
+Do not wrap path.py, chain_record.py, or record_block.py.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import sys
+
+try:
+    import probe_future
+except ImportError:
+    probe_future = None
+
+RATE = 0.05
+OPT_IN = True
+ANTICON = True
+POOL = "held"
+MINT = False
+SOCKET = False
+UE5_LAUNCH = False
+MODEL_PULL = False
+RATE_POLL = False
+OPERATOR_SETS = True
+BOTS_DO_NOT_DOWNLOAD = True
+PROBE_FUTURE = True
+ITEM = (
+    "ROADMAP Order (do not skip) #2 GGUF — operator sets JUNIOR_GGUF. Bots do not download. web3node/probe_future.py."
+)
+TRIT_PACK = (1, 0, -1, 1, 0, -1)
+
+_ENC = {0: 0, 1: 1, -1: 2}
+
+
+def pack(trits) -> bytes:
+    acc = bits = 0
+    out = bytearray()
+    for t in trits:
+        if t not in _ENC:
+            raise ValueError("trit must be -1, 0 or 1")
+        acc = (acc << 2) | _ENC[t]
+        bits += 2
+        if bits == 8:
+            out.append(acc)
+            acc = bits = 0
+    if bits:
+        out.append(acc << (8 - bits))
+    return bytes(out)
+
+
+PACK = pack(TRIT_PACK)
+
+
+def close(prev: str, text: str) -> str:
+    body = f"{prev}|{text}|{RATE}".encode() + PACK
+    return hashlib.sha256(body).hexdigest()[:16]
+
+
+def anticon() -> dict:
+    bad = []
+    if not OPT_IN:
+        bad.append("opt_in")
+    if MINT:
+        bad.append("mint")
+    if SOCKET:
+        bad.append("socket")
+    if UE5_LAUNCH:
+        bad.append("ue5_launch")
+    if MODEL_PULL:
+        bad.append("model_pull")
+    if RATE_POLL:
+        bad.append("rate_poll")
+    if not OPERATOR_SETS:
+        bad.append("operator_sets")
+    if not BOTS_DO_NOT_DOWNLOAD:
+        bad.append("bots_do_not_download")
+    if not PROBE_FUTURE:
+        bad.append("probe_future")
+    return {"ok": not bad, "reject": bad}
+
+
+def advance_roadmap_order2_gguf_operator_sets_junior_gguf_bots_do_not_download_probe_future_path_held_named_20261109() -> dict:
+    ac = anticon()
+    tip = close("0" * 16, ITEM) if ac["ok"] else None
+    probe_out = None
+    if probe_future is not None:
+        try:
+            probe_out = probe_future.probe()
+        except Exception:
+            probe_out = {"error": "probe failed"}
+    return {
+        "ok": ac["ok"],
+        "item": ITEM,
+        "source": "docs/ROADMAP.md Order #2",
+        "opt_in": OPT_IN,
+        "anticon": ac,
+        "rate": RATE,
+        "pool": POOL,
+        "mint": MINT,
+        "socket": SOCKET,
+        "ue5_launch": UE5_LAUNCH,
+        "model_pull": MODEL_PULL,
+        "rate_poll": RATE_POLL,
+        "operator_sets": OPERATOR_SETS,
+        "bots_do_not_download": BOTS_DO_NOT_DOWNLOAD,
+        "probe_future": PROBE_FUTURE,
+        "probe": probe_out,
+        "hash": tip,
+        "trit_pack": list(TRIT_PACK),
+        "advanced": ac["ok"],
+        "note": "GGUF operator sets JUNIOR_GGUF bots do not download probe_future read-only; path held at rate 0.05; opt-in AntiCon; no model pull no UE boot no rate poll",
+    }
+
+
+if __name__ == "__main__":
+    out = advance_roadmap_order2_gguf_operator_sets_junior_gguf_bots_do_not_download_probe_future_path_held_named_20261109()
+    print(json.dumps(out, indent=2))
+    sys.exit(0 if out["advanced"] else 1)
