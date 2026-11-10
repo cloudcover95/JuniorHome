@@ -276,3 +276,55 @@ Public repos: 26. Compute stays pointed at Home + JuniorLLM.
 3. Stale nextRun times in automation UI vs actual fires (common across slots).
 4. Additive probes / handshakes / advance_ scripts continue; full end-to-end JuniorOS overlay integration remains open. Many benches report not viable.
 5. Dual autonomy windows enforced; personal quant waves logged as idle / not viable in ledger.
+
+# Weekly audit 2026-11-09 17:09 MST
+
+TZ America/Denver. Owner cloudcover95. Loopback only. No product work. No deletes. No .github.
+Window: 2026-11-02 → 2026-11-09.
+Dual autonomy: LLC bots own 02:00-04:45. Personal quant team owns 05:05-07:05.
+
+## Automations (live list)
+
+Six active, APP_ONLY. Overnight is a pre-window guard (01:00), 19:00 is an evening guard.
+
+| name | schedule | note |
+|------|----------|------|
+| junioros-core-weekly | Sat 11:00 Denver | weekly core check |
+| omega-obj-weekly | Sat 10:00 Denver | weekly Omega |
+| JuniorCloud weekly audit | Mon 17:00 Denver | this run; writes docs/WEEKLY_AUDIT.md |
+| JuniorCloud daily audit | daily 16:45 Denver | daily table; AUTOMATION_AUDIT.md |
+| JuniorCloud slot 19:00 | daily 19:00 Denver | evening guard |
+| JuniorCloud overnight build | daily 01:00 Denver | pre-window guard |
+
+No 07:00 or 13:00 in catalog. Do not recreate paused slots. LLC bots own 02:00-04:45. Personal quant team owns 05:05-07:05. Overnight is a pre-window guard. 19:00 is an evening guard.
+
+## GitHub last 7 days
+
+JuniorHome tip `190ded2b` (2026-11-10 00:07 UTC) Advance named item bitnetd 127.0.0.1:8765. Numerous advance_*.py scripts for ROADMAP order items (T13+ juniorctl skill-pin height overnight owns, GGUF operator sets JUNIOR_GGUF bots do not download, i2sd userspace 127.0.0.1:8767 no docker.sock, Asahi MLX probe only from automations, UE5 launched JUNIOR_UE5=1 watts>=80 os_route.launch false, chief weekly, BETA_TO_OS live beta juniorctl health / deck sheet, bind audit), ledger quant wave timeline entries, daily automation audit docs (tip 3f453725 for 2026-11-09 16:45 MST). All additive, opt-in AntiCon, rate 0.05, pool held, mint false, socket false, no model pull, no UE boot, stdlib only, loopback.
+
+JuniorLLM tip `12768c33` (2026-11-09 21:58 UTC) vault: 2026-11-09_1455 activation bit-width sweep A3-A8 bit-slice layer step B=1 vs f32 (not-viable). Many osai vault benches on packed GEMV / bitplane / tiled mask-sign / bit-slice / LUT / Winsor-clip / terraform_lean / rate-cap pair codes vs int8 or f32 (mix of viable on memory/speed for B=1 and not-viable), rails additions (noscript offline guard against fetch-and-run remote scripts, onefile one-new-file additive commit guard, onerepo one repo per run, nogithub no .github Actions, noforce never force-push). Loopback only, rate 0.05, no model pull, no remote script.
+
+Public repos: 26. Compute stays pointed at Home + JuniorLLM.
+
+## Shipped
+
+- Daily AUTOMATION_AUDIT.md updates through 2026-11-09 16:45 MST (tip 3f453725).
+- Multiple advance_ scripts on JuniorHome advancing ROADMAP order items (T13+, GGUF operator, i2sd userspace, Asahi MLX probe, UE5 conditions, bitnetd loopback, overlays, guards, bind audit).
+- JuniorLLM OSai vault benches and rails for live beta / overlay (GEMV/bitplane viability, offline guards noscript/onefile/onerepo/nogithub/noforce).
+- Guards held: loopback only, no .github, no deletes, no remote script exec, dual autonomy windows, no product work started.
+- This WEEKLY_AUDIT.md additive section.
+
+## Skipped
+
+- New product features beyond named ROADMAP advances.
+- Recreating missing 07:00/13:00 slots (audit does not create; paused per ROADMAP).
+- Any model pulls, GGUF downloads by bots, UE5 launches, docker.sock, public binds, force-push, deletes.
+- Starting product work outside the audit. Do not skip because a tip is recent. No remote script download/execute.
+
+## Gaps
+
+1. llama GGUF still operator-set only (JUNIOR_GGUF); bots do not download. Expected.
+2. 07:00 and 13:00 slots absent from catalog; paused per ROADMAP. Capacity plan incomplete vs original four-slot intent.
+3. Stale nextRun times in automation UI vs actual fires (common across slots).
+4. Additive probes / handshakes / advance_ scripts continue; full end-to-end JuniorOS overlay integration remains open. Mix of viable (memory/speed B=1) and not-viable benches.
+5. Dual autonomy windows enforced; personal quant waves logged as idle / timeline entries in ledger.
