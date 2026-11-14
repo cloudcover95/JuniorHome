@@ -5,8 +5,8 @@ Named item: Order (do not skip) 1. **T13+** — juniorctl skill-pin height. Over
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-No UE boot. Stdlib only. Bind 127.0.0.1. Do not wrap path.py, chain_record.py,
-or record_block.py. Overnight owns T13+ juniorctl skill-pin height.
+No UE boot. Stdlib only. Overnight owns T13+ skill-pin height. Do not wrap
+path.py, chain_record.py, or record_block.py.
 """
 from __future__ import annotations
 
@@ -24,8 +24,7 @@ UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
 OVERNIGHT_OWNS = True
-JUNIORCTL_SKILL_PIN = True
-T13_HEIGHT = True
+SKILL_PIN_HEIGHT = "T13+"
 BIND = "127.0.0.1"
 ITEM = (
     "ROADMAP Order (do not skip) #1 T13+ — juniorctl skill-pin height. Overnight owns this."
@@ -75,10 +74,8 @@ def anticon() -> dict:
         bad.append("rate_poll")
     if not OVERNIGHT_OWNS:
         bad.append("overnight_owns")
-    if not JUNIORCTL_SKILL_PIN:
-        bad.append("juniorctl_skill_pin")
-    if not T13_HEIGHT:
-        bad.append("t13_height")
+    if SKILL_PIN_HEIGHT != "T13+":
+        bad.append("skill_pin_height")
     if BIND != "127.0.0.1":
         bad.append("bind")
     return {"ok": not bad, "reject": bad}
@@ -101,13 +98,12 @@ def advance_t13_juniorctl_skill_pin_height_overnight_owns_path_held_named_202611
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
         "overnight_owns": OVERNIGHT_OWNS,
-        "juniorctl_skill_pin": JUNIORCTL_SKILL_PIN,
-        "t13_height": T13_HEIGHT,
+        "skill_pin_height": SKILL_PIN_HEIGHT,
         "bind": BIND,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "T13+ juniorctl skill-pin height overnight owns; path held at rate 0.05; opt-in AntiCon; no model pull no UE boot no rate poll",
+        "note": "T13+ juniorctl skill-pin height overnight owns this; path held at rate 0.05; opt-in AntiCon; no model pull no UE boot no rate poll",
     }
 
 
