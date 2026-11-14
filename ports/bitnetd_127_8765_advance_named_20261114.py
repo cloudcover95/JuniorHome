@@ -1,7 +1,8 @@
 """bitnetd 127.0.0.1:8765 advance — ROADMAP named item.
 
-Advances JuniorHome docs/ROADMAP.md named item for bitnetd loopback:
-bitnetd 127.0.0.1:8765. Pure in-process. Declarative facts only.
+Advances JuniorHome docs/ROADMAP.md named item:
+bitnetd 127.0.0.1:8765 (loopback-only, no socket open).
+Pure in-process. Declarative facts only.
 Never opens a socket, never pulls a model, never fetches, never boots UE,
 never imports juniorctl or bitnetd.
 
@@ -124,7 +125,7 @@ def probe(facts: dict | None = None) -> dict:
         "counted": OPT_IN and ac["ok"],
         "origin": f.get("origin"),
         "bitnetd_ready": bool(f.get("bitnetd_ready")),
-        "bitnetd_loopback_ready": ready and ac["ok"],
+        "bitnetd_ready_ok": ready and ac["ok"],
         "bitnetd": BITNETD,
         "i2sd": I2SD,
         "model_pull": MODEL_PULL,
@@ -241,7 +242,7 @@ def self_check() -> dict:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="bitnetd 127.0.0.1:8765 advance named item")
+    parser = argparse.ArgumentParser(description="bitnetd 127.0.0.1:8765 advance named")
     parser.add_argument("--selftest", action="store_true", help="run self-check and exit")
     args = parser.parse_args()
     if args.selftest or len(sys.argv) == 1:
