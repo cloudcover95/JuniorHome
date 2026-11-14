@@ -5,8 +5,8 @@ Named item: Order (do not skip) 1. **T13+** — juniorctl skill-pin height. Over
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-No UE boot. Stdlib only. Overnight owns T13+ skill-pin height. Do not wrap path.py,
-chain_record.py, or record_block.py.
+No UE boot. Stdlib only. Overnight owns T13+. Do not wrap
+path.py, chain_record.py, or record_block.py.
 """
 from __future__ import annotations
 
@@ -23,8 +23,8 @@ SOCKET = False
 UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
-OVERNIGHT_OWNS = True
-SKILL_PIN_HEIGHT = True
+OVERNIGHT_OWNS_T13 = True
+JUNIORCTL_SKILL_PIN = True
 BIND = "127.0.0.1"
 ITEM = (
     "ROADMAP Order (do not skip) #1 T13+ — juniorctl skill-pin height. Overnight owns this."
@@ -72,10 +72,10 @@ def anticon() -> dict:
         bad.append("model_pull")
     if RATE_POLL:
         bad.append("rate_poll")
-    if not OVERNIGHT_OWNS:
-        bad.append("overnight_owns")
-    if not SKILL_PIN_HEIGHT:
-        bad.append("skill_pin_height")
+    if not OVERNIGHT_OWNS_T13:
+        bad.append("overnight_owns_t13")
+    if not JUNIORCTL_SKILL_PIN:
+        bad.append("juniorctl_skill_pin")
     if BIND != "127.0.0.1":
         bad.append("bind")
     return {"ok": not bad, "reject": bad}
@@ -97,13 +97,13 @@ def advance_t13_plus_juniorctl_skill_pin_height_overnight_owns_path_held_named_2
         "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
-        "overnight_owns": OVERNIGHT_OWNS,
-        "skill_pin_height": SKILL_PIN_HEIGHT,
+        "overnight_owns_t13": OVERNIGHT_OWNS_T13,
+        "juniorctl_skill_pin": JUNIORCTL_SKILL_PIN,
         "bind": BIND,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "T13+ juniorctl skill-pin height overnight owns; path held at rate 0.05; opt-in AntiCon; no model pull no UE boot no rate poll",
+        "note": "T13+ juniorctl skill-pin height; overnight owns this; path held at rate 0.05; opt-in AntiCon; no model pull no UE boot no rate poll",
     }
 
 
