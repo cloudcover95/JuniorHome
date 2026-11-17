@@ -248,7 +248,7 @@ No 07:00 or 13:00 in catalog. Do not recreate paused slots. LLC bots own 02:00-0
 
 ## GitHub last 7 days
 
-JuniorHome tip `68dae61a` (2026-11-03 00:06 UTC) Advance ROADMAP #1 T13+ juniorctl skill-pin height named item. Numerous advance_*.py scripts for ROADMAP items (T13+ juniorctl skill-pin, GGUF operator sets JUNIOR_GGUF, i2sd userspace 127.0.0.1:8767, Asahi MLX probe, UE5 watts>=80 launch false, overlays handshake, paused slots do not recreate, chief weekly, etc.), ledger quant wave entries (idle, bench not viable), daily automation audit docs. All additive, opt-in AntiCon, one trit pack, base rate 0.05, pool held, mint false, socket false, no model pull, no UE boot, stdlib only, loopback.
+JuniorHome tip `68dae61a` (2026-11-03 00:06 UTC) Advance ROADMAP #1 T13+ juniorctl skill-pin height named item. Numerous advance_*.py scripts for ROADMAP items (T13+ juniorctl skill-pin height, GGUF operator sets JUNIOR_GGUF, i2sd userspace 127.0.0.1:8767, Asahi MLX probe, UE5 watts>=80 launch false, overlays handshake, paused slots do not recreate, chief weekly, etc.), ledger quant wave entries (idle, bench not viable), daily automation audit docs. All additive, opt-in AntiCon, one trit pack, base rate 0.05, pool held, mint false, socket false, no model pull, no UE boot, stdlib only, loopback.
 
 JuniorLLM tip `091d50b4` (2026-11-02 22:02 UTC) vault: 2026-11-02 14:55 bench, ask small-batch B=2-64 concurrent pair codes vs int8 resident (not viable). Many osai vault benches (mostly not viable: pair codes vs int8, LUT, night reads, etc.), rails additions (offline bot-first run order, DST guard, nopull, metro/UE5 live=false). Loopback only, rate 0.05, no model pull.
 
@@ -311,6 +311,58 @@ Public repos: 26. Compute stays pointed at Home + JuniorLLM.
 - Daily AUTOMATION_AUDIT.md updates through 2026-11-09 16:45 MST (tip 3f453725).
 - Multiple advance_ scripts on JuniorHome advancing ROADMAP order items (T13+, GGUF operator, i2sd userspace, Asahi MLX probe, UE5 conditions, bitnetd loopback, overlays, guards, bind audit).
 - JuniorLLM OSai vault benches and rails for live beta / overlay (GEMV/bitplane viability, offline guards noscript/onefile/onerepo/nogithub/noforce).
+- Guards held: loopback only, no .github, no deletes, no remote script exec, dual autonomy windows, no product work started.
+- This WEEKLY_AUDIT.md additive section.
+
+## Skipped
+
+- New product features beyond named ROADMAP advances.
+- Recreating missing 07:00/13:00 slots (audit does not create; paused per ROADMAP).
+- Any model pulls, GGUF downloads by bots, UE5 launches, docker.sock, public binds, force-push, deletes.
+- Starting product work outside the audit. Do not skip because a tip is recent. No remote script download/execute.
+
+## Gaps
+
+1. llama GGUF still operator-set only (JUNIOR_GGUF); bots do not download. Expected.
+2. 07:00 and 13:00 slots absent from catalog; paused per ROADMAP. Capacity plan incomplete vs original four-slot intent.
+3. Stale nextRun times in automation UI vs actual fires (common across slots).
+4. Additive probes / handshakes / advance_ scripts continue; full end-to-end JuniorOS overlay integration remains open. Mix of viable (memory/speed B=1) and not-viable benches.
+5. Dual autonomy windows enforced; personal quant waves logged as idle / timeline entries in ledger.
+
+# Weekly audit 2026-11-16 17:07 MST
+
+TZ America/Denver. Owner cloudcover95. Loopback only. No product work. No deletes. No .github.
+Window: 2026-11-09 → 2026-11-16.
+Dual autonomy: LLC bots own 02:00-04:45. Personal quant team owns 05:05-07:05.
+
+## Automations (live list)
+
+Six active, APP_ONLY. Overnight is a pre-window guard (01:00), 19:00 is an evening guard.
+
+| name | schedule | note |
+|------|----------|------|
+| junioros-core-weekly | Sat 11:00 Denver | weekly core check |
+| omega-obj-weekly | Sat 10:00 Denver | weekly Omega |
+| JuniorCloud weekly audit | Mon 17:00 Denver | this run; writes docs/WEEKLY_AUDIT.md |
+| JuniorCloud daily audit | daily 16:45 Denver | daily table; AUTOMATION_AUDIT.md |
+| JuniorCloud slot 19:00 | daily 19:00 Denver | evening guard |
+| JuniorCloud overnight build | daily 01:00 Denver | pre-window guard |
+
+No 07:00 or 13:00 in catalog. Do not recreate paused slots. LLC bots own 02:00-04:45. Personal quant team owns 05:05-07:05. Overnight is a pre-window guard. 19:00 is an evening guard.
+
+## GitHub last 7 days
+
+JuniorHome tip `7f9e2551` (2026-11-16 19:06 -05:00) Advance ROADMAP #3 i2sd userspace 127.0.0.1:8767 no docker.sock named item dated 20261116. Numerous advance_*.py / ports scripts for ROADMAP order items (T13+ juniorctl skill-pin height overnight owns, GGUF operator sets JUNIOR_GGUF bots do not download probe_future, i2sd userspace 127.0.0.1:8767 no docker.sock, Asahi MLX probe only from automations, UE5 launched JUNIOR_UE5=1 watts>=80 os_route.launch false, chief weekly, not-this-roadmap guards), ledger quant wave timeline entries (05:05/10:05/14:05), daily automation audit docs (tip 2b679dd1 for 2026-11-16 16:45 MST). All additive, opt-in AntiCon, rate 0.05, pool held, mint false, socket false, no model pull, no UE boot, stdlib only, loopback.
+
+JuniorLLM tip `7f872438` (2026-11-16 14:48 -07:00) vault: 2026-11-16_1455 partial int8 tile cache (gate|up cached, 44 MB) only 1.16-1.40x over threaded u32 expand; no split >=1.5x faster and >=1.5x smaller; exact W1.58 (not-viable). Many osai vault benches on tiled u32-LUT expand / 16-bit LUT / thread-parallel / hybrid splits / winsor-quantile / outlier splits vs tmac_g8 or int8-expand (mix of viable B=1 memory/speed and not-viable), rails additions (scratchdraft draft-outside-repo guard, loopback 127.0.0.1-only bind guard, noscript, onefile, etc.). Loopback only, rate 0.05, no model pull, no remote script.
+
+Public repos: 26. Compute stays pointed at Home + JuniorLLM.
+
+## Shipped
+
+- Daily AUTOMATION_AUDIT.md updates through 2026-11-16 16:45 MST (tip 2b679dd1).
+- Multiple advance scripts/ports on JuniorHome advancing ROADMAP order items (T13+ juniorctl skill-pin, GGUF operator, i2sd userspace, Asahi MLX probe, UE5 conditions, bitnetd loopback, overlays, guards).
+- JuniorLLM OSai vault benches and rails for live beta / overlay (LUT/GEMM/bitplane viability checks, offline guards scratchdraft/loopback/noscript).
 - Guards held: loopback only, no .github, no deletes, no remote script exec, dual autonomy windows, no product work started.
 - This WEEKLY_AUDIT.md additive section.
 
