@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Advance the i2sd userspace named item from docs/ROADMAP.md.
 
-Named item: ROADMAP #3 i2sd userspace — 127.0.0.1:8767. No docker.sock.
+Named item: Order (do not skip) 3. i2sd userspace — 127.0.0.1:8767. No docker.sock.
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-No UE boot. Stdlib only. Bind 127.0.0.1. No docker.sock.
+No UE boot. Stdlib only. Bind 127.0.0.1:8767. No docker.sock.
+Does not wrap path.py, chain_record.py, or record_block.py.
+Additive only. Cap 1 file. Dated 20261117.
 """
 from __future__ import annotations
 
@@ -19,14 +21,14 @@ ANTICON = True
 POOL = "held"
 MINT = False
 SOCKET = False
-UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
-BIND = "127.0.0.1"
-PORT = 8767
+UE5_LAUNCH = False
+I2SD_USERSPACE = True
+BIND = "127.0.0.1:8767"
 DOCKER_SOCK = False
 ITEM = (
-    "ROADMAP #3 i2sd userspace — 127.0.0.1:8767. No docker.sock."
+    "ROADMAP Order (do not skip) 3. i2sd userspace — 127.0.0.1:8767. No docker.sock."
 )
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -65,22 +67,22 @@ def anticon() -> dict:
         bad.append("mint")
     if SOCKET:
         bad.append("socket")
-    if UE5_LAUNCH:
-        bad.append("ue5_launch")
     if MODEL_PULL:
         bad.append("model_pull")
     if RATE_POLL:
         bad.append("rate_poll")
-    if BIND != "127.0.0.1":
+    if UE5_LAUNCH:
+        bad.append("ue5_launch")
+    if not I2SD_USERSPACE:
+        bad.append("i2sd_userspace")
+    if BIND != "127.0.0.1:8767":
         bad.append("bind")
-    if PORT != 8767:
-        bad.append("port")
     if DOCKER_SOCK:
         bad.append("docker_sock")
     return {"ok": not bad, "reject": bad}
 
 
-def advance_i2sd_userspace_named() -> dict:
+def advance() -> dict:
     ac = anticon()
     tip = close("0" * 16, ITEM) if ac["ok"] else None
     return {
@@ -93,20 +95,24 @@ def advance_i2sd_userspace_named() -> dict:
         "pool": POOL,
         "mint": MINT,
         "socket": SOCKET,
-        "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
+        "ue5_launch": UE5_LAUNCH,
+        "i2sd_userspace": I2SD_USERSPACE,
         "bind": BIND,
-        "port": PORT,
         "docker_sock": DOCKER_SOCK,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "i2sd userspace 127.0.0.1:8767; no docker.sock; no model pull; no UE boot; rate 0.05 held",
+        "note": (
+            "i2sd userspace 127.0.0.1:8767 no docker.sock; path held at rate 0.05; "
+            "opt-in AntiCon one trit pack; no model pull; no rate poll; "
+            "pool held; mint false; socket false; no UE boot; dated 20261117"
+        ),
     }
 
 
 if __name__ == "__main__":
-    out = advance_i2sd_userspace_named()
+    out = advance()
     print(json.dumps(out, indent=2))
     sys.exit(0 if out["advanced"] else 1)
