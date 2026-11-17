@@ -81,13 +81,13 @@ def anticon() -> dict:
     return {"ok": not bad, "reject": bad}
 
 
-def advance_i2sd_userspace_127_0_0_1_8767_no_docker_sock_named_20261117() -> dict:
+def advance_i2sd_userspace_127_0_0_1_8767_no_docker_sock_named() -> dict:
     ac = anticon()
     tip = close("0" * 16, ITEM) if ac["ok"] else None
     return {
         "ok": ac["ok"],
         "item": ITEM,
-        "source": "docs/ROADMAP.md Order #3",
+        "source": "docs/ROADMAP.md",
         "opt_in": OPT_IN,
         "anticon": ac,
         "rate": RATE,
@@ -103,11 +103,11 @@ def advance_i2sd_userspace_127_0_0_1_8767_no_docker_sock_named_20261117() -> dic
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "i2sd userspace 127.0.0.1:8767 no docker.sock; path held at rate 0.05; opt-in AntiCon; no model pull no UE boot no rate poll",
+        "note": "i2sd userspace 127.0.0.1:8767 no docker.sock; path held at rate 0.05; no model pull; no UE boot; no rate poll",
     }
 
 
 if __name__ == "__main__":
-    out = advance_i2sd_userspace_127_0_0_1_8767_no_docker_sock_named_20261117()
+    out = advance_i2sd_userspace_127_0_0_1_8767_no_docker_sock_named()
     print(json.dumps(out, indent=2))
     sys.exit(0 if out["advanced"] else 1)
