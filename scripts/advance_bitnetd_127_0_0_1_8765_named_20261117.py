@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Advance the bitnetd named item from docs/ROADMAP.md / JuniorOS overlay.
+"""Advance the bitnetd 127.0.0.1:8765 named item from docs/ROADMAP.md / JuniorOS overlay.
 
-Named item: bitnetd 127.0.0.1:8765 (local loopback for JuniorOS overlay / BitNet scoring).
+Named item: JuniorOS overlay — bitnetd 127.0.0.1:8765. Loopback only. No docker.sock.
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
 No UE boot. Stdlib only. Bind 127.0.0.1:8765. No docker.sock.
 Does not wrap path.py, chain_record.py, or record_block.py.
-Additive only. Cap 1 file.
+Additive only. Cap 1 file. Dated 20261117.
 """
 from __future__ import annotations
 
@@ -21,13 +21,14 @@ ANTICON = True
 POOL = "held"
 MINT = False
 SOCKET = False
-UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
+UE5_LAUNCH = False
+BITNETD = True
 BIND = "127.0.0.1:8765"
 DOCKER_SOCK = False
 ITEM = (
-    "bitnetd 127.0.0.1:8765 — local loopback for JuniorOS overlay / BitNet CPU intent scoring. No model pull."
+    "ROADMAP JuniorOS overlay — bitnetd 127.0.0.1:8765. Loopback only. No docker.sock."
 )
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -66,12 +67,14 @@ def anticon() -> dict:
         bad.append("mint")
     if SOCKET:
         bad.append("socket")
-    if UE5_LAUNCH:
-        bad.append("ue5_launch")
     if MODEL_PULL:
         bad.append("model_pull")
     if RATE_POLL:
         bad.append("rate_poll")
+    if UE5_LAUNCH:
+        bad.append("ue5_launch")
+    if not BITNETD:
+        bad.append("bitnetd")
     if BIND != "127.0.0.1:8765":
         bad.append("bind")
     if DOCKER_SOCK:
@@ -85,25 +88,26 @@ def advance() -> dict:
     return {
         "ok": ac["ok"],
         "item": ITEM,
-        "source": "docs/ROADMAP.md / JuniorOS overlay",
+        "source": "docs/ROADMAP.md",
         "opt_in": OPT_IN,
         "anticon": ac,
         "rate": RATE,
         "pool": POOL,
         "mint": MINT,
         "socket": SOCKET,
-        "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
+        "ue5_launch": UE5_LAUNCH,
+        "bitnetd": BITNETD,
         "bind": BIND,
         "docker_sock": DOCKER_SOCK,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
         "note": (
-            "bitnetd 127.0.0.1:8765 for JuniorOS overlay; path held at rate 0.05; "
-            "opt-in AntiCon one trit pack; no model pull; no UE boot; no rate poll; "
-            "pool held; mint false; socket false; dated 20261117"
+            "JuniorOS overlay bitnetd 127.0.0.1:8765 loopback only no docker.sock; path held at rate 0.05; "
+            "opt-in AntiCon one trit pack; no model pull; no rate poll; "
+            "pool held; mint false; socket false; no UE boot; dated 20261117"
         ),
     }
 
