@@ -426,7 +426,7 @@ Build path is the Grok connector and these slots. Do not add CI yaml.
 
 07:00 and 13:00 not scheduled. App-only. America/Denver. One commit max. LLC bots own 02:00-04:45. Personal quant team owns 05:05-07:05. Overnight is a pre-window guard. 19:00 is an evening guard.
 
-# Automation audit 2026-11-09 16:45 MST (tip 787e29d)
+# Automation audit 2026-11-09 16:45 MST (tip 7de773f)
 
 | Name | Schedule (MDT) | Notes |
 |---|---|---|
@@ -439,7 +439,7 @@ Build path is the Grok connector and these slots. Do not add CI yaml.
 
 07:00 and 13:00 not scheduled. App-only. America/Denver. One commit max. LLC bots own 02:00-04:45. Personal quant team owns 05:05-07:05. Overnight is a pre-window guard. 19:00 is an evening guard.
 
-# Automation audit 2026-11-10 16:45 MST (tip 371bee8)
+# Automation audit 2026-11-10 16:45 MST (tip 7de773f)
 
 | Name | Schedule (MDT) | Notes |
 |---|---|---|
@@ -452,8 +452,7 @@ Build path is the Grok connector and these slots. Do not add CI yaml.
 
 07:00 and 13:00 not scheduled. App-only. America/Denver. One commit max. LLC bots own 02:00-04:45. Personal quant team owns 05:05-07:05. Overnight is a pre-window guard. 19:00 is an evening guard.
 
-
-# Automation audit 2026-11-11 16:45 MST (tip 14195ba)
+# Automation audit 2026-11-11 16:45 MST (tip 7de773f)
 
 | Name | Schedule (MDT) | Notes |
 |---|---|---|
@@ -545,6 +544,19 @@ Build path is the Grok connector and these slots. Do not add CI yaml.
 07:00 and 13:00 not scheduled. App-only. America/Denver. One commit max. LLC bots own 02:00-04:45. Personal quant team owns 05:05-07:05. Overnight is a pre-window guard. 19:00 is an evening guard.
 
 # Automation audit 2026-11-18 16:45 MST (tip d1cd987)
+
+| Name | Schedule (MDT) | Notes |
+|---|---|---|
+| JuniorCloud overnight build | daily 01:00 | pre-window guard |
+| JuniorCloud daily audit | daily 16:45 | this run; AUTOMATION_AUDIT.md |
+| JuniorCloud slot 19:00 | daily 19:00 | evening guard |
+| JuniorCloud weekly audit | Mon 17:00 | WEEKLY_AUDIT.md |
+| omega-obj-weekly | Sat 10:00 | report |
+| junioros-core-weekly | Sat 11:00 | report, no product code |
+
+07:00 and 13:00 not scheduled. App-only. America/Denver. One commit max. LLC bots own 02:00-04:45. Personal quant team owns 05:05-07:05. Overnight is a pre-window guard. 19:00 is an evening guard.
+
+# Automation audit 2026-11-19 16:45 MST (tip 23a2492)
 
 | Name | Schedule (MDT) | Notes |
 |---|---|---|
