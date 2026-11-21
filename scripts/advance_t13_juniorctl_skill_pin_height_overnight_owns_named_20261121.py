@@ -5,8 +5,8 @@ Named item: Order (do not skip) 1. **T13+** — juniorctl skill-pin height. Over
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-No UE boot. Stdlib only. Overnight owns the skill-pin height.
-Does not wrap path.py, chain_record.py, or record_block.py.
+No UE boot. Stdlib only. Overnight owns. Do not wrap path.py,
+chain_record.py, or record_block.py. Additive only.
 """
 from __future__ import annotations
 
@@ -24,9 +24,10 @@ UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
 OVERNIGHT_OWNS = True
+SKILL_PIN_HEIGHT = True
+BIND = "127.0.0.1"
 ITEM = (
-    "ROADMAP Order (do not skip) #1 T13+ — juniorctl skill-pin height. "
-    "Overnight owns this."
+    "ROADMAP Order (do not skip) #1 T13+ — juniorctl skill-pin height. Overnight owns this."
 )
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
@@ -73,6 +74,10 @@ def anticon() -> dict:
         bad.append("rate_poll")
     if not OVERNIGHT_OWNS:
         bad.append("overnight_owns")
+    if not SKILL_PIN_HEIGHT:
+        bad.append("skill_pin_height")
+    if BIND != "127.0.0.1":
+        bad.append("bind")
     return {"ok": not bad, "reject": bad}
 
 
@@ -82,7 +87,7 @@ def advance_t13_juniorctl_skill_pin_height_overnight_owns_named_20261121() -> di
     return {
         "ok": ac["ok"],
         "item": ITEM,
-        "source": "docs/ROADMAP.md",
+        "source": "docs/ROADMAP.md Order #1",
         "opt_in": OPT_IN,
         "anticon": ac,
         "rate": RATE,
@@ -93,10 +98,12 @@ def advance_t13_juniorctl_skill_pin_height_overnight_owns_named_20261121() -> di
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
         "overnight_owns": OVERNIGHT_OWNS,
+        "skill_pin_height": SKILL_PIN_HEIGHT,
+        "bind": BIND,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "T13+ juniorctl skill-pin height overnight owns; path held at rate 0.05; opt-in AntiCon one trit pack; no model pull; no UE boot; no rate poll; no wrap of path/chain_record/record_block",
+        "note": "T13+ juniorctl skill-pin height overnight owns; path held at rate 0.05; opt-in AntiCon one trit pack; no model pull no UE boot no rate poll",
     }
 
 
