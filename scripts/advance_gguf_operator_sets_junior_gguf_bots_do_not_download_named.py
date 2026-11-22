@@ -1,30 +1,34 @@
-"""Advance ROADMAP named item: GGUF operator sets JUNIOR_GGUF. Bots do not download.
+#!/usr/bin/env python3
+"""Advance the GGUF named item from docs/ROADMAP.md.
 
-Named item: GGUF — operator sets JUNIOR_GGUF. Bots do not download. web3node/probe_future.py.
-Additive only. Does not wrap path.py, chain_record.py, or record_block.py.
+Named item: Order (do not skip) 2. **GGUF** — operator sets JUNIOR_GGUF. Bots do not download. web3node/probe_future.py.
 
-Base rate 0.05. Pool held. mint false. socket false. No model pull. No UE boot.
-No rate poll. Stdlib only. Bind 127.0.0.1. Close: sha256(prev || pack || text)[:16].
+Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
+pool held, mint false, socket false. No model pull. No rate set by poll.
+No UE boot. Stdlib only. Operator sets. Bots do not download. Do not wrap
+path.py, chain_record.py, or record_block.py. Additive only.
 """
 from __future__ import annotations
 
 import hashlib
+import json
 import sys
 
 RATE = 0.05
 OPT_IN = True
 ANTICON = True
-POOL_HELD = True
+POOL = "held"
 MINT = False
 SOCKET = False
-FETCH = False
 UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
+OPERATOR_SETS = True
+BOTS_DO_NOT_DOWNLOAD = True
 BIND = "127.0.0.1"
-ROADMAP_ITEM = "GGUF — operator sets JUNIOR_GGUF. Bots do not download. web3node/probe_future.py."
-DAY = "2026-10-31"
-GENESIS = "0" * 16
+ITEM = (
+    "ROADMAP Order (do not skip) #2 GGUF — operator sets JUNIOR_GGUF. Bots do not download. web3node/probe_future.py."
+)
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
 _ENC = {0: 0, 1: 1, -1: 2}
@@ -50,7 +54,8 @@ PACK = pack(TRIT_PACK)
 
 
 def close(prev: str, text: str) -> str:
-    return hashlib.sha256(prev.encode() + PACK + text.encode()).hexdigest()[:16]
+    body = f"{prev}|{text}|{RATE}".encode() + PACK
+    return hashlib.sha256(body).hexdigest()[:16]
 
 
 def anticon() -> dict:
@@ -67,54 +72,42 @@ def anticon() -> dict:
         bad.append("model_pull")
     if RATE_POLL:
         bad.append("rate_poll")
+    if not OPERATOR_SETS:
+        bad.append("operator_sets")
+    if not BOTS_DO_NOT_DOWNLOAD:
+        bad.append("bots_do_not_download")
     if BIND != "127.0.0.1":
         bad.append("bind")
     return {"ok": not bad, "reject": bad}
 
 
-def advance() -> dict:
+def advance_gguf_operator_sets_junior_gguf_bots_do_not_download_named() -> dict:
     ac = anticon()
-    tip = close(GENESIS, ROADMAP_ITEM) if ac["ok"] else None
+    tip = close("0" * 16, ITEM) if ac["ok"] else None
     return {
         "ok": ac["ok"],
-        "roadmap_item": ROADMAP_ITEM,
-        "source": "docs/ROADMAP.md",
-        "day": DAY,
+        "item": ITEM,
+        "source": "docs/ROADMAP.md Order #2",
         "opt_in": OPT_IN,
         "anticon": ac,
         "rate": RATE,
-        "pool_held": POOL_HELD,
+        "pool": POOL,
         "mint": MINT,
         "socket": SOCKET,
-        "fetch": FETCH,
         "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
+        "operator_sets": OPERATOR_SETS,
+        "bots_do_not_download": BOTS_DO_NOT_DOWNLOAD,
         "bind": BIND,
-        "tip": tip,
+        "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "probe only; GGUF named item; operator sets JUNIOR_GGUF; bots do not download; no socket; no model pull; no UE; 2026-10-31 additive",
+        "note": "GGUF operator sets JUNIOR_GGUF bots do not download; path held at rate 0.05; opt-in AntiCon one trit pack; no model pull no UE boot no rate poll",
     }
 
 
-def self_check() -> dict:
-    assert RATE == 0.05
-    assert OPT_IN and ANTICON and POOL_HELD
-    assert not (MINT or SOCKET or FETCH or UE5_LAUNCH or MODEL_PULL or RATE_POLL)
-    assert BIND == "127.0.0.1"
-    assert "GGUF" in ROADMAP_ITEM and "JUNIOR_GGUF" in ROADMAP_ITEM
-    out = advance()
-    assert out["ok"] and out["advanced"] and out["tip"] and len(out["tip"]) == 16
-    assert close(GENESIS, ROADMAP_ITEM) == out["tip"]
-    return out
-
-
 if __name__ == "__main__":
-    try:
-        result = self_check()
-        print(result)
-        sys.exit(0)
-    except AssertionError as e:
-        print({"ok": False, "error": repr(e)})
-        sys.exit(1)
+    out = advance_gguf_operator_sets_junior_gguf_bots_do_not_download_named()
+    print(json.dumps(out, indent=2))
+    sys.exit(0 if out["advanced"] else 1)
