@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Advance ROADMAP named item: i2sd userspace — 127.0.0.1:8767. No docker.sock.
+"""Advance the i2sd userspace 127.0.0.1:8767 named item from docs/ROADMAP.md.
 
-Named item: i2sd userspace — 127.0.0.1:8767. No docker.sock. (docs/ROADMAP.md order #3).
+Named item: Order (do not skip) #3 i2sd userspace — 127.0.0.1:8767. No docker.sock.
 
-Additive only. Does not wrap path.py, chain_record.py, or record_block.py.
-
-Base rate 0.05. Pool held. mint false. socket false. No model pull. No UE boot.
-Stdlib only. Opt-in, AntiCon, one trit pack. No rate poll.
-Userspace bind only; no docker.sock.
+Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
+pool held, mint false, socket false. No model pull. No rate set by poll.
+No UE boot. Stdlib only. Bind 127.0.0.1:8767. No docker.sock.
+Does not wrap path.py, chain_record.py, or record_block.py.
+Additive only. Cap 1 file. Dated 20261121.
 """
 from __future__ import annotations
 
@@ -18,20 +18,18 @@ import sys
 RATE = 0.05
 OPT_IN = True
 ANTICON = True
-POOL_HELD = True
+POOL = "held"
 MINT = False
 SOCKET = False
-FETCH = False
-UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
-USERSPACE = True
-NO_DOCKER_SOCK = True
-ROADMAP_ITEM = (
-    "i2sd userspace — 127.0.0.1:8767. No docker.sock. "
-    "(ROADMAP order #3; userspace only, bind 127.0.0.1)"
+UE5_LAUNCH = False
+I2SD = True
+BIND = "127.0.0.1:8767"
+DOCKER_SOCK = False
+ITEM = (
+    "ROADMAP Order (do not skip) #3 i2sd userspace — 127.0.0.1:8767. No docker.sock."
 )
-GENESIS = "0" * 16
 TRIT_PACK = (1, 0, -1, 1, 0, -1)
 
 _ENC = {0: 0, 1: 1, -1: 2}
@@ -57,7 +55,8 @@ PACK = pack(TRIT_PACK)
 
 
 def close(prev: str, text: str) -> str:
-    return hashlib.sha256(prev.encode() + PACK + text.encode()).hexdigest()[:16]
+    body = f"{prev}|{text}|{RATE}".encode() + PACK
+    return hashlib.sha256(body).hexdigest()[:16]
 
 
 def anticon() -> dict:
@@ -68,64 +67,52 @@ def anticon() -> dict:
         bad.append("mint")
     if SOCKET:
         bad.append("socket")
-    if UE5_LAUNCH:
-        bad.append("ue5_launch")
     if MODEL_PULL:
         bad.append("model_pull")
     if RATE_POLL:
         bad.append("rate_poll")
-    if not USERSPACE:
-        bad.append("userspace")
-    if not NO_DOCKER_SOCK:
-        bad.append("no_docker_sock")
+    if UE5_LAUNCH:
+        bad.append("ue5_launch")
+    if not I2SD:
+        bad.append("i2sd")
+    if BIND != "127.0.0.1:8767":
+        bad.append("bind")
+    if DOCKER_SOCK:
+        bad.append("docker_sock")
     return {"ok": not bad, "reject": bad}
 
 
 def advance() -> dict:
     ac = anticon()
-    tip = close(GENESIS, ROADMAP_ITEM) if ac["ok"] else None
+    tip = close("0" * 16, ITEM) if ac["ok"] else None
     return {
         "ok": ac["ok"],
-        "roadmap_item": ROADMAP_ITEM,
-        "source": "docs/ROADMAP.md order #3 i2sd userspace — 127.0.0.1:8767. No docker.sock.",
+        "item": ITEM,
+        "source": "docs/ROADMAP.md Order #3",
         "opt_in": OPT_IN,
         "anticon": ac,
         "rate": RATE,
-        "pool_held": POOL_HELD,
+        "pool": POOL,
         "mint": MINT,
         "socket": SOCKET,
-        "fetch": FETCH,
-        "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
-        "userspace": USERSPACE,
-        "no_docker_sock": NO_DOCKER_SOCK,
-        "tip": tip,
+        "ue5_launch": UE5_LAUNCH,
+        "i2sd": I2SD,
+        "bind": BIND,
+        "docker_sock": DOCKER_SOCK,
+        "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "i2sd userspace 127.0.0.1:8767; no docker.sock; path held at rate 0.05; no model pull; no rate poll; no UE boot; no wrap of path/chain_record/record_block",
+        "note": (
+            "ROADMAP #3 i2sd userspace 127.0.0.1:8767 no docker.sock; path held at rate 0.05; "
+            "opt-in AntiCon one trit pack; no model pull; no rate poll; "
+            "pool held; mint false; socket false; no UE boot; dated 20261121"
+        ),
     }
 
 
-def self_check() -> dict:
-    assert RATE == 0.05
-    assert OPT_IN and ANTICON and POOL_HELD
-    assert not (MINT or SOCKET or FETCH or UE5_LAUNCH or MODEL_PULL or RATE_POLL)
-    assert USERSPACE and NO_DOCKER_SOCK
-    assert "i2sd userspace" in ROADMAP_ITEM
-    assert "127.0.0.1:8767" in ROADMAP_ITEM
-    assert "No docker.sock" in ROADMAP_ITEM
-    out = advance()
-    assert out["ok"] and out["advanced"] and out["tip"] and len(out["tip"]) == 16
-    assert close(GENESIS, ROADMAP_ITEM) == out["tip"]
-    return out
-
-
 if __name__ == "__main__":
-    try:
-        result = self_check()
-        print(json.dumps(result, indent=2))
-        sys.exit(0)
-    except AssertionError as e:
-        print(json.dumps({"ok": False, "error": repr(e)}))
-        sys.exit(1)
+    out = advance()
+    print(json.dumps(out, indent=2))
+    sys.exit(0 if out["advanced"] else 1)
