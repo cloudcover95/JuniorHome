@@ -5,8 +5,8 @@ Named item: Order (do not skip) 5. **UE5 launched** — JUNIOR_UE5=1 and watts>=
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-No UE boot. Stdlib only. os_route.launch false until conditions. Do not wrap
-path.py, chain_record.py, or record_block.py. Additive only.
+No UE boot. Stdlib only. Default FrameForge2D; os_route.launch false.
+Do not wrap path.py, chain_record.py, or record_block.py. Additive only.
 """
 from __future__ import annotations
 
@@ -23,10 +23,9 @@ SOCKET = False
 UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
-OS_ROUTE_LAUNCH = False
 DEFAULT_FRAMEFORGE2D = True
-JUNIOR_UE5 = False
-WATTS_OK = False
+OS_ROUTE_LAUNCH = False
+WATTS_OK = False  # watts>=80 not assumed; launch held false
 BIND = "127.0.0.1"
 ITEM = (
     "ROADMAP Order (do not skip) #5 UE5 launched — JUNIOR_UE5=1 and watts>=80. Default FrameForge2D. os_route.launch false until then."
@@ -74,14 +73,10 @@ def anticon() -> dict:
         bad.append("model_pull")
     if RATE_POLL:
         bad.append("rate_poll")
-    if OS_ROUTE_LAUNCH:
-        bad.append("os_route_launch")
     if not DEFAULT_FRAMEFORGE2D:
         bad.append("default_frameforge2d")
-    if JUNIOR_UE5:
-        bad.append("junior_ue5")
-    if WATTS_OK:
-        bad.append("watts_ok")
+    if OS_ROUTE_LAUNCH:
+        bad.append("os_route_launch")
     if BIND != "127.0.0.1":
         bad.append("bind")
     return {"ok": not bad, "reject": bad}
@@ -103,15 +98,14 @@ def advance_ue5_launched_named_20261122() -> dict:
         "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
-        "os_route_launch": OS_ROUTE_LAUNCH,
         "default_frameforge2d": DEFAULT_FRAMEFORGE2D,
-        "junior_ue5": JUNIOR_UE5,
+        "os_route_launch": OS_ROUTE_LAUNCH,
         "watts_ok": WATTS_OK,
         "bind": BIND,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "UE5 launched path held; os_route.launch false until JUNIOR_UE5=1 and watts>=80; default FrameForge2D; opt-in AntiCon one trit pack base rate 0.05 pool held mint false socket false; no model pull no UE boot no rate poll",
+        "note": "UE5 launched held false; default FrameForge2D; os_route.launch false; path held at rate 0.05; opt-in AntiCon one trit pack; no model pull no UE boot no rate poll",
     }
 
 
