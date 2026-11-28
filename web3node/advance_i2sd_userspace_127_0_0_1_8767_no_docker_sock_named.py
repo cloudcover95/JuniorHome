@@ -5,8 +5,8 @@ Named item: Order (do not skip) 3. **i2sd userspace** — 127.0.0.1:8767. No doc
 
 Uses the existing path: opt-in, AntiCon, one trit pack, base rate 0.05,
 pool held, mint false, socket false. No model pull. No rate set by poll.
-No UE boot. Stdlib only. Bind 127.0.0.1:8767. No docker.sock. Do not wrap
-path.py, chain_record.py, or record_block.py.
+No UE boot. Stdlib only. Bind 127.0.0.1:8767. Do not wrap path.py,
+chain_record.py, or record_block.py.
 """
 from __future__ import annotations
 
@@ -23,8 +23,10 @@ SOCKET = False
 UE5_LAUNCH = False
 MODEL_PULL = False
 RATE_POLL = False
-NO_DOCKER_SOCK = True
-BIND = "127.0.0.1:8767"
+PROBE_FROM_AUTOMATIONS = True
+BIND = "127.0.0.1"
+PORT = 8767
+DOCKER_SOCK = False
 ITEM = (
     "ROADMAP Order (do not skip) #3 i2sd userspace — 127.0.0.1:8767. No docker.sock."
 )
@@ -71,10 +73,14 @@ def anticon() -> dict:
         bad.append("model_pull")
     if RATE_POLL:
         bad.append("rate_poll")
-    if not NO_DOCKER_SOCK:
-        bad.append("no_docker_sock")
-    if BIND != "127.0.0.1:8767":
+    if not PROBE_FROM_AUTOMATIONS:
+        bad.append("probe_from_automations")
+    if BIND != "127.0.0.1":
         bad.append("bind")
+    if PORT != 8767:
+        bad.append("port")
+    if DOCKER_SOCK:
+        bad.append("docker_sock")
     return {"ok": not bad, "reject": bad}
 
 
@@ -94,12 +100,14 @@ def advance_i2sd_userspace_127_0_0_1_8767_no_docker_sock_named() -> dict:
         "ue5_launch": UE5_LAUNCH,
         "model_pull": MODEL_PULL,
         "rate_poll": RATE_POLL,
-        "no_docker_sock": NO_DOCKER_SOCK,
+        "probe_from_automations": PROBE_FROM_AUTOMATIONS,
         "bind": BIND,
+        "port": PORT,
+        "docker_sock": DOCKER_SOCK,
         "hash": tip,
         "trit_pack": list(TRIT_PACK),
         "advanced": ac["ok"],
-        "note": "i2sd userspace 127.0.0.1:8767 no docker.sock; path held at rate 0.05; opt-in AntiCon; no model pull no UE boot no rate poll",
+        "note": "i2sd userspace bind 127.0.0.1:8767 no docker.sock; path held at rate 0.05; opt-in AntiCon; no model pull no UE boot no rate poll",
     }
 
 
